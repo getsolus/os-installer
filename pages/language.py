@@ -57,6 +57,7 @@ class LanguagePage(Gtk.VBox):
         scroller = Gtk.ScrolledWindow(None, None)
         scroller.add(self.listbox)
         scroller.set_margin_top(50)
+        scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.pack_start(scroller, True, True, 0)
         
         # TEMPORARY
