@@ -101,16 +101,16 @@ class InstallerWindow(Gtk.Window):
         self.rows = dict()
         
         # buttons
-        install = self.fancy_button(_("Install to your computer now"), "system-software-install-symbolic")
+        install = self.fancy_button(_("Install to your computer now"), "install-symbolic")
         self.listbox.add(install)
         self.rows[self.listbox.get_row_at_index(0)] = "install"
 
-        help_icon = "starred-symbolic" if self.use_symbolic else "help-browser-symbolic" 
+        help_icon = "learnmore-symbolic" if self.use_symbolic else "help-browser-symbolic" 
         help_btn = self.fancy_button(_("What's new in this release"), help_icon)
         self.listbox.add(help_btn)
         self.rows[self.listbox.get_row_at_index(1)] = "changes"
 
-        live = self.fancy_button(_("Continue using the LiveCD"), "drive-optical-symbolic")
+        live = self.fancy_button(_("Continue using the LiveCD"), "livecd-symbolic")
         self.listbox.add(live)
         self.rows[self.listbox.get_row_at_index(2)] = "live"
         
