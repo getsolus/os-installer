@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  interface.py - Main Installer UI
+#  installer_section.py - Holds installer pages
 #  
 #  Copyright 2013 Ikey Doherty <ikey@solusos.com>
 #  
