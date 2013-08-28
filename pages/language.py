@@ -56,7 +56,7 @@ class LanguagePage(Gtk.VBox):
         self.listbox = Gtk.ListBox()
         scroller = Gtk.ScrolledWindow(None, None)
         scroller.add(self.listbox)
-        scroller.set_margin_top(100)
+        scroller.set_margin_top(50)
         self.pack_start(scroller, True, True, 0)
         
         # TEMPORARY
@@ -150,3 +150,6 @@ class LanguagePage(Gtk.VBox):
 
     def get_name(self):
         return "language"
+
+    def get_icon_name(self):
+        return "preferences-desktop-locale-symbolic"
