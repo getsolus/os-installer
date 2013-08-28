@@ -9,3 +9,8 @@ of hooking it all back up to the old backend, and clean it all up :)
 Authors
 --------
  * Ikey Doherty <ikey@solusos.com>
+
+
+Artists
+-------
+ * Georgi Karavasilev
