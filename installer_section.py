@@ -26,14 +26,25 @@ import gi.repository
 from gi.repository import Gtk, Gdk, Pango
 from resources import *
 
-
-''' Helper function '''
+from pages.language import LanguagePage
 
 class InstallerSection(Gtk.VBox):
 
     def __init__(self):
         Gtk.VBox.__init__(self)
         self.set_border_width(10)
+
+        # Title
+        self.title = Gtk.Label("")
+        self.title.set_use_markup(True)
+        self.pack_start(self.title, False, False, 0)
+
+        # Content area
+        self.stack = Gtk.Stack()
+        self.pack_start(self.stack, True, True, 0)
+
+        self.pages = dict()
+        self._add_page(LanguagePage())
 
         # Navigation buttons
         btnbox = Gtk.ButtonBox()
@@ -53,3 +64,16 @@ class InstallerSection(Gtk.VBox):
         btnbox.add(forward)
         
         self.pack_end(btnbox, False, False, 0)
+
+        self._select_page(0)
+
+    def _select_page(self, index):
+        page = self.pages[index]
+        self.title.set_markup("<span font=\"20.5\" color=\"#82807b\">%s</span>" % page.get_title())
+        self.stack.set_visible_child(page)
+
+    def _add_page(self, page):
+        index = 0 if len(self.pages) <= 1 else len(self.pages)
+        self.pages[index] = page
+        self.stack.add_named(page, page.get_name())
+
