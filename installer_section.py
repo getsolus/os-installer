@@ -37,7 +37,7 @@ class InstallerSection(Gtk.VBox):
         # Title
         self.title = Gtk.Label("")
         self.title.set_use_markup(True)
-        self.pack_start(self.title, False, False, 0)
+        self.pack_start(self.title, False, False, 10)
 
         # Content area
         self.stack = Gtk.Stack()
