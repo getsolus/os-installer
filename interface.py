@@ -26,9 +26,7 @@ import gi.repository
 from gi.repository import Gtk, Gdk, Pango
 from live_page import LivePage
 from changes_page import ChangesPage
-
-DarkTheme = True
-UseSymbolic = DarkTheme
+from resources import *
 
 
 class InstallerWindow(Gtk.Window):
@@ -69,11 +67,10 @@ class InstallerWindow(Gtk.Window):
 
     def _init_theme(self):
         # TEMPORARY: Needs to be read from config
-        self.get_settings().set_string_property("gtk-icon-theme-name", "elementary", "0")
-        if DarkTheme:
-            self.get_settings().set_string_property("gtk-theme-name","MediterraneanDark", "Adwaita")
-        else:
-            self.get_settings().set_string_property("gtk-theme-name","Bluebird", "Adwaita")
+        theme = config[UI_THEME]
+        self.get_settings().set_string_property("gtk-icon-theme-name", theme["IconTheme"], "0")
+        self.get_settings().set_string_property("gtk-theme-name", theme["Widgets"], "Adwaita")
+        self.use_symbolic = theme["SymbolicIcons"].lower() == "true"
 
     def create_install_page(self):
         # Dummy content
@@ -84,12 +81,12 @@ class InstallerWindow(Gtk.Window):
     def create_intro_page(self):
         layout = Gtk.VBox()
         # Create a pretty label
-        label = "<span font=\"40.5\" color=\"#82807b\">SolusOS 2</span>"
+        label = "<span font=\"40.5\" color=\"#82807b\">%s</span>" % DISTRO_NAME
         label_widg = Gtk.Label(label)
         label_widg.set_use_markup(True)
 
         # Release label
-        release = "<span color=\"#82807b\" font=\"14.5\">alpha 9</span>"
+        release = "<span color=\"#82807b\" font=\"14.5\">%s</span>" % DISTRO_VERSION
         release_label = Gtk.Label(release)
         release_label.set_use_markup(True)
         release_label.set_angle(-30)
@@ -108,7 +105,7 @@ class InstallerWindow(Gtk.Window):
         self.listbox.add(install)
         self.rows[self.listbox.get_row_at_index(0)] = "install"
 
-        help_icon = "starred-symbolic" if UseSymbolic else "help-browser-symbolic" 
+        help_icon = "starred-symbolic" if self.use_symbolic else "help-browser-symbolic" 
         help_btn = self.fancy_button(_("What's new in this release"), help_icon)
         self.listbox.add(help_btn)
         self.rows[self.listbox.get_row_at_index(1)] = "changes"
@@ -127,7 +124,7 @@ class InstallerWindow(Gtk.Window):
         return layout
 
     def fancy_button(self, text, icon_name):
-        if not UseSymbolic:
+        if not self.use_symbolic:
             icon_name = icon_name.replace("-symbolic", "")
 
         image = Gtk.Image()
