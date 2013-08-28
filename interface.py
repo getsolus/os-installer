@@ -26,6 +26,7 @@ import gi.repository
 from gi.repository import Gtk, Gdk, Pango
 from live_page import LivePage
 from changes_page import ChangesPage
+from installer_section import InstallerSection
 from resources import *
 
 
@@ -51,7 +52,7 @@ class InstallerWindow(Gtk.Window):
 
         self.stack = Gtk.Stack()
         self.stack.add_named(self.create_intro_page(), "intro")
-        self.stack.add_named(self.create_install_page(), "install")
+        self.stack.add_named(InstallerSection(), "install")
         self.stack.add_named(LivePage(), "live")
         self.stack.add_named(ChangesPage(), "changes")
 
@@ -71,12 +72,6 @@ class InstallerWindow(Gtk.Window):
         self.get_settings().set_string_property("gtk-icon-theme-name", theme["IconTheme"], "0")
         self.get_settings().set_string_property("gtk-theme-name", theme["Widgets"], "Adwaita")
         self.use_symbolic = theme["SymbolicIcons"].lower() == "true"
-
-    def create_install_page(self):
-        # Dummy content
-        box = Gtk.VBox()
-        box.add(Gtk.Label("Welcome!!"))
-        return box
 
     def create_intro_page(self):
         layout = Gtk.VBox()
