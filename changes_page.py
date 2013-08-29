@@ -27,7 +27,7 @@ from gi.repository import Gtk, WebKit
 
 class ChangesPage(Gtk.VBox):
 
-    def __init__(self):
+    def __init__(self, owner):
         Gtk.VBox.__init__(self)
 
         view = WebKit.WebView()
@@ -35,10 +35,27 @@ class ChangesPage(Gtk.VBox):
         # Eventually need to open a local changes file
         view.open("http://solusos.com")
 
-        label = "<span font=\"40.5\" color=\"#82807b\">%s</span>" % _("Changes")
-        label_wid = Gtk.Label(label)
-        label_wid.set_use_markup(True)
-        self.pack_start(label_wid, False, False, 3)
+        self.title = Gtk.Label("<span font=\"20.5\" color=\"#82807b\">%s</span>" % _("Changes"))
+        self.title.set_use_markup(True)
+
+        self.image = Gtk.Image()
+        self.image.set_from_icon_name("learnmore-symbolic", Gtk.IconSize.DIALOG)
+        self.image.set_padding(10, 10)
+
+        header = Gtk.HBox()
+        header.pack_start(self.image, False, False, 0)
+        header.pack_start(self.title, False, False, 0)
+        self.pack_start(header, False, False, 3)
+
+        # We need a way to go back to the main window.. :)
+        self.back = Gtk.Button()
+        back_image = Gtk.Image()
+        back_image.set_from_icon_name("go-home-symbolic", Gtk.IconSize.BUTTON)
+        self.back.set_image(back_image)
+        self.back.set_relief(Gtk.ReliefStyle.NONE)
+        self.back.connect("clicked", lambda x: owner.go_home())
+
+        header.pack_end(self.back, False, False, 0)
 
         scroller = Gtk.ScrolledWindow(None, None)
         scroller.add(view)

@@ -36,6 +36,9 @@ class InstallerWindow(Gtk.Window):
         page = self.rows[row]
         self.stack.set_visible_child_name(page)
 
+    def go_home(self):
+        self.stack.set_visible_child_name("intro")
+
     def __init__(self):
         Gtk.Window.__init__(self)
         self.connect("destroy", Gtk.main_quit)
@@ -54,7 +57,7 @@ class InstallerWindow(Gtk.Window):
         self.stack.add_named(self.create_intro_page(), "intro")
         self.stack.add_named(InstallerSection(), "install")
         self.stack.add_named(LivePage(), "live")
-        self.stack.add_named(ChangesPage(), "changes")
+        self.stack.add_named(ChangesPage(self), "changes")
 
         self.listbox.connect("row-activated", self.rowsel)
         self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
