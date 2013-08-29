@@ -44,9 +44,10 @@ class LanguageItem(Gtk.HBox):
         self.language_string = "%s (%s)" % (language, country)
         self.language_label.set_markup(self.language_string)
         self.pack_start(self.language_label, False, True, 0)
-        
 
-        
+        self.locale = locale # Note we need the encoding too when we hook up the installer core
+
+
 class LanguagePage(BasePage):
 
     def __init__(self, installer):
@@ -55,6 +56,7 @@ class LanguagePage(BasePage):
         
         # Nice listbox to hold our languages
         self.listbox = Gtk.ListBox()
+        self.listbox.connect("row-activated", self.activated)
         scroller = Gtk.ScrolledWindow(None, None)
         scroller.add(self.listbox)
         scroller.set_margin_top(50)
@@ -68,7 +70,11 @@ class LanguagePage(BasePage):
         self.installer = installer
         self.installer.can_go_back(False)
         self.installer.can_go_forward(False)
-        # Add content
+
+    def activated(self, box, row):
+        item = row.get_children()[0]
+        self.locale = item.locale
+        self.installer.can_go_forward(True)
 
     def _load_lists(self):
         #Load countries into memory
