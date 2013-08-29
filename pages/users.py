@@ -29,7 +29,7 @@ import re
 LABEL_COLUMN = 0
 DATA_COLUMN = 1
 UNAME_REGEX = "^[a-z_][a-z0-9_-]*[$]?$"
-
+PASSWORD_LENGTH = 6
 
 class NewUserPage(Gtk.Grid):
 
@@ -46,6 +46,21 @@ class NewUserPage(Gtk.Grid):
                 self.rname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
             else:
                 self.rname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+        else:
+            # Handle the two password fields together
+            pass1 = self.pword_field.get_text()
+            pass2 = self.pword_field2.get_text()
+
+            if len(pass1) > PASSWORD_LENGTH:
+                self.pword_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+            else:
+                self.pword_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+                
+            if len(pass1) > PASSWORD_LENGTH and pass1 == pass2:
+                self.pword_field2.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+            else:
+                self.pword_field2.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+
 
     def __init__(self, owner):
         Gtk.Grid.__init__(self)
@@ -81,12 +96,14 @@ class NewUserPage(Gtk.Grid):
         pword_label = Gtk.Label(_("Password:"))
         self.pword_field = Gtk.Entry()
         self.pword_field.set_visibility(False)
+        self.pword_field.connect("changed", self.validator)
         self.attach(pword_label, LABEL_COLUMN, row, 1, 1)
         self.attach(self.pword_field, DATA_COLUMN, row, 1, 1)
 
         row += 1
         pword_label2 = Gtk.Label(_("Confirm password:"))
         self.pword_field2 = Gtk.Entry()
+        self.pword_field2.connect("changed", self.validator)
         self.pword_field2.set_visibility(False)
         self.attach(pword_label2, LABEL_COLUMN, row, 1, 1)
         self.attach(self.pword_field2, DATA_COLUMN, row, 1, 1)
