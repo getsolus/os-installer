@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  changes_page.py - Whats new, etc
+#  language.py - Language selection
 #  
 #  Copyright 2013 Ikey Doherty <ikey@solusos.com>
 #  

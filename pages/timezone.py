@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  changes_page.py - Whats new, etc
+#  timezone.py - Timezone chooser
 #  
 #  Copyright 2013 Ikey Doherty <ikey@solusos.com>
 #  
@@ -60,7 +60,6 @@ class TimezonePage(BasePage):
 
         self.timezone = None
         self.installer.can_go_forward(False)
-
 
     def change_timezone(self, completion, model, selection):
         item = model[selection]
