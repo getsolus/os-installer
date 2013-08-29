@@ -59,6 +59,7 @@ class TimezonePage(BasePage):
         self.map.set_timezone("Europe/London")
 
         self.timezone = None
+        self.timezone_human = None
         self.installer.can_go_forward(False)
 
     def change_timezone(self, completion, model, selection):
@@ -71,7 +72,8 @@ class TimezonePage(BasePage):
         self.timezone = zone
         nice_loc = self.db.tz_to_loc[zone]
 
-        self.map.set_watermark("%s (%s)" % (nice_loc.human_zone, nice_loc.human_country))
+        self.timezone_human = "%s (%s)" % (nice_loc.human_zone, nice_loc.human_country)
+        self.map.set_watermark(self.timezone_human)
         self.locations.set_text(nice_loc.human_zone)
 
         # Ok to go forward
@@ -89,3 +91,6 @@ class TimezonePage(BasePage):
 
     def get_icon_name(self):
         return "preferences-system-time-symbolic"
+
+    def get_primary_answer(self):
+        return self.timezone_human

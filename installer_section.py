@@ -28,6 +28,7 @@ from resources import *
 
 from pages.language import LanguagePage
 from pages.timezone import TimezonePage
+from pages.summary import SummaryPage
 
 class InstallerSection(Gtk.VBox):
 
@@ -72,6 +73,7 @@ class InstallerSection(Gtk.VBox):
         self.pages = dict()
         self._add_page(LanguagePage(self))
         self._add_page(TimezonePage(self))
+        self._add_page(SummaryPage(self))
         self._select_page(0)
 
     def nav(self, btn, forward=False):
@@ -81,7 +83,10 @@ class InstallerSection(Gtk.VBox):
 
     def _select_page(self, index):
         page = self.pages[index]
-        page.prepare()
+        if page.get_name() != "summary":
+            page.prepare()
+        else:
+            page.prepare([p for p in self.pages.values() if p.get_name() != "summary"])
         self.stack.set_visible_child_name(page.get_name())
         self.selected_page = index
 

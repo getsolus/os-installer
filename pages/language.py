@@ -71,6 +71,7 @@ class LanguagePage(BasePage):
         self.installer.can_go_back(False)
         self.installer.can_go_forward(False)
         self.locale = None
+        self.locale_item = None
 
     def prepare(self):
         self.installer.can_go_back(False)
@@ -79,6 +80,7 @@ class LanguagePage(BasePage):
     def activated(self, box, row):
         item = row.get_children()[0]
         self.locale = item.locale
+        self.locale_item = item
         self.installer.can_go_forward(True)
 
     def _load_lists(self):
@@ -170,3 +172,6 @@ class LanguagePage(BasePage):
 
     def get_icon_name(self):
         return "preferences-desktop-locale-symbolic"
+
+    def get_primary_answer(self):
+        return self.locale_item.language_string

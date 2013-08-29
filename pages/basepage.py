@@ -54,5 +54,8 @@ class BasePage(Gtk.VBox):
     def get_icon_name(self):
         pass
 
+    def get_primary_answer(self):
+        pass
+
     def prepare(self):
         pass
