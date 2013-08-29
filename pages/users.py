@@ -24,11 +24,28 @@
 import gi.repository
 from gi.repository import Gtk
 from basepage import BasePage
+import re
 
 LABEL_COLUMN = 0
 DATA_COLUMN = 1
+UNAME_REGEX = "^[a-z_][a-z0-9_-]*[$]?$"
+
 
 class NewUserPage(Gtk.Grid):
+
+    def validator(self, entry):
+        if entry == self.uname_field:
+            # Perform username validation
+            if self.username_regex.match(entry.get_text()):
+                self.uname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+            else:
+                self.uname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+        elif entry == self.rname_field:
+            # Only care that it's .. what?
+            if len(self.rname_field.get_text()) > 1:
+                self.rname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+            else:
+                self.rname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
 
     def __init__(self, owner):
         Gtk.Grid.__init__(self)
@@ -39,6 +56,8 @@ class NewUserPage(Gtk.Grid):
         self.set_margin_left(50)
         self.set_margin_right(50)
 
+        self.username_regex = re.compile(UNAME_REGEX, re.IGNORECASE)
+
         def justify_label(lab):
             lab.set_justify(Gtk.Justification.RIGHT)
             lab.set_alignment(1.0, 0.5)
@@ -47,12 +66,14 @@ class NewUserPage(Gtk.Grid):
         uname_label = Gtk.Label(_("Username:"))
         self.uname_field = Gtk.Entry()
         self.uname_field.set_hexpand(True)
+        self.uname_field.connect("changed", self.validator)
         self.attach(uname_label, LABEL_COLUMN, row, 1, 1)
         self.attach(self.uname_field, DATA_COLUMN, row, 1, 1)
 
         row += 1
         rname_label = Gtk.Label(_("Real name:"))
         self.rname_field = Gtk.Entry()
+        self.rname_field.connect("changed", self.validator)
         self.attach(rname_label, LABEL_COLUMN, row, 1, 1)
         self.attach(self.rname_field, DATA_COLUMN, row, 1, 1)
 
@@ -171,8 +192,8 @@ class UsersPage(BasePage):
         self.installer.can_go_back(True)
         self.installer.can_go_forward(False)
         self.stack.set_visible_child_name("main")
-        self.add_user_page.clear_form()
         self.show_all()
+        self.add_user_page.clear_form()
 
     def get_title(self):
         return _("Add users to the system")
