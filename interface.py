@@ -61,8 +61,6 @@ class InstallerWindow(Gtk.Window):
         self.layout.add(self.stack)
 
         self.set_resizable(False)
-        self.set_deletable(False)
-        self.set_skip_taskbar_hint(True)
         self.set_type_hint(Gdk.WindowTypeHint.DIALOG)
         self.show_all()
 
