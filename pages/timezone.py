@@ -28,11 +28,11 @@ from widgets.tz import Database, Location
 
 class TimezonePage(BasePage):
 
-    def __init__(self):
+    def __init__(self, installer):
         BasePage.__init__(self)
-        #self.set_border_width(30)
         self.map = TimezoneMap.TimezoneMap()
         self.pack_start(self.map, True, True, 0)
+        self.installer = installer
 
         # Set up timezone database
         self.db = Database()
@@ -56,7 +56,10 @@ class TimezonePage(BasePage):
 
         self.pack_end(self.locations, False, False, 3)
 
-        self.map.set_timezone("Europe/London")
+        #self.map.set_timezone("Europe/London")
+
+        self.timezone = None
+        self.installer.can_go_forward(False)
 
 
     def change_timezone(self, completion, model, selection):
@@ -66,10 +69,14 @@ class TimezonePage(BasePage):
 
     def changed(self, map, location):
         zone = location.get_property("zone")
+        self.timezone = zone
         nice_loc = self.db.tz_to_loc[zone]
 
         self.map.set_watermark("%s (%s)" % (nice_loc.human_zone, nice_loc.human_country))
         self.locations.set_text(nice_loc.human_zone)
+
+        # Ok to go forward
+        self.installer.can_go_forward(True)
 
     def get_title(self):
         return _("Choose your timezone")

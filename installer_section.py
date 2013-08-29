@@ -71,7 +71,7 @@ class InstallerSection(Gtk.VBox):
         self.selected_page = 0
         self.pages = dict()
         self._add_page(LanguagePage(self))
-        self._add_page(TimezonePage())
+        self._add_page(TimezonePage(self))
         self._select_page(0)
 
     def nav(self, btn, forward=False):
