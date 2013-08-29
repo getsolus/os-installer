@@ -29,6 +29,7 @@ from resources import *
 from pages.language import LanguagePage
 from pages.timezone import TimezonePage
 from pages.summary import SummaryPage
+from pages.users import UsersPage
 
 class InstallerSection(Gtk.VBox):
 
@@ -73,6 +74,7 @@ class InstallerSection(Gtk.VBox):
         self.pages = dict()
         self._add_page(LanguagePage(self))
         self._add_page(TimezonePage(self))
+        self._add_page(UsersPage(self))
         self._add_page(SummaryPage(self))
         self._select_page(0)
 
