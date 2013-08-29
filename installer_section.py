@@ -80,7 +80,6 @@ class InstallerSection(Gtk.VBox):
 
     def nav(self, btn, forward=False):
         index = self.selected_page + 1 if forward else self.selected_page - 1
-        print index
         self._select_page(index)
 
     def _select_page(self, index):
