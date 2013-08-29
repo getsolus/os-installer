@@ -24,14 +24,31 @@
 import gi.repository
 from gi.repository import Gtk, TimezoneMap
 from basepage import BasePage
-        
+from widgets.tz import Database, Location
+
 class TimezonePage(BasePage):
 
     def __init__(self):
         BasePage.__init__(self)
         #self.set_border_width(30)
         self.map = TimezoneMap.TimezoneMap()
+        self.map.connect("location-changed", self.changed)
         self.pack_start(self.map, True, True, 0)
+
+        self.map.set_timezone("Europe/London")
+        # Set up timezone database
+        self.db = Database()
+
+        locations = Gtk.Entry()
+        locations.set_placeholder_text(_("Search for your timezone..."))
+        self.completion = TimezoneMap.TimezoneCompletion()
+        locations.set_completion(self.completion)
+        self.pack_end(locations, False, False, 3)
+
+    def changed(self, map, location):
+        city = location.get_property("zone")
+        self.map.set_watermark(city)
+        print city
 
     def get_title(self):
         return _("Choose your timezone")
