@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  changes_page.py - Whats new, etc
+#  basepage.py - Provides base for other Installer pages
 #  
 #  Copyright 2013 Ikey Doherty <ikey@solusos.com>
 #  
@@ -22,22 +22,34 @@
 #  
 #
 import gi.repository
-from gi.repository import Gtk, TimezoneMap
-from basepage import BasePage
+from gi.repository import Gtk
+
         
-class TimezonePage(BasePage):
+class BasePage(Gtk.VBox):
 
     def __init__(self):
-        BasePage.__init__(self)
-        #self.set_border_width(30)
-        self.map = TimezoneMap.TimezoneMap()
-        self.pack_start(self.map, True, True, 0)
+        Gtk.VBox.__init__(self)
+        self.set_border_width(10)
 
+        self.title = Gtk.Label("<span font=\"20.5\" color=\"#82807b\">%s</span>" % self.get_title())
+        self.title.set_use_markup(True)
+        
+        self.image = Gtk.Image()
+        self.image.set_from_icon_name(self.get_icon_name(), Gtk.IconSize.DIALOG)
+        self.image.set_padding(10, 10)
+
+        header = Gtk.HBox()
+        header.pack_start(self.image, False, False, 0)
+        header.pack_start(self.title, False, False, 0)
+
+        self.pack_start(header, False, True, 10)
+
+        
     def get_title(self):
-        return _("Choose your timezone")
+        pass
 
     def get_name(self):
-        return "timezone"
+        pass
 
     def get_icon_name(self):
-        return "preferences-system-time-symbolic"
+        pass

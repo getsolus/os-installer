@@ -22,7 +22,8 @@
 #  
 #
 import gi.repository
-from gi.repository import Gtk, WebKit
+from gi.repository import Gtk
+from basepage import BasePage
 import os
 
 class LanguageItem(Gtk.HBox):
@@ -46,10 +47,10 @@ class LanguageItem(Gtk.HBox):
         
 
         
-class LanguagePage(Gtk.VBox):
+class LanguagePage(BasePage):
 
     def __init__(self):
-        Gtk.VBox.__init__(self)
+        BasePage.__init__(self)
         #self.set_border_width(30)
         
         # Nice listbox to hold our languages

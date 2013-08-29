@@ -34,19 +34,6 @@ class InstallerSection(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
         self.set_border_width(10)
-
-        # Title
-        self.title = Gtk.Label("")
-        self.title.set_use_markup(True)
-
-        self.image = Gtk.Image()
-        self.image.set_padding(10, 10)
-
-        header = Gtk.HBox()
-        header.pack_start(self.image, False, False, 0)
-        header.pack_start(self.title, False, False, 0)
-
-        self.pack_start(header, False, True, 10)
         
         # Content area
         self.stack = Gtk.Stack()
@@ -89,8 +76,6 @@ class InstallerSection(Gtk.VBox):
 
     def _select_page(self, index):
         page = self.pages[index]
-        self.title.set_markup("<span font=\"20.5\" color=\"#82807b\">%s</span>" % page.get_title())
-        self.image.set_from_icon_name(page.get_icon_name(), Gtk.IconSize.DIALOG)
         self.stack.set_visible_child_name(page.get_name())
         self.selected_page = index
 
