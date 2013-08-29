@@ -38,14 +38,18 @@ class NewUserPage(Gtk.Grid):
             # Perform username validation
             if self.username_regex.match(entry.get_text()):
                 self.uname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_score(self.uname_field, True)
             else:
                 self.uname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+                self.update_score(self.uname_field, False)
         elif entry == self.rname_field:
             # Only care that it's .. what?
             if len(self.rname_field.get_text()) > 1:
                 self.rname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_score(self.rname_field, True)
             else:
                 self.rname_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+                self.update_score(self.rname_field, False)
         else:
             # Handle the two password fields together
             pass1 = self.pword_field.get_text()
@@ -53,15 +57,27 @@ class NewUserPage(Gtk.Grid):
 
             if len(pass1) > PASSWORD_LENGTH:
                 self.pword_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_score(self.pword_field, True)
             else:
                 self.pword_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+                self.update_score(self.pword_field, False)
                 
             if len(pass1) > PASSWORD_LENGTH and pass1 == pass2:
                 self.pword_field2.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_score(self.pword_field2, True)
             else:
                 self.pword_field2.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+                self.update_score(self.pword_field2, False)
 
+    def update_score(self, widget, score):
+        if not widget in self.scores:
+            self.scores[widget] = score
+        else:
+            self.scores[widget] = score
 
+        total_score = len( [i for i in self.scores.values() if i])
+        self.ok.set_sensitive(total_score == self.needed_score)
+        
     def __init__(self, owner):
         Gtk.Grid.__init__(self)
         self.owner = owner
@@ -70,6 +86,9 @@ class NewUserPage(Gtk.Grid):
         self.set_row_spacing(10)
         self.set_margin_left(50)
         self.set_margin_right(50)
+
+        self.scores = dict()
+        self.needed_score = 4
 
         self.username_regex = re.compile(UNAME_REGEX, re.IGNORECASE)
 
@@ -125,6 +144,7 @@ class NewUserPage(Gtk.Grid):
         ok_image = Gtk.Image()
         ok_image.set_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON)
         self.ok.set_image(ok_image)
+        self.ok.set_sensitive(False)
 
         self.cancel = Gtk.Button(_("Cancel"))
         self.cancel.connect("clicked", lambda x: self.owner.show_main())
