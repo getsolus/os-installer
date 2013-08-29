@@ -41,9 +41,26 @@ class TimezonePage(BasePage):
 
         locations = Gtk.Entry()
         locations.set_placeholder_text(_("Search for your timezone..."))
-        self.completion = TimezoneMap.TimezoneCompletion()
-        locations.set_completion(self.completion)
+
+        tz_model = Gtk.ListStore(str,str,str,str,float,float)
+
+        for item in self.db.locations:
+            tz_model.append([item.human_zone, item.zone, None, item.country, item.longitude, item.latitude])
+
+        completion = TimezoneMap.TimezoneCompletion()
+        completion.set_model(tz_model)
+        completion.set_text_column(0)
+        completion.set_inline_completion(True)
+        completion.set_inline_selection(True)
+        completion.connect("match-selected", self.change_timezone)
+        locations.set_completion(completion)
+
         self.pack_end(locations, False, False, 3)
+
+    def change_timezone(self, completion, model, selection):
+        item = model[selection]
+        zone = item[1]
+        self.map.set_timezone(zone)
 
     def changed(self, map, location):
         city = location.get_property("zone")
