@@ -25,6 +25,83 @@ import gi.repository
 from gi.repository import Gtk
 from basepage import BasePage
 
+LABEL_COLUMN = 0
+DATA_COLUMN = 1
+
+class NewUserPage(Gtk.Grid):
+
+    def __init__(self):
+        Gtk.Grid.__init__(self)
+
+        self.set_column_spacing(10)
+        self.set_row_spacing(10)
+        self.set_margin_left(50)
+        self.set_margin_right(50)
+
+        def justify_label(lab):
+            lab.set_justify(Gtk.Justification.RIGHT)
+            lab.set_alignment(1.0, 0.5)
+
+        row = 0
+        uname_label = Gtk.Label(_("Username:"))
+        self.uname_field = Gtk.Entry()
+        self.uname_field.set_hexpand(True)
+        self.attach(uname_label, LABEL_COLUMN, row, 1, 1)
+        self.attach(self.uname_field, DATA_COLUMN, row, 1, 1)
+
+        row += 1
+        rname_label = Gtk.Label(_("Real name:"))
+        self.rname_field = Gtk.Entry()
+        self.attach(rname_label, LABEL_COLUMN, row, 1, 1)
+        self.attach(self.rname_field, DATA_COLUMN, row, 1, 1)
+
+        row += 1
+        pword_label = Gtk.Label(_("Password:"))
+        self.pword_field = Gtk.Entry()
+        self.pword_field.set_visibility(False)
+        self.attach(pword_label, LABEL_COLUMN, row, 1, 1)
+        self.attach(self.pword_field, DATA_COLUMN, row, 1, 1)
+
+        row += 1
+        pword_label2 = Gtk.Label(_("Confirm password:"))
+        self.pword_field2 = Gtk.Entry()
+        self.pword_field2.set_visibility(False)
+        self.attach(pword_label2, LABEL_COLUMN, row, 1, 1)
+        self.attach(self.pword_field2, DATA_COLUMN, row, 1, 1)
+
+        row += 1
+        # Now we have an automatic login field
+        self.autologin = Gtk.CheckButton(_("Log this user into the computer automatically"))
+        self.attach(self.autologin, DATA_COLUMN, row, 1, 1)
+
+        row += 1
+        # And now an administrative user check
+        self.adminuser = Gtk.CheckButton(_("This user should have administrative capabilities"))
+        self.attach(self.adminuser, DATA_COLUMN, row, 1, 1)
+
+        row += 1
+        btnbox = Gtk.ButtonBox()
+        # Lastly the action buttons
+        self.ok = Gtk.Button(_("Add now"))
+        ok_image = Gtk.Image()
+        ok_image.set_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON)
+        self.ok.set_image(ok_image)
+
+        self.cancel = Gtk.Button(_("Cancel"))
+        cancel_image = Gtk.Image()
+        cancel_image.set_from_icon_name("window-close-symbolic", Gtk.IconSize.BUTTON)
+        self.cancel.set_image(cancel_image)
+
+        btnbox.set_layout(Gtk.ButtonBoxStyle.START)
+        btnbox.set_margin_top(10)
+        btnbox.add(self.ok)
+        btnbox.add(self.cancel)
+        self.attach(btnbox, DATA_COLUMN, row, 1, 1)
+
+        for label in [uname_label, rname_label, pword_label, pword_label2]:
+            justify_label(label)
+        
+
 class UsersPage(BasePage):
 
     def __init__(self, installer):
@@ -51,6 +128,7 @@ class UsersPage(BasePage):
         toolbar.get_style_context().set_junction_sides(junctions)
         
         add = Gtk.ToolButton()
+        add.connect("clicked", self.add_user)
         add.set_icon_name("list-add-symbolic")
         toolbar.add(add)
 
@@ -58,14 +136,29 @@ class UsersPage(BasePage):
         remove.set_icon_name("list-remove-symbolic")
         remove.set_sensitive(False)
         toolbar.add(remove)
-        
-        self.pack_start(scroller, True, True, 0)
-        self.pack_start(toolbar, False, False, 0)
+
+        # We use a stack here too, because dialogs are horrible.
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
+        self.pack_start(self.stack, True, True, 0)
+
+        main_page = Gtk.VBox()
+        main_page.pack_start(scroller, True, True, 0)
+        main_page.pack_start(toolbar, False, False, 0)
+
+        self.stack.add_named(main_page, "main")
+
+        self.add_user_page = NewUserPage()
+        self.stack.add_named(self.add_user_page, "add-user")
+
+    def add_user(self, widget):
+        self.stack.set_visible_child_name("add-user")
+        self.installer.can_go_back(False)
 
     def prepare(self):
         self.installer.can_go_back(True)
         self.installer.can_go_forward(False)
-
+        self.stack.set_visible_child_name("main")
         self.show_all()
 
     def get_title(self):
