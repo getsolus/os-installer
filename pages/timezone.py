@@ -56,7 +56,7 @@ class TimezonePage(BasePage):
 
         self.pack_end(self.locations, False, False, 3)
 
-        #self.map.set_timezone("Europe/London")
+        self.map.set_timezone("Europe/London")
 
         self.timezone = None
         self.installer.can_go_forward(False)
