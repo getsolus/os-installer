@@ -22,7 +22,7 @@
 #  
 #  
 import gi.repository
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 import gettext
 
 from interface import InstallerWindow
@@ -30,6 +30,7 @@ from interface import InstallerWindow
 gettext.install("os-installer", "/usr/share/locale")
 
 def main():
+    GObject.threads_init()
     window = InstallerWindow()
     Gtk.main()
 
