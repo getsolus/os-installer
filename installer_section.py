@@ -81,6 +81,7 @@ class InstallerSection(Gtk.VBox):
 
     def _select_page(self, index):
         page = self.pages[index]
+        page.prepare()
         self.stack.set_visible_child_name(page.get_name())
         self.selected_page = index
 

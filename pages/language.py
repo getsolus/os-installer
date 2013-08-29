@@ -70,7 +70,12 @@ class LanguagePage(BasePage):
         self.installer = installer
         self.installer.can_go_back(False)
         self.installer.can_go_forward(False)
+        self.locale = None
 
+    def prepare(self):
+        self.installer.can_go_back(False)
+        self.installer.can_go_forward(self.locale is not None)
+        
     def activated(self, box, row):
         item = row.get_children()[0]
         self.locale = item.locale

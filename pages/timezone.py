@@ -78,6 +78,10 @@ class TimezonePage(BasePage):
         # Ok to go forward
         self.installer.can_go_forward(True)
 
+    def prepare(self):
+        self.installer.can_go_back(True)
+        self.installer.can_go_forward(self.timezone is not None)
+        
     def get_title(self):
         return _("Choose your timezone")
 
