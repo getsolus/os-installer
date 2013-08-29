@@ -229,6 +229,7 @@ class UsersPage(BasePage):
         self.installer = installer
 
         self.listbox = Gtk.ListBox()
+        self.listbox.connect("row-activated", self.activated)
         scroller = Gtk.ScrolledWindow(None,None)
         scroller.add(self.listbox)
         scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -251,10 +252,11 @@ class UsersPage(BasePage):
         add.set_icon_name("list-add-symbolic")
         toolbar.add(add)
 
-        remove = Gtk.ToolButton()
-        remove.set_icon_name("list-remove-symbolic")
-        remove.set_sensitive(False)
-        toolbar.add(remove)
+        self.remove = Gtk.ToolButton()
+        self.remove.set_icon_name("list-remove-symbolic")
+        self.remove.set_sensitive(False)
+        self.remove.connect("clicked", self.delete_user)
+        toolbar.add(self.remove)
 
         # We use a stack here too, because dialogs are horrible.
         self.stack = Gtk.Stack()
@@ -271,6 +273,25 @@ class UsersPage(BasePage):
         self.stack.add_named(self.add_user_page, "add-user")
 
         self.users = []
+
+    def activated(self, box, row):
+        if row is None:
+            self.remove.set_sensitive(False)
+            return
+        self.remove.set_sensitive(True)
+
+    def delete_user(self, w=None):
+        row = self.listbox.get_selected_row()
+        if row is None:
+            self.remove.set_sensitive(False)
+            return
+        user = row.get_children()[0].user
+        self.users.remove(user)
+        self.listbox.remove(row)
+        self.remove.set_sensitive(False)
+
+        if len(self.users) == 0:
+            self.installer.can_go_forward(False)
 
     def add_user(self, widget):
         self.stack.set_visible_child_name("add-user")
