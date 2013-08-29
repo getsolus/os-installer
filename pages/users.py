@@ -30,9 +30,10 @@ DATA_COLUMN = 1
 
 class NewUserPage(Gtk.Grid):
 
-    def __init__(self):
+    def __init__(self, owner):
         Gtk.Grid.__init__(self)
-
+        self.owner = owner
+        
         self.set_column_spacing(10)
         self.set_row_spacing(10)
         self.set_margin_left(50)
@@ -88,6 +89,7 @@ class NewUserPage(Gtk.Grid):
         self.ok.set_image(ok_image)
 
         self.cancel = Gtk.Button(_("Cancel"))
+        self.cancel.connect("clicked", lambda x: self.owner.show_main())
         cancel_image = Gtk.Image()
         cancel_image.set_from_icon_name("window-close-symbolic", Gtk.IconSize.BUTTON)
         self.cancel.set_image(cancel_image)
@@ -100,7 +102,12 @@ class NewUserPage(Gtk.Grid):
 
         for label in [uname_label, rname_label, pword_label, pword_label2]:
             justify_label(label)
-        
+
+    def clear_form(self):
+        for entry in [self.uname_field, self.rname_field, self.pword_field, self.pword_field2]:
+            entry.set_text("")
+        for check in [self.autologin, self.adminuser]:
+            check.set_active(False)
 
 class UsersPage(BasePage):
 
@@ -148,17 +155,23 @@ class UsersPage(BasePage):
 
         self.stack.add_named(main_page, "main")
 
-        self.add_user_page = NewUserPage()
+        self.add_user_page = NewUserPage(self)
         self.stack.add_named(self.add_user_page, "add-user")
 
     def add_user(self, widget):
         self.stack.set_visible_child_name("add-user")
         self.installer.can_go_back(False)
 
+    def show_main(self):
+        self.stack.set_visible_child_name("main")
+        self.installer.can_go_back(True)
+        self.add_user_page.clear_form()
+
     def prepare(self):
         self.installer.can_go_back(True)
         self.installer.can_go_forward(False)
         self.stack.set_visible_child_name("main")
+        self.add_user_page.clear_form()
         self.show_all()
 
     def get_title(self):
