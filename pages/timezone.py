@@ -32,12 +32,10 @@ class TimezonePage(BasePage):
         BasePage.__init__(self)
         #self.set_border_width(30)
         self.map = TimezoneMap.TimezoneMap()
-        self.map.connect("location-changed", self.changed)
         self.pack_start(self.map, True, True, 0)
 
         # Set up timezone database
         self.db = Database()
-        self.map.set_timezone("Europe/London")
 
         self.locations = Gtk.Entry()
         self.locations.set_placeholder_text(_("Search for your timezone..."))
@@ -54,8 +52,12 @@ class TimezonePage(BasePage):
         completion.set_inline_selection(True)
         completion.connect("match-selected", self.change_timezone)
         self.locations.set_completion(completion)
+        self.map.connect("location-changed", self.changed)
 
         self.pack_end(self.locations, False, False, 3)
+
+        self.map.set_timezone("Europe/London")
+
 
     def change_timezone(self, completion, model, selection):
         item = model[selection]
@@ -67,6 +69,7 @@ class TimezonePage(BasePage):
         nice_loc = self.db.tz_to_loc[zone]
 
         self.map.set_watermark("%s (%s)" % (nice_loc.human_zone, nice_loc.human_country))
+        self.locations.set_text(nice_loc.human_zone)
 
     def get_title(self):
         return _("Choose your timezone")
