@@ -31,6 +31,54 @@ DATA_COLUMN = 1
 UNAME_REGEX = "^[a-z_][a-z0-9_-]*[$]?$"
 PASSWORD_LENGTH = 6
 
+
+def justify_label(lab):
+    lab.set_justify(Gtk.Justification.RIGHT)
+    lab.set_alignment(1.0, 0.5)
+
+def justify_label2(lab):
+    lab.set_justify(Gtk.Justification.LEFT)
+    lab.set_alignment(0.0, 0.5)
+    
+class User:
+
+    def __init__(self, username, realname, password, autologin, admin):
+        self.username = username
+        self.realname = realname
+        self.password = password
+        self.autologin = autologin
+        self.admin = admin
+
+
+class UserPanel(Gtk.VBox):
+    '''
+    Userpanel. Represents a user. Eventually will have Face support
+    '''
+    
+    def __init__(self, user):
+        Gtk.VBox.__init__(self)
+        
+        self.user = user
+
+        label = Gtk.Label("<big>%s</big> - %s" % (self.user.realname, self.user.username))
+        label.set_use_markup(True)
+        label_details = Gtk.Label("")
+        details = ""
+        if self.user.autologin:
+            details += "     - %s" % _("will be automatically logged into the computer")
+        else:
+            details += "     - %s" % _("will use a password to log into the computer")
+        if self.user.admin:
+            details += "\n     - %s" % _("will have administrative capabilities")
+        else:
+            details += "\n     - %s" % _("will be an ordinary user")
+
+        label_details.set_markup(details)
+        justify_label2(label)
+        justify_label2(label_details)
+        self.pack_start(label, True, True, 4)
+        self.pack_start(label_details, False, False, 0)
+        
 class NewUserPage(Gtk.Grid):
 
     def validator(self, entry):
@@ -92,10 +140,6 @@ class NewUserPage(Gtk.Grid):
 
         self.username_regex = re.compile(UNAME_REGEX, re.IGNORECASE)
 
-        def justify_label(lab):
-            lab.set_justify(Gtk.Justification.RIGHT)
-            lab.set_alignment(1.0, 0.5)
-
         row = 0
         uname_label = Gtk.Label(_("Username:"))
         self.uname_field = Gtk.Entry()
@@ -145,6 +189,7 @@ class NewUserPage(Gtk.Grid):
         ok_image.set_from_icon_name("list-add-symbolic", Gtk.IconSize.BUTTON)
         self.ok.set_image(ok_image)
         self.ok.set_sensitive(False)
+        self.ok.connect("clicked", self.add_user)
 
         self.cancel = Gtk.Button(_("Cancel"))
         self.cancel.connect("clicked", lambda x: self.owner.show_main())
@@ -166,6 +211,15 @@ class NewUserPage(Gtk.Grid):
             entry.set_text("")
         for check in [self.autologin, self.adminuser]:
             check.set_active(False)
+
+    def add_user(self, w=None):
+        user = User(self.uname_field.get_text(),
+                    self.rname_field.get_text(),
+                    self.pword_field.get_text(),
+                    self.autologin.get_active(),
+                    self.adminuser.get_active())
+        self.owner.add_new_user(user)
+        self.owner.show_main()
 
 class UsersPage(BasePage):
 
@@ -216,9 +270,18 @@ class UsersPage(BasePage):
         self.add_user_page = NewUserPage(self)
         self.stack.add_named(self.add_user_page, "add-user")
 
+        self.users = []
+
     def add_user(self, widget):
         self.stack.set_visible_child_name("add-user")
         self.installer.can_go_back(False)
+
+    def add_new_user(self, user):
+        self.users.append(user)
+        user_panel = UserPanel(user)
+        self.listbox.add(user_panel)
+        self.listbox.show_all()
+        self.installer.can_go_forward(True)
 
     def show_main(self):
         self.stack.set_visible_child_name("main")
@@ -227,7 +290,7 @@ class UsersPage(BasePage):
 
     def prepare(self):
         self.installer.can_go_back(True)
-        self.installer.can_go_forward(False)
+        self.installer.can_go_forward(len(self.users) > 0)
         self.stack.set_visible_child_name("main")
         self.show_all()
         self.add_user_page.clear_form()
@@ -240,3 +303,7 @@ class UsersPage(BasePage):
 
     def get_icon_name(self):
         return "system-users-symbolic"
+
+    def get_primary_answer(self):
+        users = [user.username for user in self.users]
+        return ", ".join(users)
