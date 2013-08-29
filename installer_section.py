@@ -31,6 +31,12 @@ from pages.timezone import TimezonePage
 
 class InstallerSection(Gtk.VBox):
 
+    def can_go_back(self, should):
+        self.back.set_sensitive(should)
+
+    def can_go_forward(self, should):
+        self.forward.set_sensitive(should)
+
     def __init__(self):
         Gtk.VBox.__init__(self)
         self.set_border_width(10)
@@ -40,34 +46,33 @@ class InstallerSection(Gtk.VBox):
         self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self.pack_start(self.stack, True, True, 0)
 
-        self.index = 0
-        self.selected_page = 0
-        self.pages = dict()
-        self._add_page(LanguagePage())
-        self._add_page(TimezonePage())
-
         # Navigation buttons
         btnbox = Gtk.ButtonBox()
         btnbox.set_layout(Gtk.ButtonBoxStyle.END)
         btnbox.set_margin_top(10)
 
-        back = Gtk.Button(_("Previous"))
-        back.connect("clicked", self.nav, False)
-        #back.set_sensitive(False)
+        self.back = Gtk.Button(_("Previous"))
+        self.back.connect("clicked", self.nav, False)
         image = Gtk.Image()
         image.set_from_icon_name("go-previous-symbolic", Gtk.IconSize.BUTTON)
-        back.set_image(image)
-        btnbox.add(back)
+        self.back.set_image(image)
+        btnbox.add(self.back)
 
-        forward = Gtk.Button(_("Next"))
-        forward.connect("clicked", self.nav, True)
+        self.forward = Gtk.Button(_("Next"))
+        self.forward.connect("clicked", self.nav, True)
         forward_image = Gtk.Image()
         forward_image.set_from_icon_name("go-next-symbolic", Gtk.IconSize.BUTTON)
-        forward.set_image(forward_image)
-        btnbox.add(forward)
-
-        self._select_page(0)
+        self.forward.set_image(forward_image)
+        btnbox.add(self.forward)
+        
         self.pack_end(btnbox, False, False, 0)
+
+        self.index = 0
+        self.selected_page = 0
+        self.pages = dict()
+        self._add_page(LanguagePage(self))
+        self._add_page(TimezonePage())
+        self._select_page(0)
 
     def nav(self, btn, forward=False):
         index = self.selected_page + 1 if forward else self.selected_page - 1

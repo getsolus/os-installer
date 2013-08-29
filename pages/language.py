@@ -49,7 +49,7 @@ class LanguageItem(Gtk.HBox):
         
 class LanguagePage(BasePage):
 
-    def __init__(self):
+    def __init__(self, installer):
         BasePage.__init__(self)
         #self.set_border_width(30)
         
@@ -64,6 +64,10 @@ class LanguagePage(BasePage):
         # TEMPORARY
         self.resource_dir = "./data"
         self._load_lists()
+
+        self.installer = installer
+        self.installer.can_go_back(False)
+        self.installer.can_go_forward(False)
         # Add content
 
     def _load_lists(self):
