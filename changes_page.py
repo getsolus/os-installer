@@ -32,9 +32,17 @@ class ChangesPage(Gtk.VBox):
 
         view = WebKit.WebView()
         view.set_transparent(True)
-        # Eventually need to open a local changes file
-        view.open("http://solusos.com")
+        # Eventually need to open a local changes file from real location
+        lines = None
+        base_uri = "file:///home/ikey/Desktop/SolusOS_Work/os-installer/changes/"
+        with open ("changes/index.html", "r") as html:
+            lines = "\n".join(html.readlines())
 
+        view.load_html_string(lines, base_uri)
+
+        settings = WebKit.WebSettings()
+        settings.set_property("enable_file_access_from_file_uris", True)
+        view.set_settings(settings)
         self.title = Gtk.Label("<span font=\"20.5\" color=\"#82807b\">%s</span>" % _("Changes"))
         self.title.set_use_markup(True)
 
@@ -59,6 +67,7 @@ class ChangesPage(Gtk.VBox):
 
         scroller = Gtk.ScrolledWindow(None, None)
         scroller.add(view)
+        scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.pack_start(scroller, True, True, 0)
 
         # Add content
