@@ -151,7 +151,6 @@ class KeyboardPage(BasePage):
             conf = element.getElementsByTagName('configItem')[0]
             name = conf.getElementsByTagName('name')[0]
             desc = conf.getElementsByTagName('description')[0]
-            #vendor = conf.getElementsByTagName('vendor')[0] # presently unused..
             iter_model = model_models.append([self.getText(desc.childNodes), self.getText(name.childNodes)])
             index += 1
             item = self.getText(name.childNodes)
@@ -182,8 +181,6 @@ class KeyboardPage(BasePage):
         p.poll()
 
         xml_file = '/usr/share/X11/xkb/rules/xorg.xml'      
-        #model_variants = gtk.ListStore(str,str)
-        #model_variants.set_sort_column_id(0, gtk.SORT_ASCENDING)        
         dom = parse(xml_file)
 
         index = -1
@@ -197,7 +194,6 @@ class KeyboardPage(BasePage):
             layout_description = self.getText(conf.getElementsByTagName('description')[0].childNodes)
                 
             if (layout_name == self.keyboard_layout):
-                #iter_variant = model_variants.append([layout_description, None])
                 variant_panel = KeyboardVariantPanel(layout_description, None)
                 self.listbox_layouts.add(variant_panel)
                 variants_list = layout.getElementsByTagName('variantList')
