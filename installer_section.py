@@ -31,6 +31,7 @@ from pages.timezone import TimezonePage
 from pages.summary import SummaryPage
 from pages.users import UsersPage
 from pages.keyboard import KeyboardPage
+from pages.disks import DiskPage
 
 class InstallerSection(Gtk.VBox):
 
@@ -75,6 +76,7 @@ class InstallerSection(Gtk.VBox):
         self.pages = dict()
         self._add_page(LanguagePage(self))
         self._add_page(KeyboardPage(self))
+        self._add_page(DiskPage(self))
         self._add_page(TimezonePage(self))
         self._add_page(UsersPage(self))
         self._add_page(SummaryPage(self))
