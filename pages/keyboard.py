@@ -104,7 +104,7 @@ class KeyboardPage(BasePage):
 
     def prepare(self):
         self.installer.can_go_back(True)
-        self.installer.can_go_forward(False)
+        self.installer.can_go_forward(True)
 
     def build_kb_lists(self):
         ''' Do some xml kung-fu and load the keyboard stuffs '''
@@ -230,4 +230,4 @@ class KeyboardPage(BasePage):
         return "input-keyboard-symbolic"
 
     def get_primary_answer(self):
-        return self.locale_item.language_string
+        return "Not yet implemented"
