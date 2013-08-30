@@ -211,6 +211,7 @@ class NewUserPage(Gtk.Grid):
             entry.set_text("")
         for check in [self.autologin, self.adminuser]:
             check.set_active(False)
+        self.adminuser.set_sensitive(True)
 
     def add_user(self, w=None):
         user = User(self.uname_field.get_text(),
@@ -294,7 +295,12 @@ class UsersPage(BasePage):
             self.installer.can_go_forward(False)
 
     def add_user(self, widget):
+        admins = [user for user in self.users if user.admin]
         self.stack.set_visible_child_name("add-user")
+        if len(admins) == 0:
+            # Force this new user to be an administrator
+            self.add_user_page.adminuser.set_sensitive(False)
+            self.add_user_page.adminuser.set_active(True)
         self.installer.can_go_back(False)
 
     def add_new_user(self, user):
