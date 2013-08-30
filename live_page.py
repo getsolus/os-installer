@@ -30,8 +30,9 @@ class LivePage(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
 
-        label = _("Thank you for using SolusOS. Please use the button in the top right corner to close this window")
+        label = "<big>%s</big>\n\n%s" % (_("Thank you for using SolusOS."), _("Please use the button in the top right corner to close this window.\nYou may restart the installer at any time from the desktop."))
         label_wid = Gtk.Label(label)
+        label_wid.set_use_markup(True)
         self.pack_start(label_wid, True, False, 0)
 
         # Add content
