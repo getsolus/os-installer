@@ -80,18 +80,34 @@ class KeyboardPage(BasePage):
         scroller.add(self.listbox_models)
         scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
 
+        self.listbox_models.connect("row-activated", self.activate)
 
         self.listbox_layouts = Gtk.ListBox()
         scroller2 = Gtk.ScrolledWindow(None, None)
         scroller2.add(self.listbox_layouts)
         scroller2.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
 
+        self.listbox_layouts.connect("row-activated", self.activate)
+        
+
         scroller_holder.pack_start(scroller, True, True, 0)
-        scroller_holder.pack_start(scroller2, True, True, 0)
+        #scroller_holder.pack_start(scroller2, True, True, 0)
         scroller_holder.set_margin_top(20)
         scroller_holder.set_margin_bottom(20)
-        self.pack_start(scroller_holder, True, True, 0)
+        #self.pack_start(scroller_holder, True, True, 0)
 
+        # Stack to hold panes
+        self.stack = Gtk.Stack()
+        self.stack.add_named(scroller_holder, "models")
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
+
+        self.pack_start(self.stack, True, True, 0)
+
+        # Page 2
+        page2 = Gtk.VBox()
+        page2.add(scroller2)
+        self.stack.add_named(page2, "layouts")
+        
         # To test keyboard layouts
         self.test_keyboard = Gtk.Entry()
         self.test_keyboard.set_placeholder_text(_("Type here to test your keyboard layout"))
@@ -102,6 +118,15 @@ class KeyboardPage(BasePage):
         self.build_kb_lists()
         self.build_kb_variant_lists()
 
+    def activate(self, box, row):
+        child = row.get_children()[0]
+        # Do something with that ^
+
+        if box == self.listbox_models:
+            self.stack.set_visible_child_name("layouts")
+        else:
+            self.stack.set_visible_child_name("models")
+            
     def prepare(self):
         self.installer.can_go_back(True)
         self.installer.can_go_forward(True)
