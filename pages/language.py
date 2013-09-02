@@ -43,6 +43,7 @@ class LanguageItem(Gtk.HBox):
         self.language_label = Gtk.Label()
         self.language_string = "%s (%s)" % (language, country)
         self.language_label.set_markup(self.language_string)
+        self.country_code = country_code
         self.pack_start(self.language_label, False, True, 0)
 
         self.locale = locale # Note we need the encoding too when we hook up the installer core
@@ -53,30 +54,52 @@ class LanguagePage(BasePage):
     def __init__(self, installer):
         BasePage.__init__(self)
         #self.set_border_width(30)
-        
+        self.installer = installer
+
         # Nice listbox to hold our languages
         self.listbox = Gtk.ListBox()
         self.listbox.connect("row-activated", self.activated)
         scroller = Gtk.ScrolledWindow(None, None)
-        scroller.add(self.listbox)
+        scroller.add_with_viewport(self.listbox)
         scroller.set_margin_top(50)
         scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.pack_start(scroller, True, True, 0)
         
         # TEMPORARY
         self.resource_dir = "./data"
+
         self._load_lists()
 
-        self.installer = installer
         self.installer.can_go_back(False)
         self.installer.can_go_forward(False)
         self.locale = None
         self.locale_item = None
 
+        self.prepped = False
+
     def prepare(self):
+        self.set_once()
         self.installer.can_go_back(False)
         self.installer.can_go_forward(self.locale is not None)
-        
+
+    def set_once(self):
+        if self.prepped:
+            return
+        self.prepped = True
+        known_country = None
+        if "country" in self.installer.suggestions:
+            known_country = self.installer.suggestions["country"]
+
+        selected = None
+        for child in self.listbox.get_children():
+            item = child.get_children()[0]
+            if known_country is not None and known_country.lower() == item.country_code:
+                if selected is None:
+                    selected = child
+
+        if selected is not None:
+            self.listbox.select_row(selected)
+                    
     def activated(self, box, row):
         item = row.get_children()[0]
         self.locale = item.locale
@@ -110,6 +133,7 @@ class LanguagePage(BasePage):
         set_index = None
 
         appends = []
+            
         for line in locales:
             cur_index += 1
             if "UTF-8" in line:
@@ -133,6 +157,7 @@ class LanguagePage(BasePage):
 
                         item = LanguageItem(language, country, locale_code, country_code, self.resource_dir)
                         appends.append(item)
+
                         '''iter = model.append()
                         model.set_value(iter, 0, language_label)
                         model.set_value(iter, 1, locale_code)
@@ -159,11 +184,14 @@ class LanguagePage(BasePage):
                             set_index = iter
                             #print "Set via locale: " + cur_lang'''
 
+
+            
         appends.sort(key=lambda x: x.language_string.lower())
+        index = 0
+        selected = None
         for item in appends:
             self.listbox.add(item)
-            #appends.remove(item)
-
+            
     def get_title(self):
         return _("Choose a language")
 
