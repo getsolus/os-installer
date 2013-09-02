@@ -157,34 +157,6 @@ class LanguagePage(BasePage):
 
                         item = LanguageItem(language, country, locale_code, country_code, self.resource_dir)
                         appends.append(item)
-
-                        '''iter = model.append()
-                        model.set_value(iter, 0, language_label)
-                        model.set_value(iter, 1, locale_code)
-                        flag_path = self.resource_dir + '/flags/16/' + country_code + '.png'
-                        if os.path.exists(flag_path):
-                            model.set_value(iter, 2, gtk.gdk.pixbuf_new_from_file(flag_path))
-                        else:
-                            flag_path = self.resource_dir + '/flags/16/generic.png'
-                            model.set_value(iter, 2, gtk.gdk.pixbuf_new_from_file(flag_path))'''
-                        # If it's matching our country code, that's our language right there.. 
-                        '''if ((cur_country_code is not None) and (cur_country_code.lower() == country_code)):                            
-                            if (set_index is None):
-                                set_index = iter                                
-                            else:
-                                # If we find more than one language for a particular country, one of them being English, go for English by default.
-                                if (language_code == "en"):
-                                    set_index = iter                 
-                                # Guesswork... handy for countries which have their own language (fr_FR, de_DE, es_ES.. etc. )
-                                elif (country_code == language_code):
-                                    set_index = iter
-                                    
-                        # as a plan B... use the locale (USA)
-                        if((set_index is None) and (locale_code == cur_lang)):
-                            set_index = iter
-                            #print "Set via locale: " + cur_lang'''
-
-
             
         appends.sort(key=lambda x: x.language_string.lower())
         index = 0
