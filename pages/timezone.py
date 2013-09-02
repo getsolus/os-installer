@@ -56,8 +56,6 @@ class TimezonePage(BasePage):
 
         self.pack_end(self.locations, False, False, 3)
 
-        self.map.set_timezone("Europe/London")
-
         self.timezone = None
         self.timezone_human = None
         self.installer.can_go_forward(False)
@@ -80,6 +78,10 @@ class TimezonePage(BasePage):
         self.installer.can_go_forward(True)
 
     def prepare(self):
+        if "timezone" in self.installer.suggestions:
+            timezone = self.installer.suggestions["timezone"]
+            self.map.set_timezone(timezone)
+            
         self.installer.can_go_back(True)
         self.installer.can_go_forward(self.timezone is not None)
         

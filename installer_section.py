@@ -72,6 +72,8 @@ class InstallerSection(Gtk.VBox):
         
         self.pack_end(btnbox, False, False, 0)
 
+        # Pages can make suggestions for other parts of the installer
+        self.suggestions = dict()
         self.index = 0
         self.selected_page = 0
         self.pages = dict()
@@ -93,7 +95,7 @@ class InstallerSection(Gtk.VBox):
         if page.get_name() != "summary":
             page.prepare()
         else:
-            page.prepare([p for p in self.pages.values() if p.get_name() != "summary"])
+            page.prepare([p for p in self.pages.values() if p.get_name() != "summary" and not p.is_hidden()])
         self.stack.set_visible_child_name(page.get_name())
         self.selected_page = index
 

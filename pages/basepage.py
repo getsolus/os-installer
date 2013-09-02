@@ -59,3 +59,6 @@ class BasePage(Gtk.VBox):
 
     def prepare(self):
         pass
+
+    def is_hidden(self):
+        return False

@@ -86,6 +86,9 @@ we can perform a quick check to find out where you are in the world. To opt out,
         self.spinner.hide()
         self.installer.can_go_forward(True)
 
+        self.installer.suggestions["country"] = country
+        self.installer.suggestions["timezone"] = timezone
+
     def lookup(self, btn=None):
         t = threading.Thread(target=self._lookup)
         t.start()
@@ -106,3 +109,6 @@ we can perform a quick check to find out where you are in the world. To opt out,
 
     def get_primary_answer(self):
         return "Not yet implemented"
+
+    def is_hidden(self):
+        return True
