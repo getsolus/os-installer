@@ -26,6 +26,7 @@ import gi.repository
 from gi.repository import Gtk, Gdk, Pango
 from resources import *
 
+from pages.geoip import GeoPage
 from pages.language import LanguagePage
 from pages.timezone import TimezonePage
 from pages.summary import SummaryPage
@@ -74,6 +75,7 @@ class InstallerSection(Gtk.VBox):
         self.index = 0
         self.selected_page = 0
         self.pages = dict()
+        self._add_page(GeoPage(self))
         self._add_page(LanguagePage(self))
         self._add_page(KeyboardPage(self))
         self._add_page(DiskPage(self))
