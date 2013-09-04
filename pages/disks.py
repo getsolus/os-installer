@@ -106,7 +106,10 @@ class DiskPage(BasePage):
         self.treeview = Gtk.TreeView()
         self.scroller = Gtk.ScrolledWindow(None, None)
         self.scroller.add(self.treeview)
-        self.scroller.set_border_width(10)
+        #self.scroller.set_border_width(10)
+        self.scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        self.scroller.get_style_context().set_junction_sides(Gtk.JunctionSides.BOTTOM)
         self.pack_start(self.scroller, True, True, 0)
         
         # device
@@ -151,6 +154,17 @@ class DiskPage(BasePage):
         self.column9.add_attribute(ren, "markup", INDEX_PARTITION_FREE_SPACE)
         self.treeview.append_column(self.column9)
 
+        toolbar = Gtk.Toolbar()
+        toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_INLINE_TOOLBAR)
+        junctions = Gtk.JunctionSides.TOP
+        toolbar.get_style_context().set_junction_sides(junctions)
+        
+        add = Gtk.ToolButton()
+        add.set_icon_name("preferences-system-symbolic")
+        toolbar.add(add)
+
+        self.pack_start(toolbar, False, False, 0)
+        
         self.target_disk = "/dev/sda"
 
         self.build_hdds()
