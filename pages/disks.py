@@ -200,6 +200,8 @@ class DiskPage(BasePage):
         self.root.set_label(_("Assign as root partition (ext4)"))
         self.root.set_is_important(True)
         self.root.set_sensitive(False)
+
+        self.root.connect("clicked", self._assign_root)
         toolbar.add(self.root)
 
         self.swap = Gtk.ToolButton()
@@ -210,6 +212,7 @@ class DiskPage(BasePage):
 
         sep = Gtk.SeparatorToolItem()
         sep.set_expand(True)
+        sep.set_draw(False)
         toolbar.add(sep)
         
         gparted = Gtk.ToolButton()
@@ -225,12 +228,31 @@ class DiskPage(BasePage):
         self.pack_start(self.stack, True, True, 0)
         
 
+        self.root_partition = None
+        
         self.build_hdds()
 
+    def _assign_root(self, btn):
+        model = self.treeview.get_model()
+        if self.root_partition is not None:
+            # Already got a root reset. Go fix.
+            model.set_value(self.root_partition_row, INDEX_PARTITION_FORMAT_AS, self.root_format_saved)
+            model.set_value(self.root_partition_row, INDEX_PARTITION_MOUNT_AS, self.root_mount_saved)
+            
+        self.root_partition_row = self.selected_row
+        self.root_partition = self.selected_partition.partition
+
+        self.root_format_saved = model[self.selected_row][INDEX_PARTITION_FORMAT_AS]
+        self.root_mount_saved = model[self.selected_row][INDEX_PARTITION_MOUNT_AS]
+        
+        model.set_value(self.selected_row, INDEX_PARTITION_FORMAT_AS, "ext4")
+        model.set_value(self.selected_row, INDEX_PARTITION_MOUNT_AS, "/")
+
+        self.queue_draw()
+        print "Assigned root (/) to %s" % self.root_partition.path
+        
     def _partition_selected(self, selection):
         model, treeiter = selection.get_selected()
-        print model
-        print treeiter
         
         if treeiter == None:
             self.root.set_sensitive(False)
@@ -242,6 +264,7 @@ class DiskPage(BasePage):
         self.root.set_sensitive(not swap)
         self.swap.set_sensitive(swap)
 
+        self.selected_row = treeiter
         self.selected_partition = part
         
     def _disk_selected(self, box, row):
