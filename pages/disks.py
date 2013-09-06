@@ -55,6 +55,8 @@ class DiskPanel(Gtk.HBox):
         self.pack_start(self.label, False, True, 0)
 
         self.set_name('installer-box')
+
+        self.device = name
         self.set_border_width(5)
         
 class PartitionSetup(object):
@@ -129,6 +131,7 @@ class DiskPage(BasePage):
         self.disks_page.set_border_width(20)
         self.listbox_disks = Gtk.ListBox()
         self.disks_page.pack_start(self.listbox_disks, True, True, 0)
+        self.listbox_disks.connect("row-activated", self._disk_selected)
 
         self.stack.add_named(self.disks_page, "disks")
         
@@ -199,14 +202,18 @@ class DiskPage(BasePage):
 
         self.stack.add_named(self.partition_page, "partitions")
 
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
         self.pack_start(self.stack, True, True, 0)
         
-        self.target_disk = "/dev/sda"
 
         self.build_hdds()
+
+    def _disk_selected(self, box, row):
+        device = row.get_children()[0].device
+        self.target_disk = device
         self.build_partitions()
-
-
+        self.stack.set_visible_child_name("partitions")
+        
     def build_hdds(self):
         self.disks = []
         #model = Gtk.ListStore(str, str)            
@@ -394,7 +401,7 @@ class DiskPage(BasePage):
             
     def prepare(self):
         self.installer.can_go_back(True)
-        self.installer.can_go_forward(True)
+        self.installer.can_go_forward(False)
         
     def get_title(self):
         return _("Where should we install?")
