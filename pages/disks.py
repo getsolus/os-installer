@@ -469,4 +469,7 @@ class DiskPage(BasePage):
         return "drive-harddisk-system-symbolic"
 
     def get_primary_answer(self):
-        return "Not yet implemented"
+        answer =  _("Format %s as %s for root (/)") % (self.root_partition.path, "ext4")
+        if self.swap_partition is not None:
+            answer += "\n" + _("Format and use %s as swap device") % self.swap_partition.path
+        return answer
