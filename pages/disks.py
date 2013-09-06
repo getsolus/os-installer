@@ -241,16 +241,10 @@ class DiskPage(BasePage):
             index += 1
             
 
-    def build_partitions(self):        
-        #self.window.set_sensitive(False)
-        # "busy" cursor.
-        #cursor = gtk.gdk.Cursor(gtk.gdk.WATCH)
-        #self.window.window.set_cursor(cursor)        
-        
+    def build_partitions(self):
         os.popen('mkdir -p /tmp/os-installer/tmpmount')
         
         try:                                                                                            
-            #grub_model = gtk.ListStore(str)
             self.partitions = []
             
             model = Gtk.ListStore(str,str,str,str,str,str,str, object, bool, long, long, bool)
@@ -260,12 +254,10 @@ class DiskPage(BasePage):
             
             if self.target_disk is not None:
                 path =  self.target_disk # i.e. /dev/sda
-                #grub_model.append([path])
                 device = parted.getDevice(path)                
                 try:
                     disk = parted.Disk(device)
                 except Exception:
-                    # Need to raise a warning..
                     pass
                 partition = disk.getFirstPartition()
                 last_added_partition = PartitionSetup(partition)
@@ -372,26 +364,8 @@ class DiskPage(BasePage):
                             else:
                                 color = "#a9a9a9"
                             model.set_value(iter, INDEX_PARTITION_TYPE, "<span foreground='%s'>%s</span>" % (color, last_added_partition.type))                                            
-                            deviceSize = float(device.getSize()) * float(0.9) # Hack.. reducing the real size to 90% of what it is, to make sure our partitions fit..
-                            space = int((float(partition.getSize()) / deviceSize) * float(80))                            
-                            subs = {}
-                            if (space >= 10):
-                                subs['path'] = display_name.replace("/dev/", "")                            
-                                subs['OS'] = last_added_partition.description
-                            elif (space >= 5):
-                                subs['path'] = display_name.replace("/dev/", "")                            
-                                subs['OS'] = ""                            
-                            else:
-                                #Not enough space, don't write the name
-                                subs['path'] = ""                          
-                                subs['OS'] = ""
-                            subs['color'] = color                            
-                            if (space == 0):
-                                space = 1
-                            subs['space'] = space
-                            subs['title'] = display_name + "\n" + last_added_partition.description
-                            if "%" in last_added_partition.used_space:               
-                                subs['usage'] = last_added_partition.used_space.strip()
+                            #deviceSize = float(device.getSize()) * float(0.9) # Hack.. reducing the real size to 90% of what it is, to make sure our partitions fit..
+                            #space = int((float(partition.getSize()) / deviceSize) * float(80))                            
                             self.partitions.append(last_added_partition)
                             
                     partition = partition.nextPartition()
