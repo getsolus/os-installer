@@ -217,6 +217,7 @@ class DiskPage(BasePage):
         
         gparted = Gtk.ToolButton()
         gparted.set_label(_("Launch Partition Editor"))
+        gparted.connect("clicked", self._launch_gparted)
         gparted.set_is_important(True)
         toolbar.add(gparted)
         
@@ -273,7 +274,10 @@ class DiskPage(BasePage):
         self.queue_draw()
         print "Assigned swap to %s" % self.swap_partition.path
         
-        
+    def _launch_gparted(self, btn):
+        os.system("gparted %s" % self.target_disk)
+        self.build_partitions()
+
     def _partition_selected(self, selection):
         model, treeiter = selection.get_selected()
         
@@ -284,8 +288,8 @@ class DiskPage(BasePage):
 
         part = model[treeiter][INDEX_PARTITION_OBJECT]
         swap = part.type == "swap"
-        self.root.set_sensitive(not swap)
-        self.swap.set_sensitive(swap)
+        self.root.set_sensitive(part.type != "" and not swap)
+        self.swap.set_sensitive(part.type != "" and swap)
 
         self.selected_row = treeiter
         self.selected_partition = part
