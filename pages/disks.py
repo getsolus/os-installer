@@ -194,10 +194,27 @@ class DiskPage(BasePage):
         junctions = Gtk.JunctionSides.TOP
         toolbar.get_style_context().set_junction_sides(junctions)
         
-        add = Gtk.ToolButton()
-        add.set_icon_name("preferences-system-symbolic")
-        toolbar.add(add)
+        root = Gtk.ToolButton()
+        root.set_label(_("Assign as root partition"))
+        root.set_is_important(True)
+        root.set_sensitive(False)
+        toolbar.add(root)
 
+        swap = Gtk.ToolButton()
+        swap.set_label(_("Assign as swap partition"))
+        swap.set_is_important(True)
+        swap.set_sensitive(False)
+        toolbar.add(swap)
+
+        sep = Gtk.SeparatorToolItem()
+        sep.set_expand(True)
+        toolbar.add(sep)
+        
+        gparted = Gtk.ToolButton()
+        gparted.set_label(_("Launch Partition Editor"))
+        gparted.set_is_important(True)
+        toolbar.add(gparted)
+        
         self.partition_page.pack_start(toolbar, False, False, 0)
 
         self.stack.add_named(self.partition_page, "partitions")
