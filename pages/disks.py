@@ -200,7 +200,6 @@ class DiskPage(BasePage):
         self.root.set_label(_("Assign as root partition (ext4)"))
         self.root.set_is_important(True)
         self.root.set_sensitive(False)
-
         self.root.connect("clicked", self._assign_root)
         toolbar.add(self.root)
 
@@ -208,6 +207,7 @@ class DiskPage(BasePage):
         self.swap.set_label(_("Assign as swap partition"))
         self.swap.set_is_important(True)
         self.swap.set_sensitive(False)
+        self.swap.connect("clicked", self._assign_swap)
         toolbar.add(self.swap)
 
         sep = Gtk.SeparatorToolItem()
@@ -229,13 +229,14 @@ class DiskPage(BasePage):
         
 
         self.root_partition = None
+        self.swap_partition = None
         
         self.build_hdds()
 
     def _assign_root(self, btn):
         model = self.treeview.get_model()
         if self.root_partition is not None:
-            # Already got a root reset. Go fix.
+            # Already got a root set. Go fix.
             model.set_value(self.root_partition_row, INDEX_PARTITION_FORMAT_AS, self.root_format_saved)
             model.set_value(self.root_partition_row, INDEX_PARTITION_MOUNT_AS, self.root_mount_saved)
             
@@ -250,6 +251,28 @@ class DiskPage(BasePage):
 
         self.queue_draw()
         print "Assigned root (/) to %s" % self.root_partition.path
+
+        self.installer.can_go_forward(True) # Only *really* need a root in alpha stages
+
+    def _assign_swap(self, btn):
+        model = self.treeview.get_model()
+        if self.swap_partition is not None:
+            # Already got a swap set. Go fix.
+            model.set_value(self.swap_partition_row, INDEX_PARTITION_FORMAT_AS, self.root_format_saved)
+            model.set_value(self.swap_partition_row, INDEX_PARTITION_MOUNT_AS, self.root_mount_saved)
+            
+        self.swap_partition_row = self.selected_row
+        self.swap_partition = self.selected_partition.partition
+
+        self.swap_format_saved = model[self.selected_row][INDEX_PARTITION_FORMAT_AS]
+        self.swap_mount_saved = model[self.selected_row][INDEX_PARTITION_MOUNT_AS]
+        
+        model.set_value(self.selected_row, INDEX_PARTITION_FORMAT_AS, "swap")
+        model.set_value(self.selected_row, INDEX_PARTITION_MOUNT_AS, "swap")
+
+        self.queue_draw()
+        print "Assigned swap to %s" % self.swap_partition.path
+        
         
     def _partition_selected(self, selection):
         model, treeiter = selection.get_selected()
@@ -434,7 +457,7 @@ class DiskPage(BasePage):
             
     def prepare(self):
         self.installer.can_go_back(True)
-        self.installer.can_go_forward(False)
+        self.installer.can_go_forward(self.root_partition is not None)
         
     def get_title(self):
         return _("Where should we install?")
