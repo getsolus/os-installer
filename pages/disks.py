@@ -141,7 +141,7 @@ class DiskPage(BasePage):
         self.treeview = Gtk.TreeView()
         self.scroller = Gtk.ScrolledWindow(None, None)
         self.scroller.add(self.treeview)
-        #self.scroller.set_border_width(10)
+        self.partition_page.set_border_width(12)
         self.scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.scroller.get_style_context().set_junction_sides(Gtk.JunctionSides.BOTTOM)
