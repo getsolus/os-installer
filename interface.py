@@ -74,6 +74,12 @@ class InstallerWindow(Gtk.Window):
         self.get_settings().set_string_property("gtk-theme-name", theme["Widgets"], "Adwaita")
         self.use_symbolic = theme["SymbolicIcons"].lower() == "true"
 
+        context = self.get_style_context()
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_path('data/styling.css')
+        screen = Gdk.Screen.get_default()
+        context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
     def create_intro_page(self):
         layout = Gtk.VBox()
         # Create a pretty label

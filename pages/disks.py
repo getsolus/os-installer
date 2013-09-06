@@ -40,6 +40,23 @@ INDEX_PARTITION_SIZE=5
 INDEX_PARTITION_FREE_SPACE=6
 INDEX_PARTITION_OBJECT=7
 
+class DiskPanel(Gtk.HBox):
+
+    def __init__(self, name):
+        Gtk.HBox.__init__(self, 0, 10)
+
+        # Need a shiny icon
+        self.image = Gtk.Image()
+        self.image.set_from_icon_name("drive-harddisk-symbolic", Gtk.IconSize.DIALOG)
+
+        self.label = Gtk.Label(name)
+
+        self.pack_start(self.image, False, False, 0)
+        self.pack_start(self.label, False, True, 0)
+
+        self.set_name('installer-box')
+        self.set_border_width(5)
+        
 class PartitionSetup(object):
     name = ""    
     type = ""
@@ -103,6 +120,21 @@ class DiskPage(BasePage):
         BasePage.__init__(self)
         self.installer = installer
 
+        # Hold our pages in a stack
+        self.stack = Gtk.Stack()
+
+        # Disk chooser page
+        self.disks_page = Gtk.VBox()
+        self.disks_page.set_margin_top(30)
+        self.disks_page.set_border_width(20)
+        self.listbox_disks = Gtk.ListBox()
+        self.disks_page.pack_start(self.listbox_disks, True, True, 0)
+
+        self.stack.add_named(self.disks_page, "disks")
+        
+        # Partitioning page
+        self.partition_page = Gtk.VBox()
+        
         self.treeview = Gtk.TreeView()
         self.scroller = Gtk.ScrolledWindow(None, None)
         self.scroller.add(self.treeview)
@@ -110,7 +142,7 @@ class DiskPage(BasePage):
         self.scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.scroller.get_style_context().set_junction_sides(Gtk.JunctionSides.BOTTOM)
-        self.pack_start(self.scroller, True, True, 0)
+        self.partition_page.pack_start(self.scroller, True, True, 0)
         
         # device
         ren = Gtk.CellRendererText()
@@ -163,7 +195,11 @@ class DiskPage(BasePage):
         add.set_icon_name("preferences-system-symbolic")
         toolbar.add(add)
 
-        self.pack_start(toolbar, False, False, 0)
+        self.partition_page.pack_start(toolbar, False, False, 0)
+
+        self.stack.add_named(self.partition_page, "partitions")
+
+        self.pack_start(self.stack, True, True, 0)
         
         self.target_disk = "/dev/sda"
 
@@ -187,8 +223,16 @@ class DiskPage(BasePage):
                     for element in elements:
                         if "/dev/" in element: 
                             self.disks.append(element)
-                            description = section.replace(element, "").strip()
-                            #iter = model.append([element, description]);
+
+        index = 0
+        for disk in self.disks:
+            panel = DiskPanel(disk)
+            self.listbox_disks.add(panel)
+            row = self.listbox_disks.get_row_at_index(index)
+            row.set_name('disk-row')
+            row.set_margin_bottom(5)
+            index += 1
+            
 
     def build_partitions(self):        
         #self.window.set_sensitive(False)
