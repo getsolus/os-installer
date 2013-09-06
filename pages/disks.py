@@ -189,22 +189,24 @@ class DiskPage(BasePage):
         self.column9.add_attribute(ren, "markup", INDEX_PARTITION_FREE_SPACE)
         self.treeview.append_column(self.column9)
 
+        self.treeview.get_selection().connect("changed", self._partition_selected)
+        
         toolbar = Gtk.Toolbar()
         toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_INLINE_TOOLBAR)
         junctions = Gtk.JunctionSides.TOP
         toolbar.get_style_context().set_junction_sides(junctions)
         
-        root = Gtk.ToolButton()
-        root.set_label(_("Assign as root partition"))
-        root.set_is_important(True)
-        root.set_sensitive(False)
-        toolbar.add(root)
+        self.root = Gtk.ToolButton()
+        self.root.set_label(_("Assign as root partition (ext4)"))
+        self.root.set_is_important(True)
+        self.root.set_sensitive(False)
+        toolbar.add(self.root)
 
-        swap = Gtk.ToolButton()
-        swap.set_label(_("Assign as swap partition"))
-        swap.set_is_important(True)
-        swap.set_sensitive(False)
-        toolbar.add(swap)
+        self.swap = Gtk.ToolButton()
+        self.swap.set_label(_("Assign as swap partition"))
+        self.swap.set_is_important(True)
+        self.swap.set_sensitive(False)
+        toolbar.add(self.swap)
 
         sep = Gtk.SeparatorToolItem()
         sep.set_expand(True)
@@ -225,6 +227,23 @@ class DiskPage(BasePage):
 
         self.build_hdds()
 
+    def _partition_selected(self, selection):
+        model, treeiter = selection.get_selected()
+        print model
+        print treeiter
+        
+        if treeiter == None:
+            self.root.set_sensitive(False)
+            self.swap.set_sensitive(False)
+            return
+
+        part = model[treeiter][INDEX_PARTITION_OBJECT]
+        swap = part.type == "swap"
+        self.root.set_sensitive(not swap)
+        self.swap.set_sensitive(swap)
+
+        self.selected_partition = part
+        
     def _disk_selected(self, box, row):
         device = row.get_children()[0].device
         self.target_disk = device
