@@ -24,6 +24,7 @@
 import gi.repository
 from gi.repository import Gtk, Gdk, GObject
 from basepage import BasePage
+import threading
 
 from installer import Setup, InstallerEngine
 
@@ -44,6 +45,7 @@ class InstallationPage(BasePage):
         self.engine.set_error_hook(self.error_message)
 
         self.setup = Setup()
+        self.should_pulse = False
 
     def error_message(self, message=""):
         self.critical_error_happened = True
@@ -51,7 +53,7 @@ class InstallationPage(BasePage):
 
     def update_progress(self, fail=False, done=False, pulse=False, total=0,current=0,message=""):
         if(pulse):
-            gtk.gdk.threads_enter()
+            Gdk.threads_enter()
             self.label.set_label(message)
             Gdk.threads_leave()
             self.do_progress_pulse(message)
@@ -110,7 +112,7 @@ class InstallationPage(BasePage):
         self.setup.print_setup()
 
         t = threading.Thread(target=self.install)
-        # t.start()
+        t.start()
 
     def get_title(self):
         return _("Installing")
