@@ -320,7 +320,7 @@ class InstallerEngine:
         MatchIsKeyboard "on"
         Option "XkbModel" "%s"
         Option "XkbLayout" "%s"
-EndSection\n""" % setup.keyboard_model, setup.keyboard_layout)
+EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout)
             keyboardfh.close()
             
             # write MBR (grub)
