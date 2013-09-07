@@ -276,6 +276,7 @@ class DiskPage(BasePage):
         
     def _launch_gparted(self, btn):
         os.system("gparted %s" % self.target_disk)
+        self.installer.can_go_forward(False)
         self.build_partitions()
 
     def _partition_selected(self, selection):
