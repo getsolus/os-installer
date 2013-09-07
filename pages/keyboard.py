@@ -22,7 +22,7 @@
 #  
 #
 import gi.repository
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 from basepage import BasePage
 
 import xml.dom.minidom
@@ -45,6 +45,7 @@ class KeyboardPanel(Gtk.Bin):
         self.add(container)
         self.set_border_width(3)
 
+        self.description = description
         self.model = name
 
 class KeyboardVariantPanel(Gtk.Bin):
@@ -63,6 +64,7 @@ class KeyboardVariantPanel(Gtk.Bin):
         self.add(container)
         self.set_border_width(3)
 
+        self.description = description
         self.layout = name
     
 class KeyboardPage(BasePage):
@@ -70,7 +72,6 @@ class KeyboardPage(BasePage):
     def __init__(self, installer):
         BasePage.__init__(self)
         
-
         self.installer = installer
 
         scroller_holder = Gtk.HBox(10, 10)
@@ -89,12 +90,9 @@ class KeyboardPage(BasePage):
 
         self.listbox_layouts.connect("row-activated", self.activate)
         
-
         scroller_holder.pack_start(scroller, True, True, 0)
-        #scroller_holder.pack_start(scroller2, True, True, 0)
         scroller_holder.set_margin_top(20)
         scroller_holder.set_margin_bottom(20)
-        #self.pack_start(scroller_holder, True, True, 0)
 
         # Stack to hold panes
         self.stack = Gtk.Stack()
@@ -112,22 +110,54 @@ class KeyboardPage(BasePage):
         self.test_keyboard = Gtk.Entry()
         self.test_keyboard.set_placeholder_text(_("Type here to test your keyboard layout"))
         self.pack_end(self.test_keyboard, False, False, 0)
-       
+
+        self.wanted_model = None
+        self.wanted_layout = None
+        self._shown_model = False
+        self._shown_layout = False
         
-        # Do some loady loady
+        # Do some loading
         self.build_kb_lists()
-        self.build_kb_variant_lists()
 
     def activate(self, box, row):
         child = row.get_children()[0]
         # Do something with that ^
 
+        if isinstance(child, KeyboardPanel):
+            self.wanted_model = child.model
+        else:
+            self.wanted_layout = child.layout
+
         if box == self.listbox_models:
             self.stack.set_visible_child_name("layouts")
+            GObject.idle_add(self._set_once, True)
         else:
             self.stack.set_visible_child_name("models")
-            
+
+    def _set_once(self, layouts=False):
+        if not layouts:
+            if self._shown_model:
+                return
+            for row in self.listbox_models:
+                child = row.get_children()[0]
+                if child.model == self.keyboard_geom:
+                    self.listbox_models.select_row(row)
+                    self.wanted_model = child.model
+                    break
+            self._shown_model = True
+        else:
+            if self._shown_layout:
+                return
+            for row in self.listbox_layouts:
+                child = row.get_children()[0]
+                if child.layout == self.keyboard_layout:
+                    self.listbox_layouts.select_row(row)
+                    self.wanted_layout = child.layout
+                    break
+            self._shown_layout = True
+                
     def prepare(self):
+        GObject.idle_add(self._set_once)
         self.installer.can_go_back(True)
         self.installer.can_go_forward(True)
 
@@ -151,15 +181,10 @@ class KeyboardPage(BasePage):
                 substr = line[first_bracket:]
                 last_bracket = substr.index(")")
                 substr = substr[0:last_bracket]
-                keyboard_geom = substr
+                self.keyboard_geom = substr
         p.poll()
 
-        xml_file = '/usr/share/X11/xkb/rules/xorg.xml'
-        model_models = Gtk.ListStore(str,str)
-        model_models.set_sort_column_id(0, Gtk.SortType.ASCENDING)
-
-        model_layouts = Gtk.ListStore(str,str)
-        model_layouts.set_sort_column_id(0, Gtk.SortType.ASCENDING)      
+        xml_file = '/usr/share/X11/xkb/rules/xorg.xml'      
         dom = parse(xml_file)
 
         # if we find the users keyboard info we can set it in the list
@@ -170,73 +195,37 @@ class KeyboardPage(BasePage):
         # grab the root element
         root = dom.getElementsByTagName('xkbConfigRegistry')[0]
         # build the list of models
-        selected_index = index = -1
+
+        _models = list()
+        _layouts = list()
         root_models = root.getElementsByTagName('modelList')[0]
         for element in root_models.getElementsByTagName('model'):
             conf = element.getElementsByTagName('configItem')[0]
             name = conf.getElementsByTagName('name')[0]
             desc = conf.getElementsByTagName('description')[0]
-            iter_model = model_models.append([self.getText(desc.childNodes), self.getText(name.childNodes)])
-            index += 1
-            item = self.getText(name.childNodes)
-            if(item == keyboard_geom):
-                set_keyboard_model = iter_model
-                selected_index = index
 
             # Add to known items
             keyboard_panel = KeyboardPanel(self.getText(desc.childNodes), self.getText(name.childNodes))
-            self.listbox_models.add(keyboard_panel)
+            _models.append(keyboard_panel)
 
-        row = self.listbox_models.get_row_at_index(selected_index)
-        self.listbox_models.select_row(row)
-            
-    def build_kb_variant_lists(self):
-        # firstly we'll determine the layouts in use
-        p = subprocess.Popen("setxkbmap -print",shell=True,stdout=subprocess.PIPE)
-        for line in p.stdout:
-            # strip it
-            line = line.rstrip("\r\n")
-            line = line.replace("{","")
-            line = line.replace("}","")
-            line = line.replace(";","")
-            if("xkb_symbols" in line):
-                # decipher the layout in use
-                section = line.split("\"")[1] # split by the " mark
-                self.keyboard_layout = section.split("+")[1]
-        p.poll()
+        # Sort the models
+        _models.sort(key=lambda x: x.description.lower())
+        for item in _models:
+            self.listbox_models.add(item)
 
-        xml_file = '/usr/share/X11/xkb/rules/xorg.xml'      
-        dom = parse(xml_file)
-
-        index = -1
-        # grab the root element
-        root = dom.getElementsByTagName('xkbConfigRegistry')[0]
-        # build the list of variants       
         root_layouts = root.getElementsByTagName('layoutList')[0]
-        for layout in root_layouts.getElementsByTagName('layout'):
-            conf = layout.getElementsByTagName('configItem')[0]
-            layout_name = self.getText(conf.getElementsByTagName('name')[0].childNodes)            
-            layout_description = self.getText(conf.getElementsByTagName('description')[0].childNodes)
-                
-            if (layout_name == self.keyboard_layout):
-                variant_panel = KeyboardVariantPanel(layout_description, None)
-                self.listbox_layouts.add(variant_panel)
-                variants_list = layout.getElementsByTagName('variantList')
-                index += 1
-                
-                if len(variants_list) > 0:
-                    root_variants = layout.getElementsByTagName('variantList')[0]   
-                    for variant in root_variants.getElementsByTagName('variant'):                    
-                        variant_conf = variant.getElementsByTagName('configItem')[0]
-                        variant_name = self.getText(variant_conf.getElementsByTagName('name')[0].childNodes)
-                        variant_description = "%s - %s" % (layout_description, self.getText(variant_conf.getElementsByTagName('description')[0].childNodes))
-                        variant_panel = KeyboardVariantPanel(variant_description, variant_name)
-                        self.listbox_layouts.add(variant_panel)
-                break
+        for element in root_layouts.getElementsByTagName('layout'):
+            conf = element.getElementsByTagName('configItem')[0]
+            name = conf.getElementsByTagName('name')[0]
+            desc = conf.getElementsByTagName('description')[0]
+            description = self.getText(desc.childNodes)
+            name = self.getText(name.childNodes)
+            layout_panel = KeyboardVariantPanel(description, name)
+            _layouts.append(layout_panel)
 
-        # Select it
-        row = self.listbox_layouts.get_row_at_index(index)
-        self.listbox_layouts.select_row(row)
+        _layouts.sort(key=lambda x: x.description.lower())
+        for item in _layouts:
+            self.listbox_layouts.add(item)
 
     def getText(self, nodelist):
         rc = []
@@ -255,4 +244,4 @@ class KeyboardPage(BasePage):
         return "input-keyboard-symbolic"
 
     def get_primary_answer(self):
-        return "Not yet implemented"
+        return "%s - %s" % (self.wanted_model, self.wanted_layout)
