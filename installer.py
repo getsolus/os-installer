@@ -102,6 +102,8 @@ class InstallerEngine:
                 os.mkdir("/target")
             if(not os.path.exists("/source")):
                 os.mkdir("/source")
+            if(not os.path.exists("/source1")):
+                os.mkdir("/source1")
             # find the squashfs..
             if(not os.path.exists(self.media1)):
                 print "Base filesystem does not exist! Critical error (exiting)."
