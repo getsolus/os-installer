@@ -206,7 +206,7 @@ class InstallerEngine:
             live_user = self.live_user
             our_current += 1
             self.update_progress(total=our_total, current=our_current, message=_("Removing live configuration (user)"))
-            self.do_run_in_chroot("deluser %s" % live_user)
+            self.do_run_in_chroot("userdel -r %s" % live_user)
             # can happen
             if(os.path.exists("/target/home/%s" % live_user)):
                 self.do_run_in_chroot("rm -rf /home/%s" % live_user)
