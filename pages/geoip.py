@@ -31,6 +31,8 @@ import threading
 
 IP_CHECK = "http://checkip.dyndns.com/"
 
+TIMEOUT = 4
+
 class GeoPage(BasePage):
 
     def __init__(self, installer):
@@ -45,9 +47,9 @@ we can perform a quick check to find out where you are in the world. To opt out,
         self.pack_start(lab_w, False, False, 0)
 
         hbox = Gtk.HBox()
-        btn = Gtk.Button("Find my location automatically")
-        btn.connect("clicked", self.lookup)
-        hbox.pack_start(btn, False, False, 5)
+        self.btn = Gtk.Button("Find my location automatically")
+        self.btn.connect("clicked", self.lookup)
+        hbox.pack_start(self.btn, False, False, 5)
 
         self.stat_label = Gtk.Label("")
         hbox.pack_end(self.stat_label, False, False, 5)
@@ -59,7 +61,7 @@ we can perform a quick check to find out where you are in the world. To opt out,
 
     def _get_ip(self):
         try:
-            o = urllib2.urlopen(IP_CHECK)
+            o = urllib2.urlopen(IP_CHECK, None, TIMEOUT)
             contents = o.read()
             regex = r'Address: (\d+\.\d+\.\d+\.\d+)'
             reg = re.compile(regex)
@@ -67,7 +69,7 @@ we can perform a quick check to find out where you are in the world. To opt out,
         except Exception, e:
             print e
 
-        return "127.0.0.1"
+        return None
         
     def _lookup(self):
         ''' TODO: Make threaded. And useful. '''
@@ -75,14 +77,22 @@ we can perform a quick check to find out where you are in the world. To opt out,
 
         self.spinner.set_visible(True)
         self.spinner.start()
-        self.stat_label.set_markup("Resolving IP")
+        self.btn.set_sensitive(False)
+        self.stat_label.set_markup(_("Resolving IP"))
 
         ip = self._get_ip()
+        if ip is None:
+            self.stat_label.set_markup(_("Failed to determine location"))
+            self.btn.set_sensitive(True)
+            self.spinner.stop()
+            return
+            
         gi = pygeoip.GeoIP("/usr/share/GeoIP/City.dat")
         country = gi.country_code_by_addr(ip)
         timezone = gi.time_zone_by_addr(ip)
 
         self.stat_label.set_markup(_("Found: %s" % timezone))
+        self.spinner.stop()
         self.spinner.hide()
         self.installer.can_go_forward(True)
 
