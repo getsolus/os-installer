@@ -189,7 +189,7 @@ class InstallerEngine:
                     pass
                     
             # Steps:
-            our_total = 5
+            our_total = 6
             our_current = 0
             # chroot
             print " --> Chrooting"
@@ -293,6 +293,14 @@ class InstallerEngine:
             hostsfh.write("ff02::3 ip6-allhosts\n")
             hostsfh.close()
 
+            # Set the locale
+            print " --> Set locale"
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Setting locale"))
+            localefh = open("/target/etc/locale.conf", "w")
+            localefh.write("LANG=%s\n" % setup.language)
+            localefh.close()
+            
             # write MBR (grub)
             print " --> Configuring Grub"
             our_current += 1
