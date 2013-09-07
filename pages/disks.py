@@ -189,6 +189,8 @@ class DiskPage(BasePage):
         self.root_partition_row = self.selected_row
         self.root_partition = self.selected_partition.partition
         self.root_partition_obj = self.selected_partition
+        self.root_partition_obj.mount_as = "/"
+        self.root_partition_obj.format_as = "ext4"
 
         self.root_format_saved = model[self.selected_row][INDEX_PARTITION_FORMAT_AS]
         self.root_mount_saved = model[self.selected_row][INDEX_PARTITION_MOUNT_AS]
@@ -276,6 +278,7 @@ class DiskPage(BasePage):
             
     def seed(self, setup):
         setup.target_disk = self.root_partition.path
+        setup.partitions.append(self.root_partition_obj)
         if self.swap_partition_obj is not None:
             setup.partitions.append(self.swap_partition_obj)
 
