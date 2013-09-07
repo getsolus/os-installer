@@ -22,13 +22,13 @@
 #  
 #
 import gi.repository
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 from basepage import BasePage
 import os
 
 class LanguageItem(Gtk.HBox):
 
-    def __init__(self, language, country, locale, country_code, resource_dir):
+    def __init__(self, language, country, locale, language_code, country_code, resource_dir):
         Gtk.HBox.__init__(self)
         flag_path = resource_dir + '/flags/48/' + country_code + '.png'
         generic_path = resource_dir + "/flags/48/generic.png"
@@ -44,6 +44,7 @@ class LanguageItem(Gtk.HBox):
         self.language_string = "%s (%s)" % (language, country)
         self.language_label.set_markup(self.language_string)
         self.country_code = country_code
+        self.language_code = language_code
         self.pack_start(self.language_label, False, True, 0)
 
         self.locale = locale # Note we need the encoding too when we hook up the installer core
@@ -78,7 +79,7 @@ class LanguagePage(BasePage):
         self.prepped = False
 
     def prepare(self):
-        self.set_once()
+        GObject.idle_add(self.set_once)
         self.installer.can_go_back(False)
         self.installer.can_go_forward(self.locale is not None)
 
@@ -96,9 +97,18 @@ class LanguagePage(BasePage):
             if known_country is not None and known_country.lower() == item.country_code:
                 if selected is None:
                     selected = child
+                    self.locale = item.locale
+                    self.locale_item = item
+                elif item.language_code == "en":
+                    # prefer english
+                    selected = child
+                    self.locale = item.locale
+                    self.locale_item = item
+                    break
 
         if selected is not None:
             self.listbox.select_row(selected)
+            self.installer.can_go_forward(True)
                     
     def activated(self, box, row):
         item = row.get_children()[0]
@@ -155,7 +165,7 @@ class LanguagePage(BasePage):
                         else:
                             country = country_code
 
-                        item = LanguageItem(language, country, locale_code, country_code, self.resource_dir)
+                        item = LanguageItem(language, country, locale_code, language_code, country_code, self.resource_dir)
                         appends.append(item)
             
         appends.sort(key=lambda x: x.language_string.lower())
