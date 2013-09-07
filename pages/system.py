@@ -62,6 +62,10 @@ class SystemPage(BasePage):
         grub_frame.set_label_widget(grub_check)
 
         self.grub_combo = Gtk.ComboBox()
+        renderer = Gtk.CellRendererText ()
+        self.grub_combo.pack_start (renderer, True)
+        self.grub_combo.add_attribute (renderer, "text", 0)
+        
         grub_wrap = Gtk.VBox()
         grub_wrap.set_border_width(5)
         grub_wrap.add(self.grub_combo)
@@ -74,6 +78,8 @@ class SystemPage(BasePage):
         content.pack_start(grub_frame, False, False, 10)
                 
         self.installer.can_go_forward(False)
+
+        self.grub_model = None
 
     def host_validate(self, entry):
         text = entry.get_text()
@@ -88,6 +94,13 @@ class SystemPage(BasePage):
             self.hostname = text
 
     def prepare(self):
+        if self.grub_model is None:
+            self.grub_model = Gtk.ListStore(str)
+            for disk in self.installer.suggestions["disks"]:
+                self.grub_model.append([disk])
+            self.grub_combo.set_model(self.grub_model)
+            self.grub_combo.set_active(0)
+            
         self.installer.can_go_back(True)
         self.installer.can_go_forward(self.hostname is not None)
         
@@ -100,6 +113,16 @@ class SystemPage(BasePage):
     def get_icon_name(self):
         return "preferences-system-symbolic"
 
+    def seed(self, setup):
+        setup.hostname = self.hostname
+        if self.grub_combo.is_sensitive():
+            setup.grub_device = self.grub_model[self.grub_combo.get_active()][0]
+        else:
+            setup.grub_device = None
+
     def get_primary_answer(self):
-        return _("Computer host name set to %s") % self.hostname
-      
+        answer =  _("Computer host name set to %s") % self.hostname
+        if self.grub_combo.is_sensitive():
+            grub_device = self.grub_model[self.grub_combo.get_active()][0]
+            answer += "\n" + _("Install GRUB to %s") % grub_device
+        return answer
