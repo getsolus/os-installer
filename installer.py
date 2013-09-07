@@ -312,7 +312,7 @@ class InstallerEngine:
             print " --> Setting keyboard layout"
             our_current += 1
             self.update_progress(total=our_total, current=our_current, message=_("Setting keyboard options"))
-            keyboarddir = "/target/etc/X11/xorg.conf.d"
+            keyboarddir = "/etc/X11/xorg.conf.d"
             self.do_run_in_chroot("mkdir -p %s" % keyboarddir)
             keyboardfh = open("/target/etc/X11/xorg.conf.d/00-keyboard.conf", "w")
             keyboardfh.write("""Section \InputClass"
