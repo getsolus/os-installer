@@ -25,6 +25,7 @@ import gi.repository
 from gi.repository import Gtk
 from basepage import BasePage
 import re
+from installer import User
 
 LABEL_COLUMN = 0
 DATA_COLUMN = 1
@@ -39,15 +40,6 @@ def justify_label(lab):
 def justify_label2(lab):
     lab.set_justify(Gtk.Justification.LEFT)
     lab.set_alignment(0.0, 0.5)
-    
-class User:
-
-    def __init__(self, username, realname, password, autologin, admin):
-        self.username = username
-        self.realname = realname
-        self.password = password
-        self.autologin = autologin
-        self.admin = admin
 
 
 class UserPanel(Gtk.VBox):
@@ -328,6 +320,9 @@ class UsersPage(BasePage):
     def get_name(self):
         return "users"
 
+    def seed(self, setup):
+        setup.users = self.users
+        
     def get_icon_name(self):
         return "system-users-symbolic"
 

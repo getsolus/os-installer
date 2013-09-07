@@ -214,10 +214,16 @@ class InstallerEngine:
             # add new user
             print " --> Adding new user"
             our_current += 1
-            self.update_progress(total=our_total, current=our_current, message=_("Adding user to system"))           
-            self.do_run_in_chroot("useradd -s %s -c \'%s\' -G sudo -m %s" % ("/bin/bash", setup.real_name, setup.username))
+            self.update_progress(total=our_total, current=our_current, message=_("Adding users to system"))
+
+            # Add all users
             newusers = open("/target/tmp/newusers.conf", "w")
-            newusers.write("%s:%s\n" % (setup.username, setup.password1))
+            for user in setup.users:
+                groups = "-G sudo,audio,video,cdrom" if user.admin else "-G audio,video,cdrom"
+                cmd = "useradd -s %s -c \'%s\' %s -m %s" % ("/bin/bash", user.realname, groups, user.username)
+                self.do_run_in_chroot(cmd)
+                            
+                newusers.write("%s:%s\n" % (user.username, user.password))
             newusers.close()
             self.do_run_in_chroot("cat /tmp/newusers.conf | chpasswd")
             self.do_run_in_chroot("rm -rf /tmp/newusers.conf")
@@ -368,6 +374,16 @@ class InstallerEngine:
         input.close()
         dst.close()
 
+class User:
+
+    def __init__(self, username, realname, password, autologin, admin):
+        self.username = username
+        self.realname = realname
+        self.password = password
+        self.autologin = autologin
+        self.admin = admin
+        
+        
 # Represents the choices made by the user
 class Setup(object):
     language = None
@@ -377,13 +393,10 @@ class Setup(object):
     keyboard_layout = None    
     keyboard_variant = None    
     partitions = [] #Array of PartitionSetup objects
-    username = None
-    hostname = None
-    password1 = None
-    password2 = None
-    real_name = None    
+    hostname = None 
     grub_device = None
     target_disk = None
+    users = None
     
     #Descriptions (used by the summary screen)    
     keyboard_model_description = None
