@@ -189,7 +189,7 @@ class InstallerEngine:
                     pass
                     
             # Steps:
-            our_total = 6
+            our_total = 7
             our_current = 0
             # chroot
             print " --> Chrooting"
@@ -300,6 +300,13 @@ class InstallerEngine:
             localefh = open("/target/etc/locale.conf", "w")
             localefh.write("LANG=%s\n" % setup.language)
             localefh.close()
+
+            # Set the timezone
+            print " --> Setting timezone"
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Setting timezone"))
+            timezonepath = "/usr/share/zoneinfo/%s" % setup.timezone
+            self.do_run_in_chroot("ln -s %s /etc/localetime" % timezonepath)
             
             # write MBR (grub)
             print " --> Configuring Grub"
