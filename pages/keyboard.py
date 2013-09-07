@@ -237,6 +237,10 @@ class KeyboardPage(BasePage):
     def get_title(self):
         return _("Choose a keyboard layout")
 
+    def seed(self, setup):
+        setup.keyboard_model = self.wanted_model
+        setup.keyboard_layout = self.wanted_layout
+        
     def get_name(self):
         return "keyboard"
 

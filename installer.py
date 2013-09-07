@@ -189,7 +189,7 @@ class InstallerEngine:
                     pass
                     
             # Steps:
-            our_total = 7
+            our_total = 8
             our_current = 0
             # chroot
             print " --> Chrooting"
@@ -307,6 +307,21 @@ class InstallerEngine:
             self.update_progress(total=our_total, current=our_current, message=_("Setting timezone"))
             timezonepath = "/usr/share/zoneinfo/%s" % setup.timezone
             self.do_run_in_chroot("ln -s %s /etc/localtime" % timezonepath)
+
+            # Set the keyboard layout
+            print " --> Setting keyboard layout"
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Setting keyboard options"))
+            keyboarddir = "/target/etc/X11/xorg.conf.d"
+            self.do_run_in_chroot("mkdir -p %s" % keyboarddir)
+            keyboardfh = open("/target/etc/X11/xorg.conf.d/00-keyboard.conf", "w")
+            keyboardfh.write("""Section \InputClass"
+        Identifier "system-keyboard"
+        MatchIsKeyboard "on"
+        Option "XkbModel" "%s"
+        Option "XkbLayout" "%s"
+EndSection\n""" % setup.keyboard_model, setup.keyboard_layout)
+            keyboardfh.close()
             
             # write MBR (grub)
             print " --> Configuring Grub"
@@ -406,7 +421,6 @@ class Setup(object):
     timezone_code = None
     keyboard_model = None    
     keyboard_layout = None    
-    keyboard_variant = None    
     partitions = [] #Array of PartitionSetup objects
     hostname = None 
     grub_device = None
