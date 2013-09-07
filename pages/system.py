@@ -24,6 +24,10 @@
 import gi.repository
 from gi.repository import Gtk
 from basepage import BasePage
+import re
+
+ValidHostnameRegex = \
+"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$";
 
 class SystemPage(BasePage):
 
@@ -43,6 +47,8 @@ class SystemPage(BasePage):
 
         self.host_entry = Gtk.Entry()
         self.host_entry.set_placeholder_text(_("Type the hostname here"))
+        self.host_regex = re.compile(ValidHostnameRegex)
+        self.host_entry.connect("changed", self.host_validate)
 
         host_wrap = Gtk.VBox()
         host_wrap.set_border_width(5)
@@ -68,6 +74,15 @@ class SystemPage(BasePage):
                 
         self.installer.can_go_forward(False)
 
+    def host_validate(self, entry):
+        text = entry.get_text()
+        match = self.host_regex.match(text)
+        if match is None:
+            self.installer.can_go_forward(False)
+            entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+        else:
+            entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+            self.installer.can_go_forward(True)
 
     def prepare(self):
         self.installer.can_go_back(True)
