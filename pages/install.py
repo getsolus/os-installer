@@ -22,7 +22,7 @@
 #  
 #
 import gi.repository
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk, GObject
 from basepage import BasePage
 
 from installer import Setup, InstallerEngine
@@ -40,8 +40,65 @@ class InstallationPage(BasePage):
         
         self.installer = installer
         self.engine = InstallerEngine()
+        self.engine.set_progress_hook(self.update_progress)
+        self.engine.set_error_hook(self.error_message)
 
         self.setup = Setup()
+
+    def error_message(self, message=""):
+        self.critical_error_happened = True
+        self.critical_error_message = message
+
+    def update_progress(self, fail=False, done=False, pulse=False, total=0,current=0,message=""):
+        if(pulse):
+            gtk.gdk.threads_enter()
+            self.label.set_label(message)
+            Gdk.threads_leave()
+            self.do_progress_pulse(message)
+            return
+        if(done):
+            # cool, finished :D
+            self.should_pulse = False
+            self.done = done
+            Gdk.threads_enter()
+            self.progress.set_fraction(1)
+            self.label.set_label(message)
+            Gdk.threads_leave()
+            return
+        self.should_pulse = False
+        _total = float(total)
+        _current = float(current)
+        pct = float(_current/_total)
+        szPct = int(pct)
+        # thread block
+        Gdk.threads_enter()
+        self.progress.set_fraction(pct)
+        self.label.set_label(message)
+        Gdk.threads_leave()
+
+        # end thread block
+
+    def do_progress_pulse(self, message):
+        def pbar_pulse():
+            if(not self.should_pulse):
+                return False
+            Gdk.threads_enter()
+            self.progress.pulse()
+            Gdk.threads_leave()
+            return self.should_pulse
+        if(not self.should_pulse):
+            self.should_pulse = True
+            GObject.timeout_add(100, pbar_pulse)
+        else:
+            # asssume we're "pulsing" already
+            self.should_pulse = True
+            pbar_pulse()
+
+    def install(self):
+        try:
+            self.engine.install(self.setup)
+        except Exception, e:
+            print e
 
     def prepare(self, pages=None):
         self.installer.can_go_back(False)
@@ -51,6 +108,9 @@ class InstallationPage(BasePage):
             page.seed(self.setup)
         print "Seeded"
         self.setup.print_setup()
+
+        t = threading.Thread(target=self.install)
+        # t.start()
 
     def get_title(self):
         return _("Installing")
