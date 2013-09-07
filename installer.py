@@ -315,12 +315,12 @@ class InstallerEngine:
             keyboarddir = "/etc/X11/xorg.conf.d"
             self.do_run_in_chroot("mkdir -p %s" % keyboarddir)
             keyboardfh = open("/target/etc/X11/xorg.conf.d/00-keyboard.conf", "w")
-            keyboardfh.write("""Section \InputClass"
+            keyboardfh.write("""Section "InputClass"
         Identifier "system-keyboard"
         MatchIsKeyboard "on"
         Option "XkbModel" "%s"
         Option "XkbLayout" "%s"
-EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout)
+EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             keyboardfh.close()
             
             # write MBR (grub)
