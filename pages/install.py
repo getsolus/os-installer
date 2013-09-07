@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  summary.py - Installation options summary
+#  install.py - Installation progress page
 #  
 #  Copyright 2013 Ikey Doherty <ikey@solusos.com>
 #  
@@ -121,7 +121,7 @@ class InstallationPage(BasePage):
         return "installing"
 
     def get_icon_name(self):
-        return "system-software-install-symbolic"
+        return "install-symbolic"
 
     def is_hidden(self):
         return True
