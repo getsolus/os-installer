@@ -329,6 +329,3 @@ class UsersPage(BasePage):
     def get_primary_answer(self):
         users = [user.username for user in self.users]
         return ", ".join(users)
-
-    def seed(self, setup):
-        pass # Need to fix installer.py for multiple users
