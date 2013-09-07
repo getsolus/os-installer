@@ -47,6 +47,9 @@ class InstallationPage(BasePage):
         self.setup = Setup()
         self.should_pulse = False
 
+    def go_quit(self):
+        self.label.set_markup(_("Please close the window to exit the installer.\nYou just need to restart to start using your new operating system")
+        
     def error_message(self, message=""):
         self.critical_error_happened = True
         self.critical_error_message = message
@@ -65,6 +68,7 @@ class InstallationPage(BasePage):
             Gdk.threads_enter()
             self.progress.set_fraction(1)
             self.label.set_label(message)
+            GObject.idle_add(self.go_quit)
             Gdk.threads_leave()
             return
         self.should_pulse = False
