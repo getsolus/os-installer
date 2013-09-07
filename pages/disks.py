@@ -267,6 +267,9 @@ class DiskPage(BasePage):
                         if "/dev/" in element: 
                             self.disks.append(element)
 
+
+        self.installer.suggestions["disks"] = self.disks
+
         index = 0
         for disk in self.disks:
             panel = DiskPanel(disk)
@@ -278,6 +281,7 @@ class DiskPage(BasePage):
             
     def seed(self, setup):
         setup.target_disk = self.root_partition.path
+        setup.partititons = list()
         setup.partitions.append(self.root_partition_obj)
         if self.swap_partition is not None:
             setup.partitions.append(self.swap_partition_obj)
