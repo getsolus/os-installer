@@ -185,3 +185,6 @@ class LanguagePage(BasePage):
 
     def get_primary_answer(self):
         return self.locale_item.language_string
+
+    def seed(self, setup):
+        setup.language = self.locale_item.locale

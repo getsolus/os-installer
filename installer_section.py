@@ -33,6 +33,7 @@ from pages.summary import SummaryPage
 from pages.users import UsersPage
 from pages.keyboard import KeyboardPage
 from pages.disks import DiskPage
+from pages.install import InstallationPage
 
 class InstallerSection(Gtk.VBox):
 
@@ -84,7 +85,9 @@ class InstallerSection(Gtk.VBox):
         self._add_page(TimezonePage(self))
         self._add_page(UsersPage(self))
         self._add_page(SummaryPage(self))
+        self._add_page(InstallationPage(self))
         self._select_page(0)
+
 
     def nav(self, btn, forward=False):
         index = self.selected_page + 1 if forward else self.selected_page - 1
@@ -92,7 +95,7 @@ class InstallerSection(Gtk.VBox):
 
     def _select_page(self, index):
         page = self.pages[index]
-        if page.get_name() != "summary":
+        if page.get_name() != "summary" and page.get_name() != "installing":
             page.prepare()
         else:
             page.prepare([p for p in self.pages.values() if p.get_name() != "summary" and not p.is_hidden()])

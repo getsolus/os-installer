@@ -96,3 +96,7 @@ class TimezonePage(BasePage):
 
     def get_primary_answer(self):
         return self.timezone_human
+
+    def seed(self, setup):
+        setup.timezone = self.timezone
+        

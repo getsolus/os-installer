@@ -188,6 +188,7 @@ class DiskPage(BasePage):
             
         self.root_partition_row = self.selected_row
         self.root_partition = self.selected_partition.partition
+        self.root_partition_obj = self.selected_partition
 
         self.root_format_saved = model[self.selected_row][INDEX_PARTITION_FORMAT_AS]
         self.root_mount_saved = model[self.selected_row][INDEX_PARTITION_MOUNT_AS]
@@ -209,6 +210,7 @@ class DiskPage(BasePage):
             
         self.swap_partition_row = self.selected_row
         self.swap_partition = self.selected_partition.partition
+        self.swap_partition_obj = self.selected_partition
 
         self.swap_format_saved = model[self.selected_row][INDEX_PARTITION_FORMAT_AS]
         self.swap_mount_saved = model[self.selected_row][INDEX_PARTITION_MOUNT_AS]
@@ -272,6 +274,10 @@ class DiskPage(BasePage):
             row.set_margin_bottom(5)
             index += 1
             
+    def seed(self, setup):
+        setup.target_disk = self.root_partition.path
+        if self.swap_partition_obj is not None:
+            setup.partitions.append(self.swap_partition_obj)
 
     def build_partitions(self):
         os.popen('mkdir -p /tmp/os-installer/tmpmount')

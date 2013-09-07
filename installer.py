@@ -380,7 +380,6 @@ class Setup(object):
     password2 = None
     real_name = None    
     grub_device = None
-    disks = []
     target_disk = None
     
     #Descriptions (used by the summary screen)    
@@ -389,21 +388,19 @@ class Setup(object):
     keyboard_variant_description = None
     
     def print_setup(self):
-        if "--debug" in sys.argv:  
-            print "-------------------------------------------------------------------------"
-            print "language: %s" % self.language
-            print "timezone: %s (%s)" % (self.timezone, self.timezone_code)        
-            print "keyboard: %s - %s (%s) - %s - %s (%s)" % (self.keyboard_model, self.keyboard_layout, self.keyboard_variant, self.keyboard_model_description, self.keyboard_layout_description, self.keyboard_variant_description)        
-            print "user: %s (%s)" % (self.username, self.real_name)
-            print "hostname: %s " % self.hostname
-            print "passwords: %s - %s" % (self.password1, self.password2)        
-            print "grub_device: %s " % self.grub_device
-            print "target_disk: %s " % self.target_disk
-            print "disks: %s " % self.disks                       
-            print "partitions:"
-            for partition in self.partitions:
-                partition.print_partition()
-            print "-------------------------------------------------------------------------"
+        print "-------------------------------------------------------------------------"
+        print "language: %s" % self.language
+        print "timezone: %s (%s)" % (self.timezone, self.timezone_code)        
+        print "keyboard: %s - %s (%s) - %s - %s (%s)" % (self.keyboard_model, self.keyboard_layout, self.keyboard_variant, self.keyboard_model_description, self.keyboard_layout_description, self.keyboard_variant_description)        
+        print "user: %s (%s)" % (self.username, self.real_name)
+        print "hostname: %s " % self.hostname
+        print "passwords: %s - %s" % (self.password1, self.password2)        
+        print "grub_device: %s " % self.grub_device
+        print "target_disk: %s " % self.target_disk
+        print "partitions:"
+        for partition in self.partitions:
+            partition.print_partition()
+        print "-------------------------------------------------------------------------"
     
 class PartitionSetup(object):
     name = ""    

@@ -69,7 +69,7 @@ class SummaryPage(BasePage):
 
     def prepare(self, pages=None):
         self.installer.can_go_back(True)
-        self.installer.can_go_forward(False)
+        self.installer.can_go_forward(True) # Consider another button maybe.
 
         self._clear_widgets()
         for page in pages:

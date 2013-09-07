@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  basepage.py - Provides base for other Installer pages
+#  summary.py - Installation options summary
 #  
 #  Copyright 2013 Ikey Doherty <ikey@solusos.com>
 #  
@@ -23,45 +23,43 @@
 #
 import gi.repository
 from gi.repository import Gtk
+from basepage import BasePage
 
+from installer import Setup, InstallerEngine
+
+class InstallationPage(BasePage):
+
+    def __init__(self, installer):
+        BasePage.__init__(self)
+
+        self.label = Gtk.Label("")
+        self.progress = Gtk.ProgressBar()
+
+        self.pack_end(self.label, False, False, 0)
+        self.pack_end(self.progress, False, False, 0)
         
-class BasePage(Gtk.VBox):
+        self.installer = installer
+        self.engine = InstallerEngine()
 
-    def __init__(self):
-        Gtk.VBox.__init__(self)
-        self.set_border_width(10)
+        self.setup = Setup()
 
-        self.title = Gtk.Label("<span font=\"20.5\" color=\"#82807b\">%s</span>" % self.get_title())
-        self.title.set_use_markup(True)
-        
-        self.image = Gtk.Image()
-        self.image.set_from_icon_name(self.get_icon_name(), Gtk.IconSize.DIALOG)
-        self.image.set_padding(10, 10)
+    def prepare(self, pages=None):
+        self.installer.can_go_back(False)
+        self.installer.can_go_forward(False)
 
-        header = Gtk.HBox()
-        header.pack_start(self.image, False, False, 0)
-        header.pack_start(self.title, False, False, 0)
+        for page in pages:
+            page.seed(self.setup)
+        print "Seeded"
+        self.setup.print_setup()
 
-        self.pack_start(header, False, True, 10)
-
-        
     def get_title(self):
-        pass
+        return _("Installing")
 
     def get_name(self):
-        pass
+        return "installing"
 
     def get_icon_name(self):
-        pass
-
-    def get_primary_answer(self):
-        pass
-
-    def prepare(self):
-        pass
-
-    def seed(self, setup):
-        pass
+        return "system-software-install-symbolic"
 
     def is_hidden(self):
-        return False
+        return True
