@@ -30,7 +30,42 @@ class SystemPage(BasePage):
     def __init__(self, installer):
         BasePage.__init__(self)
         self.installer = installer
+        self.install_grub = False
 
+        content = Gtk.VBox()
+        content.set_border_width(30)
+        self.add(content)
+        
+        # hostname section
+        host = Gtk.Frame()
+        host.set_label(_("What name should this computer use on the network?"))
+        content.pack_start(host, False, False, 10)
+
+        self.host_entry = Gtk.Entry()
+        self.host_entry.set_placeholder_text(_("Type the hostname here"))
+
+        host_wrap = Gtk.VBox()
+        host_wrap.set_border_width(5)
+        host_wrap.add(self.host_entry)
+        host.add(host_wrap)
+
+        # grub
+        grub_frame = Gtk.Frame()
+        grub_check = Gtk.CheckButton(_("Should we install a boot loader (GRUB) on this computer?"))
+        grub_frame.set_label_widget(grub_check)
+
+        self.grub_combo = Gtk.ComboBox()
+        grub_wrap = Gtk.VBox()
+        grub_wrap.set_border_width(5)
+        grub_wrap.add(self.grub_combo)
+        grub_frame.add(grub_wrap)
+
+        # Hook up the checkbutton
+        grub_check.connect("clicked", lambda x: self.grub_combo.set_sensitive(x.get_active()))
+        self.grub_combo.set_sensitive(False)
+        
+        content.pack_start(grub_frame, False, False, 10)
+                
         self.installer.can_go_forward(False)
 
 
