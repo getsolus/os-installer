@@ -34,6 +34,7 @@ from pages.users import UsersPage
 from pages.keyboard import KeyboardPage
 from pages.disks import DiskPage
 from pages.install import InstallationPage
+from pages.system import SystemPage
 
 class InstallerSection(Gtk.VBox):
 
@@ -84,6 +85,7 @@ class InstallerSection(Gtk.VBox):
         self._add_page(DiskPage(self))
         self._add_page(TimezonePage(self))
         self._add_page(UsersPage(self))
+        self._add_page(SystemPage(self))
         self._add_page(SummaryPage(self))
         self._add_page(InstallationPage(self))
         self._select_page(0)
