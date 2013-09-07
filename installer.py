@@ -306,7 +306,7 @@ class InstallerEngine:
             our_current += 1
             self.update_progress(total=our_total, current=our_current, message=_("Setting timezone"))
             timezonepath = "/usr/share/zoneinfo/%s" % setup.timezone
-            self.do_run_in_chroot("ln -s %s /etc/localetime" % timezonepath)
+            self.do_run_in_chroot("ln -s %s /etc/localtime" % timezonepath)
             
             # write MBR (grub)
             print " --> Configuring Grub"
