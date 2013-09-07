@@ -279,7 +279,7 @@ class DiskPage(BasePage):
     def seed(self, setup):
         setup.target_disk = self.root_partition.path
         setup.partitions.append(self.root_partition_obj)
-        if self.swap_partition_obj is not None:
+        if self.swap_partition is not None:
             setup.partitions.append(self.swap_partition_obj)
 
     def build_partitions(self):
