@@ -218,10 +218,11 @@ class InstallerEngine:
             self.do_run_in_chroot("useradd -s %s -c \'%s\' -G sudo -m %s" % ("/bin/bash", setup.real_name, setup.username))
             newusers = open("/target/tmp/newusers.conf", "w")
             newusers.write("%s:%s\n" % (setup.username, setup.password1))
-            newusers.write("root:%s\n" % setup.password1)
             newusers.close()
             self.do_run_in_chroot("cat /tmp/newusers.conf | chpasswd")
             self.do_run_in_chroot("rm -rf /tmp/newusers.conf")
+            # Disable direct use of root account
+            self.do_run_in_chroot("passwd -d root")
             
             # write the /etc/fstab
             print " --> Writing fstab"
