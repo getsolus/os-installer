@@ -35,6 +35,7 @@ class SystemPage(BasePage):
         BasePage.__init__(self)
         self.installer = installer
         self.install_grub = False
+        self.hostname = None
 
         content = Gtk.VBox()
         content.set_border_width(30)
@@ -80,13 +81,15 @@ class SystemPage(BasePage):
         if match is None:
             self.installer.can_go_forward(False)
             entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+            self.hostname = None
         else:
             entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
             self.installer.can_go_forward(True)
+            self.hostname = text
 
     def prepare(self):
         self.installer.can_go_back(True)
-        self.installer.can_go_forward(False)
+        self.installer.can_go_forward(self.hostname is not None)
         
     def get_title(self):
         return _("System settings")
@@ -98,5 +101,5 @@ class SystemPage(BasePage):
         return "preferences-system-symbolic"
 
     def get_primary_answer(self):
-        return "Not yet implemented"
+        return _("Computer host name set to %s") % self.hostname
       
