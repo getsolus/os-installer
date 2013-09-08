@@ -28,3 +28,6 @@ config = ConfigObj("/etc/os-installer/install.conf")
 DISTRO_NAME = config["Branding"]["Name"]
 DISTRO_VERSION = config["Branding"]["Version"]
 UI_THEME = config["Branding"]["Theme"]
+
+RESOURCE_DIR = "/usr/share/os-installer"
+

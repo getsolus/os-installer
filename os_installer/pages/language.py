@@ -26,12 +26,14 @@ from gi.repository import Gtk, GObject
 from basepage import BasePage
 import os
 
+from resources import RESOURCE_DIR
+
 class LanguageItem(Gtk.HBox):
 
-    def __init__(self, language, country, locale, language_code, country_code, resource_dir):
+    def __init__(self, language, country, locale, language_code, country_code):
         Gtk.HBox.__init__(self)
-        flag_path = resource_dir + '/flags/48/' + country_code + '.png'
-        generic_path = resource_dir + "/flags/48/generic.png"
+        flag_path = RESOURCE_DIR + '/flags/48/' + country_code + '.png'
+        generic_path = RESOURCE_DIR + "/flags/48/generic.png"
         self.image = Gtk.Image()
         self.image.set_padding(5, 5)
         if os.path.exists(flag_path):
@@ -65,9 +67,6 @@ class LanguagePage(BasePage):
         scroller.set_margin_top(50)
         scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.pack_start(scroller, True, True, 0)
-        
-        # TEMPORARY
-        self.resource_dir = "./data"
 
         self._load_lists()
 
@@ -119,7 +118,7 @@ class LanguagePage(BasePage):
     def _load_lists(self):
         #Load countries into memory
         countries = {}
-        file = open(os.path.join(self.resource_dir, 'countries'), "r")
+        file = open(os.path.join(RESOURCE_DIR, 'countries'), "r")
         for line in file:
             line = line.strip()
             split = line.split("=")
@@ -129,7 +128,7 @@ class LanguagePage(BasePage):
 
         #Load languages into memory
         languages = {}
-        file = open(os.path.join(self.resource_dir, 'languages'), "r")
+        file = open(os.path.join(RESOURCE_DIR, 'languages'), "r")
         for line in file:
             line = line.strip()
             split = line.split("=")
@@ -137,7 +136,7 @@ class LanguagePage(BasePage):
                 languages[split[0]] = split[1]
         file.close()
 
-        path = os.path.join(self.resource_dir, 'locales')
+        path = os.path.join(RESOURCE_DIR, 'locales')
         locales = open(path, "r")
         cur_index = -1 # find the locale :P
         set_index = None
@@ -165,7 +164,7 @@ class LanguagePage(BasePage):
                         else:
                             country = country_code
 
-                        item = LanguageItem(language, country, locale_code, language_code, country_code, self.resource_dir)
+                        item = LanguageItem(language, country, locale_code, language_code, country_code)
                         appends.append(item)
             
         appends.sort(key=lambda x: x.language_string.lower())
