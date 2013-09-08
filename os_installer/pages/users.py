@@ -163,10 +163,10 @@ class NewUserPage(Gtk.Grid):
         self.attach(pword_label2, LABEL_COLUMN, row, 1, 1)
         self.attach(self.pword_field2, DATA_COLUMN, row, 1, 1)
 
-        row += 1
+        #row += 1
         # Now we have an automatic login field
-        self.autologin = Gtk.CheckButton(_("Log this user into the computer automatically"))
-        self.attach(self.autologin, DATA_COLUMN, row, 1, 1)
+        #self.autologin = Gtk.CheckButton(_("Log this user into the computer automatically"))
+        #self.attach(self.autologin, DATA_COLUMN, row, 1, 1)
 
         row += 1
         # And now an administrative user check
@@ -201,7 +201,7 @@ class NewUserPage(Gtk.Grid):
     def clear_form(self):
         for entry in [self.uname_field, self.rname_field, self.pword_field, self.pword_field2]:
             entry.set_text("")
-        for check in [self.autologin, self.adminuser]:
+        for check in [self.adminuser]:
             check.set_active(False)
         self.adminuser.set_sensitive(True)
 
@@ -209,7 +209,7 @@ class NewUserPage(Gtk.Grid):
         user = User(self.uname_field.get_text(),
                     self.rname_field.get_text(),
                     self.pword_field.get_text(),
-                    self.autologin.get_active(),
+                    False,
                     self.adminuser.get_active())
         self.owner.add_new_user(user)
         self.owner.show_main()

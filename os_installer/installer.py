@@ -10,6 +10,8 @@ import sys
 import parted
 from configobj import ConfigObj
 
+from resources import RESOURCE_DIR
+
 gettext.install("osinstaller", "/usr/share/locale")
 
 
@@ -219,6 +221,11 @@ class InstallerEngine:
             self.update_progress(total=our_total, current=our_current, message=_("Initializing the new installation"))
             self.do_run_in_chroot("rm /etc/machine-id")
             self.do_run_in_chroot("systemd-machine-id-setup")
+
+            # Temporary, replace the lightdm.conf file. Enable autologin later in our release cycle
+            lightdm_source = os.path.join(RESOURCE_DIR, "lightdm.conf")
+            lightdm_target = "/target/etc/lightdm/lightdm.conf"
+            shutil.copy2(lightdm_source, lightdm_target)
             
             # Again SolusOS specific, but remove the installer from the image
             # We need to get the configuration done via dbus eventually.
