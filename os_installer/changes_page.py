@@ -23,7 +23,7 @@
 #
 import gi.repository
 from gi.repository import Gtk, WebKit
-
+from resources import RESOURCE_DIR
 
 class ChangesPage(Gtk.VBox):
 
@@ -35,7 +35,7 @@ class ChangesPage(Gtk.VBox):
         # Eventually need to open a local changes file from real location
         lines = None
         base_uri = "file:///usr/share/os-installer/changes/"
-        with open ("changes/index.html", "r") as html:
+        with open ("%s/changes/index.html" % RESOURCE_DIR, "r") as html:
             lines = "\n".join(html.readlines())
 
         view.load_html_string(lines, base_uri)
