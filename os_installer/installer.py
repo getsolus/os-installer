@@ -189,7 +189,7 @@ class InstallerEngine:
                     pass
                     
             # Steps:
-            our_total = 9
+            our_total = 10
             our_current = 0
             # chroot
             print " --> Chrooting"
@@ -214,6 +214,12 @@ class InstallerEngine:
             # Probably SolusOS specific, remove live from sudoers
             self.do_run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers")
 
+            # systemd specific, initialize a new machine id
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Initializing the new installation"))
+            self.do_run_in_chroot("rm /etc/machine-id")
+            self.do_run_in_chroot("systemd-machine-id-setup")
+            
             # Again SolusOS specific, but remove the installer from the image
             # We need to get the configuration done via dbus eventually.
             our_current += 1
