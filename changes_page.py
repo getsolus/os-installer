@@ -34,7 +34,7 @@ class ChangesPage(Gtk.VBox):
         view.set_transparent(True)
         # Eventually need to open a local changes file from real location
         lines = None
-        base_uri = "file:///home/ikey/Desktop/SolusOS_Work/os-installer/changes/"
+        base_uri = "file:///usr/share/os-installer/changes/"
         with open ("changes/index.html", "r") as html:
             lines = "\n".join(html.readlines())
 
