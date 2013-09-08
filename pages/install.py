@@ -48,7 +48,7 @@ class InstallationPage(BasePage):
         self.should_pulse = False
 
     def go_quit(self):
-        self.label.set_markup(_("Please close the window to exit the installer.\nYou just need to restart to start using your new operating system")
+        self.label.set_markup(_("Please close the window to exit the installer.\nYou just need to restart to start using your new operating system"))
         
     def error_message(self, message=""):
         self.critical_error_happened = True
