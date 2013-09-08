@@ -1,10 +1,10 @@
 os-installer
 ============
 
-Successor to the "live-installer" from Ikey Doherty, targetted at SolusOS 2
+Successor to the "live-installer" from Ikey Doherty
 
-Essentially, we're getting the UI together right now, and then its just a case
-of hooking it all back up to the old backend, and clean it all up :)
+Currently under heavy development, don't be surprised if there are issues.
+
 
 Authors
 --------
