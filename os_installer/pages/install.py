@@ -26,7 +26,7 @@ from gi.repository import Gtk, Gdk, GObject
 from basepage import BasePage
 import threading
 
-from installer import Setup, InstallerEngine
+from os_installer.installer import Setup, InstallerEngine
 
 class InstallationPage(BasePage):
 

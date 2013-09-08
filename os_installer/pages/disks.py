@@ -30,7 +30,7 @@ import os
 import commands
 import parted
 import string
-from installer import PartitionSetup
+from os_installer.installer import PartitionSetup
 
 
 INDEX_PARTITION_PATH=0

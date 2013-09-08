@@ -24,7 +24,7 @@
 import gi.repository
 from gi.repository import Gtk, TimezoneMap
 from basepage import BasePage
-from widgets.tz import Database, Location
+from os_installer.widgets.tz import Database, Location
 
 class TimezonePage(BasePage):
 

@@ -25,7 +25,7 @@ import gi.repository
 from gi.repository import Gtk
 from basepage import BasePage
 import re
-from installer import User
+from os_installer.installer import User
 
 LABEL_COLUMN = 0
 DATA_COLUMN = 1

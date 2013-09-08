@@ -26,7 +26,7 @@ from gi.repository import Gtk, GObject
 from basepage import BasePage
 import os
 
-from resources import RESOURCE_DIR
+from os_installer.resources import RESOURCE_DIR
 
 class LanguageItem(Gtk.HBox):
 
