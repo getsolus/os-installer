@@ -210,6 +210,9 @@ class InstallerEngine:
             # can happen
             if(os.path.exists("/target/home/%s" % live_user)):
                 self.do_run_in_chroot("rm -rf /home/%s" % live_user)
+
+            # Probably SolusOS specific, remove live from sudoers
+            self.do_run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers")
             
             # add new user
             print " --> Adding new user"
