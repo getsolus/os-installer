@@ -189,7 +189,7 @@ class InstallerEngine:
                     pass
                     
             # Steps:
-            our_total = 8
+            our_total = 9
             our_current = 0
             # chroot
             print " --> Chrooting"
@@ -213,7 +213,13 @@ class InstallerEngine:
 
             # Probably SolusOS specific, remove live from sudoers
             self.do_run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers")
-            
+
+            # Again SolusOS specific, but remove the installer from the image
+            # We need to get the configuration done via dbus eventually.
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Removing live configuration (installer)"))
+            self.do_run_in_chroot("pisi remove os-installer --ignore-comar")
+
             # add new user
             print " --> Adding new user"
             our_current += 1
