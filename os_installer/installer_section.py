@@ -99,17 +99,7 @@ class InstallerSection(Gtk.VBox):
         page = self.pages[index]
         if page.get_name() != "summary" and page.get_name() != "installing":
             page.prepare()
-            self.forward.set_label(_("Next"))
         else:
-            # Fix up the install button
-            if page.get_name() == "summary":
-                self.forward.set_label(_("Install"))
-                self.forward.set_sensitive(False)
-                GObject.timeout_add(1000, lambda x: self.forward.set_sensitive(True))
-            else:
-                # Hide buttons as we're installing
-                self.forward.set_visible(False)
-                self.back.set_visible(False)
             page.prepare([p for p in self.pages.values() if p.get_name() != "summary" and not p.is_hidden()])
         self.stack.set_visible_child_name(page.get_name())
         self.selected_page = index
