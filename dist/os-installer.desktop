@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Install OS
+GenericName=OS Installer
+Comment=Install the operating system to disk
+Exec=pkexec /usr/bin/os-installer
+Icon=os-installer
+Terminal=False
+Type=Application
+Categories=System;
