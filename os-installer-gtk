@@ -25,7 +25,7 @@ import gi.repository
 from gi.repository import Gtk, GObject, Gdk
 import gettext
 
-from interface import InstallerWindow
+from os_installer.interface import InstallerWindow
 
 gettext.install("os-installer", "/usr/share/locale")
 
