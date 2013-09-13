@@ -84,6 +84,7 @@ we can perform a quick check to find out where you are in the world. To opt out,
         if ip is None:
             self.stat_label.set_markup(_("Failed to determine location"))
             self.btn.set_sensitive(True)
+            self.installer.can_go_forward(True)
             self.spinner.stop()
             return
             
