@@ -74,6 +74,9 @@ class InstallerWindow(Gtk.Window):
         self.get_settings().set_string_property("gtk-theme-name", theme["Widgets"], "Adwaita")
         self.use_symbolic = theme["SymbolicIcons"].lower() == "true"
 
+        if theme["DarkControls"].lower() == true:
+            self.get_settings().set_property("gtk-application-prefer-dark-theme", True)
+
         context = self.get_style_context()
         css_provider = Gtk.CssProvider()
         css_provider.load_from_path('%s/styling.css' % RESOURCE_DIR)
