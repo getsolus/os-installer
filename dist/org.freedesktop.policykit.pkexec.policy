@@ -3,12 +3,12 @@
 "http://www.freedesktop.org/software/polkit/policyconfig-1.dtd">
 <policyconfig>
 
-  <vendor>SolusOS</vendor>
-  <vendor_url>http://www.solusos.com/</vendor_url>
+  <vendor>EvolveOS</vendor>
+  <vendor_url>https://evolve-os.com/</vendor_url>
 
   <action id="org.freedesktop.policykit.pkexec">
-    <description>Install SolusOS</description>
-    <message>Authentication is required to install SolusOS</message>
+    <description>Install Evolve OS</description>
+    <message>Authentication is required to install Evolve OS</message>
     <defaults>
       <allow_any>no</allow_any>
       <allow_inactive>no</allow_inactive>

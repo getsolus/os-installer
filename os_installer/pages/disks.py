@@ -338,8 +338,8 @@ class DiskPage(BasePage):
                                             last_added_partition.free_space = int(float(last_added_partition.size) * (float(100) - float(used_space_pct)) / float(100))
                                         if os.path.exists(os.path.join(mount_point, 'etc/issue')):
                                             last_added_partition.description = commands.getoutput("cat " + os.path.join(mount_point, 'etc/issue')).replace('\\n', '').replace('\l', '').strip()
-                                        if os.path.exists(os.path.join(mount_point, 'etc/solusos-release')):
-                                            last_added_partition.description = commands.getoutput("cat " + os.path.join(mount_point, 'etc/solusos-release')).strip()                              
+                                        if os.path.exists(os.path.join(mount_point, 'etc/evolveos-release')):
+                                            last_added_partition.description = commands.getoutput("cat " + os.path.join(mount_point, 'etc/evolveos-release')).strip()                              
                                         if os.path.exists(os.path.join(mount_point, 'etc/lsb-release')):
                                             last_added_partition.description = commands.getoutput("cat " + os.path.join(mount_point, 'etc/lsb-release') + " | grep DISTRIB_DESCRIPTION").replace('DISTRIB_DESCRIPTION', '').replace('=', '').replace('"', '').strip()                                    
                                         if os.path.exists(os.path.join(mount_point, 'Windows/servicing/Version')):
