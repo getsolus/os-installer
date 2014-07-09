@@ -130,7 +130,7 @@ class NewUserPage(Gtk.Grid):
         self.scores = dict()
         self.needed_score = 4
 
-        self.username_regex = re.compile(UNAME_REGEX, re.IGNORECASE)
+        self.username_regex = re.compile(UNAME_REGEX)
 
         row = 0
         uname_label = Gtk.Label(_("Username:"))
