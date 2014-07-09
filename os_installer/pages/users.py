@@ -95,14 +95,14 @@ class NewUserPage(Gtk.Grid):
             pass1 = self.pword_field.get_text()
             pass2 = self.pword_field2.get_text()
 
-            if len(pass1) > PASSWORD_LENGTH:
+            if len(pass1) >= PASSWORD_LENGTH:
                 self.pword_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
                 self.update_score(self.pword_field, True)
             else:
                 self.pword_field.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
                 self.update_score(self.pword_field, False)
                 
-            if len(pass1) > PASSWORD_LENGTH and pass1 == pass2:
+            if len(pass1) >= PASSWORD_LENGTH and pass1 == pass2:
                 self.pword_field2.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
                 self.update_score(self.pword_field2, True)
             else:
