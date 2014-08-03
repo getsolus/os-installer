@@ -186,8 +186,5 @@ class LanguagePage(BasePage):
         return self.locale_item.language_string
 
     def seed(self, setup):
-        # Ensure we have .utf8 here for gnome-terminal to work
-        locale = self.locale_item.locale
-        if not "." in locale:
-            locale = "%s.utf8" % locale
-        setup.language = locale
+        setup.language = self.locale_item.locale
+

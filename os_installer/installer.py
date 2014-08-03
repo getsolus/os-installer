@@ -320,7 +320,11 @@ class InstallerEngine:
             our_current += 1
             self.update_progress(total=our_total, current=our_current, message=_("Setting locale"))
             localefh = open("/target/etc/locale.conf", "w")
-            localefh.write("LANG=%s\n" % setup.language)
+            lang = setup.language
+            if not lang.endswith(".utf8"):
+                    lc = lang.split(".")[0]
+                    lang = "%s.utf8" % lc
+            localefh.write("LANG=%s\n" % lang)
             localefh.close()
 
             # Set the timezone

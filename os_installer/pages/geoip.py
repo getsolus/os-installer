@@ -22,7 +22,7 @@
 #  
 #
 import gi.repository
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from basepage import BasePage
 import urllib2
 import re
@@ -73,29 +73,35 @@ we can perform a quick check to find out where you are in the world. To opt out,
         
     def _lookup(self):
         ''' TODO: Make threaded. And useful. '''
+        Gdk.threads_enter()
         self.installer.can_go_forward(False)
 
         self.spinner.set_visible(True)
         self.spinner.start()
         self.btn.set_sensitive(False)
         self.stat_label.set_markup(_("Resolving IP"))
+        Gdk.threads_leave()
 
         ip = self._get_ip()
         if ip is None:
+            Gdk.threads_enter()
             self.stat_label.set_markup(_("Failed to determine location"))
             self.btn.set_sensitive(True)
             self.installer.can_go_forward(True)
             self.spinner.stop()
+            Gdk.threads_leave()
             return
             
         gi = pygeoip.GeoIP("/usr/share/GeoIP/City.dat")
         country = gi.country_code_by_addr(ip)
         timezone = gi.time_zone_by_addr(ip)
 
+        Gdk.threads_enter()
         self.stat_label.set_markup(_("Found: %s" % timezone))
         self.spinner.stop()
         self.spinner.hide()
         self.installer.can_go_forward(True)
+        Gdk.threads_leave()
 
         self.installer.suggestions["country"] = country
         self.installer.suggestions["timezone"] = timezone
