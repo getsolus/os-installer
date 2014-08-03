@@ -357,6 +357,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             # now unmount it
             print " --> Unmounting partitions"
             try:
+                os.system("sync")
                 os.system("umount --force /target/dev/shm")
                 os.system("umount --force /target/dev/pts")
                 os.system("umount --force /target/dev/")
