@@ -26,7 +26,7 @@ class InstallerEngine:
         self.media1 = "/run/initramfs/live/LiveOS/squashfs.img"
         self.media_type1 = "squashfs"
         self.media2 = "/source1/LiveOS/rootfs.img"
-        self.media_type2 = "ext2"      
+        self.media_type2 = "ext4"
 
     def set_progress_hook(self, progresshook):
         ''' Set a callback to be called on progress updates '''
