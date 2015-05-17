@@ -58,7 +58,7 @@ class SystemPage(BasePage):
 
         # grub
         grub_frame = Gtk.Frame()
-        grub_check = Gtk.CheckButton(_("Should we install a boot loader (GRUB) on this computer?"))
+        grub_check = Gtk.CheckButton(_("Should we install a boot loader on this computer?"))
         grub_frame.set_label_widget(grub_check)
 
         self.grub_combo = Gtk.ComboBox()
@@ -96,7 +96,12 @@ class SystemPage(BasePage):
     def prepare(self):
         if self.grub_model is None:
             self.grub_model = Gtk.ListStore(str)
-            for disk in self.installer.suggestions["disks"]:
+            disks = None
+            if "esp" in self.installer.suggestions:
+                disks = self.installer.suggestions["esp"]
+            else:
+                disk = self.installer.suggestions["disks"]
+            for disk in disks:
                 self.grub_model.append([disk])
             self.grub_combo.set_model(self.grub_model)
             self.grub_combo.set_active(0)
@@ -124,5 +129,5 @@ class SystemPage(BasePage):
         answer =  _("Computer host name set to %s") % self.hostname
         if self.grub_combo.is_sensitive():
             grub_device = self.grub_model[self.grub_combo.get_active()][0]
-            answer += "\n" + _("Install GRUB to %s") % grub_device
+            answer += "\n" + _("Install bootloader to %s") % grub_device
         return answer
