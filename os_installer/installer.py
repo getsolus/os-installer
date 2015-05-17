@@ -308,7 +308,7 @@ class InstallerEngine:
                     else:                                                    
                         fstab.write("%s\t%s\t%s\t%s\t%s\t%s\n" % (partition_uuid, partition.mount_as, partition.type, fstab_mount_options, "0", fstab_fsck_option))
             if self.efi_mode and setup.grub_device is not None:
-                fstab.write("%s\t/boot/efi\tvfat\t0\t0\n" % self.get_uuid(setup.grub_device))
+                fstab.write("%s\t/boot/efi\tvfat\tdefaults\t0\t0\n" % self.get_uuid(setup.grub_device))
             fstab.close()
             
             # write host+hostname infos
