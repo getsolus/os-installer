@@ -429,8 +429,8 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
         sdir = "/target/boot/efi/solus"
         if not os.path.exists(sdir):
             os.makedirs(sdir)
-        kernel = "/boot/kernel-%s" % kver
-        initrd = "/boot/initramfs-%s.img" % kver
+        kernel = "/source/boot/kernel-%s" % kver
+        initrd = "/source/boot/initramfs-%s.img" % kver
         tkernel = os.path.join(sdir, "kernel")
         tinitrd = os.path.join(sdir, "initramfs")
         if os.path.exists(tkernel):
