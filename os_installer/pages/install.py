@@ -102,6 +102,8 @@ class InstallationPage(BasePage):
 
     def install(self):
         try:
+            if "esp" in self.installer.suggestions:
+                self.engine.efi_mode = True
             self.engine.install(self.setup)
         except Exception, e:
             print e

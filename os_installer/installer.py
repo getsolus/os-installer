@@ -18,6 +18,8 @@ gettext.install("osinstaller", "/usr/share/locale")
 class InstallerEngine:
     ''' This is central to the live installer '''
 
+    efi_mode = False
+
     def __init__(self):
         self.conf_file = '/etc/os-installer/install.conf'
         configuration = ConfigObj(self.conf_file)     
@@ -95,6 +97,29 @@ class InstallerEngine:
                 print " ------ Mounting %s on %s" % (partition.partition.path, "/target" + partition.mount_as)
                 os.system("mkdir -p /target" + partition.mount_as)
                 self.do_mount(partition.partition.path, "/target" + partition.mount_as, partition.type, None)
+
+        if self.efi_mode and setup.grub_device is not None:
+            tgt = "/target/boot/efi"
+            if not os.path.exists(tgt):
+                os.makedirs(tgt)
+            self.do_mount(setup.grub_device, "/target/boot/efi", "vfat", None)
+
+    def get_uuid(self, path):
+        partition_uuid = path
+        try:
+            blkid = commands.getoutput('blkid').split('\n')
+            for blkid_line in blkid:
+                blkid_elements = blkid_line.split(':')
+                if blkid_elements[0] == path:
+                    blkid_mini_elements = blkid_line.split()
+                    for blkid_mini_element in blkid_mini_elements:
+                        if "UUID=" in blkid_mini_element:
+                            partition_uuid = blkid_mini_element.replace('"', '').strip()
+                            break
+                    break
+        except Exception, detail:
+            print detail
+        return partition_uuid
 
     def install(self, setup):        
         # mount the media location.
@@ -263,20 +288,7 @@ class InstallerEngine:
             fstab.write("proc\t/proc\tproc\tdefaults\t0\t0\n")
             for partition in setup.partitions:
                 if (partition.mount_as is not None and partition.mount_as != "None"):
-                    partition_uuid = partition.partition.path # If we can't find the UUID we use the path
-                    try:                    
-                        blkid = commands.getoutput('blkid').split('\n')
-                        for blkid_line in blkid:
-                            blkid_elements = blkid_line.split(':')
-                            if blkid_elements[0] == partition.partition.path:
-                                blkid_mini_elements = blkid_line.split()
-                                for blkid_mini_element in blkid_mini_elements:
-                                    if "UUID=" in blkid_mini_element:
-                                        partition_uuid = blkid_mini_element.replace('"', '').strip()
-                                        break
-                                break
-                    except Exception, detail:
-                        print detail
+                    partition_uuid = self.get_uuid(partition.partition.path)
                                         
                     fstab.write("# %s\n" % (partition.partition.path))                            
                     
@@ -295,6 +307,8 @@ class InstallerEngine:
                         fstab.write("%s\tswap\tswap\tsw\t0\t0\n" % partition_uuid)
                     else:                                                    
                         fstab.write("%s\t%s\t%s\t%s\t%s\t%s\n" % (partition_uuid, partition.mount_as, partition.type, fstab_mount_options, "0", fstab_fsck_option))
+            if self.efi_mode and setup.grub_device is not None:
+                fstab.write("%s\t/boot/efi\tvfat\t0\t0\n" % self.get_uuid(setup.grub_device))
             fstab.close()
             
             # write host+hostname infos
@@ -355,7 +369,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             our_current += 1
             if(setup.grub_device is not None):
                 self.update_progress(pulse=True, total=our_total, current=our_current, message=_("Installing bootloader"))
-                if "esp" in self.suggestions:
+                if self.efi_mode:
                     print " --> Installing gummiboot"
                     self.do_gummy(our_total, our_current)
                 else:
@@ -367,6 +381,8 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             print " --> Unmounting partitions"
             try:
                 os.system("sync")
+                if self.efi_mode and setup.grub_device is not None:
+                    os.system("umount --force /target/boot/efi")
                 os.system("umount --force /target/dev/shm")
                 os.system("umount --force /target/dev/pts")
                 os.system("umount --force /target/dev/")
