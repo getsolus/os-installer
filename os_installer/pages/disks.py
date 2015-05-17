@@ -228,6 +228,7 @@ class DiskPage(BasePage):
         os.system("gparted %s" % self.target_disk)
         self.installer.can_go_forward(False)
         self.build_partitions()
+        self.build_esp()
 
     def _partition_selected(self, selection):
         model, treeiter = selection.get_selected()
@@ -301,7 +302,8 @@ class DiskPage(BasePage):
                     if fs.type in ["fat", "fat32"]:
                         f = partition.getFlag(parted.PARTITION_BOOT)
                         if f:
-                            esp.append(partition.path)
+                            if partition.path not in esp:
+                                esp.append(partition.path)
                 partition = partition.nextPartition()
         self.installer.suggestions["esp"] = esp
 
