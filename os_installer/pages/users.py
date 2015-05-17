@@ -175,6 +175,7 @@ class NewUserPage(Gtk.Grid):
 
         row += 1
         btnbox = Gtk.ButtonBox()
+        btnbox.set_spacing(5)
         # Lastly the action buttons
         self.ok = Gtk.Button(_("Add now"))
         ok_image = Gtk.Image()

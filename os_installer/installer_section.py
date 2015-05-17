@@ -57,6 +57,7 @@ class InstallerSection(Gtk.VBox):
         btnbox = Gtk.ButtonBox()
         btnbox.set_layout(Gtk.ButtonBoxStyle.END)
         btnbox.set_margin_top(10)
+        btnbox.set_spacing(5)
 
         self.back = Gtk.Button(_("Previous"))
         self.back.connect("clicked", self.nav, False)
