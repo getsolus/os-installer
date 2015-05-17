@@ -22,7 +22,7 @@
 #  
 #
 import gi.repository
-from gi.repository import Gtk, WebKit
+from gi.repository import Gtk, WebKit2, Gdk
 from resources import RESOURCE_DIR
 
 class ChangesPage(Gtk.VBox):
@@ -30,18 +30,20 @@ class ChangesPage(Gtk.VBox):
     def __init__(self, owner):
         Gtk.VBox.__init__(self)
 
-        view = WebKit.WebView()
-        view.set_transparent(True)
+        view = WebKit2.WebView()
+        #view.set_transparent(True)
         # Eventually need to open a local changes file from real location
         lines = None
         base_uri = "file:///usr/share/os-installer/changes/"
         with open ("%s/changes/index.html" % RESOURCE_DIR, "r") as html:
             lines = "\n".join(html.readlines())
 
-        view.load_html_string(lines, base_uri)
+        view.load_html(lines, base_uri)
+        r = Gdk.RGBA(1.0, 1.0, 1.0, 1.0)
+        view.set_background_color(r)
 
-        settings = WebKit.WebSettings()
-        settings.set_property("enable_file_access_from_file_uris", True)
+        settings = WebKit2.Settings()
+        #settings.set_property("enable_file_access_from_file_uris", True)
         view.set_settings(settings)
         self.title = Gtk.Label("<span font=\"20.5\" color=\"#82807b\">%s</span>" % _("Changes"))
         self.title.set_use_markup(True)
@@ -68,6 +70,7 @@ class ChangesPage(Gtk.VBox):
         scroller = Gtk.ScrolledWindow(None, None)
         scroller.add(view)
         scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        scroller.set_overlay_scrolling(False)
         self.pack_start(scroller, True, True, 0)
 
         # Add content

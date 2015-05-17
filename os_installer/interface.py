@@ -25,9 +25,9 @@
 import gi.repository
 from gi.repository import Gtk, Gdk, Pango
 from live_page import LivePage
-from changes_page import ChangesPage
 from installer_section import InstallerSection
 from resources import *
+import os
 
 
 class InstallerWindow(Gtk.Window):
@@ -49,6 +49,12 @@ class InstallerWindow(Gtk.Window):
         self.set_icon_name("system-software-install")
         self._init_theme()
 
+
+        boxen = Gtk.HeaderBar()
+        boxen.set_show_close_button(True)
+        boxen.set_title(self.get_title())
+        self.set_titlebar(boxen)
+
         self.layout = Gtk.VBox()
 
         self.add(self.layout)
@@ -57,7 +63,6 @@ class InstallerWindow(Gtk.Window):
         self.stack.add_named(self.create_intro_page(), "intro")
         self.stack.add_named(InstallerSection(), "install")
         self.stack.add_named(LivePage(), "live")
-        self.stack.add_named(ChangesPage(self), "changes")
 
         self.listbox.connect("row-activated", self.rowsel)
         self.stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
@@ -85,60 +90,39 @@ class InstallerWindow(Gtk.Window):
     def create_intro_page(self):
         layout = Gtk.VBox()
         # Create a pretty label
-        label = "<span font=\"40.5\" color=\"#82807b\">%s</span>" % DISTRO_NAME
+        label = "<span font=\"30.5\" color=\"#82807b\">%s</span>" % DISTRO_NAME
         label_widg = Gtk.Label(label)
         label_widg.set_use_markup(True)
-
-        # Release label
-        release = "<span color=\"#82807b\" font=\"14.5\">%s</span>" % DISTRO_VERSION
-        release_label = Gtk.Label(release)
-        release_label.set_use_markup(True)
-        release_label.set_angle(-30)
+        label_widg.set_halign(Gtk.Align.CENTER)
 
         header = Gtk.HBox()
-        header.pack_end(release_label, False, False, 0)
         layout.pack_start(header, False, True, 0)
 
         layout.pack_start(label_widg, True, True, 0)        
 
         self.listbox = Gtk.ListBox()
         self.rows = dict()
-        
-        # buttons
-        install = self.fancy_button(_("Install to your computer now"), "install-symbolic")
-        self.listbox.add(install)
-        self.rows[self.listbox.get_row_at_index(0)] = "install"
 
-        help_icon = "learnmore-symbolic" if self.use_symbolic else "help-browser-symbolic" 
-        help_btn = self.fancy_button(_("What's new in this release"), help_icon)
-        self.listbox.add(help_btn)
-        self.rows[self.listbox.get_row_at_index(1)] = "changes"
+        row = Gtk.HBox(5)
+        button = self.nice_button("Install Solus", "installsolus192.png")
+        row.pack_start(button, False, False, 0)
+        button.connect("clicked", lambda x: self.stack.set_visible_child_name("install"))
+        button = self.nice_button("Continue using the live preview", "livepreview192.png")
+        button.connect("clicked", lambda x: self.stack.set_visible_child_name("live"))
+        row.pack_start(button, False, False, 0)
 
-        live = self.fancy_button(_("Continue using the LiveCD"), "livecd-symbolic")
-        self.listbox.add(live)
-        self.rows[self.listbox.get_row_at_index(2)] = "live"
-        
-        scroller = Gtk.ScrolledWindow(None,None)
-        scroller.set_border_width(5)
-        scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
-        scroller.set_shadow_type(Gtk.ShadowType.IN)
-        scroller.add(self.listbox)
-        layout.pack_end(scroller, False, True, 0)
+        layout.pack_end(row, True, True, 0)
 
         return layout
 
-    def fancy_button(self, text, icon_name):
-        if not self.use_symbolic:
-            icon_name = icon_name.replace("-symbolic", "")
-
-        image = Gtk.Image()
-        image.set_from_icon_name(icon_name, Gtk.IconSize.DIALOG)
-        image.set_padding(5, 5)
-
-        hbox = Gtk.HBox(0, 0)
-        label = Gtk.Label(text)
-        label.set_alignment(0.5, 0.5)
-        label.set_justify(Gtk.Justification.RIGHT)
-        hbox.pack_start(image, False, False, 0)
-        hbox.pack_start(label, True, False, 0)
-        return hbox
+    def nice_button(self, text, icon):
+        btn = Gtk.Button()
+        box = Gtk.VBox(0)
+        btn.add(box)
+        img = Gtk.Image.new_from_file(os.path.join(RESOURCE_DIR, icon))
+        lab = Gtk.Label(text)
+        box.pack_start(img, False, False, 0)
+        box.pack_start(lab, False, False, 0)
+        btn.set_relief(Gtk.ReliefStyle.NONE)
+        btn.set_can_focus(False)
+        return btn
