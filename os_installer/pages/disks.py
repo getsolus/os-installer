@@ -75,6 +75,7 @@ class DiskPage(BasePage):
         self.disks_page.set_margin_top(30)
         self.disks_page.set_border_width(20)
         self.listbox_disks = Gtk.ListBox()
+        self.listbox_disks.get_style_context().add_class("no-bg")
         self.disks_page.pack_start(self.listbox_disks, True, True, 0)
         self.listbox_disks.connect("row-activated", self._disk_selected)
 
