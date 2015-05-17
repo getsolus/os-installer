@@ -22,7 +22,7 @@
 #  
 #
 import gi.repository
-from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 from basepage import BasePage
 
 import subprocess
@@ -177,8 +177,8 @@ class DiskPage(BasePage):
 
         self.root_partition = None
         self.swap_partition = None
-        
-        self.build_hdds()
+
+        GObject.idle_add(lambda: self.build_hdds())
 
     def _assign_root(self, btn):
         model = self.treeview.get_model()
@@ -269,7 +269,27 @@ class DiskPage(BasePage):
                             self.disks.append(element)
 
 
+        ''' Try to find an ESP '''
+        esp = list()
+        for path in self.disks:
+            device = parted.getDevice(path)
+            try:
+                disk = parted.Disk(device)
+            except Exception:
+                pass
+            if disk.type != "gpt":
+                continue
+            partition = disk.getFirstPartition()
+            while (partition is not None):
+                fs = partition.fileSystem
+                if fs is not None:
+                    if fs.type in ["fat", "fat32"]:
+                        f = partition.getFlag(parted.PARTITION_BOOT)
+                        if f:
+                            esp.append(partition.path)
+                partition = partition.nextPartition()
         self.installer.suggestions["disks"] = self.disks
+        self.installer.suggestions["esp"] = esp
 
         index = 0
         for disk in self.disks:
@@ -279,7 +299,7 @@ class DiskPage(BasePage):
             row.set_name('disk-row')
             row.set_margin_bottom(5)
             index += 1
-            
+
     def seed(self, setup):
         setup.target_disk = self.root_partition.path
         setup.partititons = list()
