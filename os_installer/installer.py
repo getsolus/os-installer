@@ -282,6 +282,7 @@ class InstallerEngine:
                     
                     if(partition.mount_as == "/"):
                         fstab_fsck_option = "1"
+                        self.root_partition = partition_uuid
                     else:
                         fstab_fsck_option = "0" 
                                             
@@ -350,13 +351,17 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             keyboardfh.close()
             
             # write MBR (grub)
-            print " --> Configuring Grub"
+            print " --> Configuring bootloader"
             our_current += 1
             if(setup.grub_device is not None):
                 self.update_progress(pulse=True, total=our_total, current=our_current, message=_("Installing bootloader"))
-                print " --> Running grub-install"
-                self.do_run_in_chroot("grub-install --force %s" % setup.grub_device)
-                self.do_configure_grub(our_total, our_current)
+                if "esp" in self.suggestions:
+                    print " --> Installing gummiboot"
+                    self.do_gummy(our_total, our_current)
+                else:
+                    print " --> Running grub-install"
+                    self.do_run_in_chroot("grub-install --force %s" % setup.grub_device)
+                    self.do_configure_grub(our_total, our_current)
             
             # now unmount it
             print " --> Unmounting partitions"
@@ -397,6 +402,44 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
         grubfh = open("/var/log/os-installer-grub-output.log", "w")
         grubfh.writelines(grub_output)
         grubfh.close()
+
+    def do_gummy(self, our_total, our_current):
+        self.update_progress(pulse=True, total=our_total, current=our_current, message=_("Configuring bootloader"))
+        tgt = "/target/boot/efi/efi/boot/bootx64.efi"
+        if not os.path.exists(tgt):
+            dirn = "/target/boot/efi/efi/boot/"
+            if not os.path.exists(dirn):
+                os.makedirs(dirn)
+            shutil.copy("/usr/lib/gummiboot/gummibootx64.efi", tgt)
+
+        entfile = "/target/boot/efi/loader/default.conf"
+        if not os.path.exists(entfile):
+            dirn = "/target/boot/efi/loader"
+            if not os.path.exists(dirn):
+                os.makedirs(dirn)
+            with open(entfile, "w") as defconf:
+                defconf.write("default Solus\ntimeout 4\n")
+        solfile = "/target/boot/efi/loader/entries/solus.conf"
+        if not os.path.exists(os.path.dirname(solfile)):
+            os.makedirs(os.path.dirname(solfile))
+        with open(solfile, "w") as solconf:
+            solconf.write("title Solus\nlinux /solus/kernel\ninitrd /solus/initramfs\noptions root=%s quiet\n" % self.root_partition)
+        kver = os.uname()[2]
+        print kver
+        sdir = "/target/boot/efi/solus"
+        if not os.path.exists(sdir):
+            os.makedirs(sdir)
+        kernel = "/boot/kernel-%s" % kver
+        initrd = "/boot/initramfs-%s.img" % kver
+        tkernel = os.path.join(sdir, "kernel")
+        tinitrd = os.path.join(sdir, "initramfs")
+        if os.path.exists(tkernel):
+            print "Removing %s" % tkernel
+        if os.path.exists(tinitrd):
+            print "Removing %s" % tinitrd
+        shutil.copy(kernel, tkernel)
+        shutil.copy(initrd, tinitrd)
+
 
     def do_mount(self, device, dest, type, options=None):
         ''' Mount a filesystem '''
