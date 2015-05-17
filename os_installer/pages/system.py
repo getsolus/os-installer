@@ -100,7 +100,7 @@ class SystemPage(BasePage):
             if "esp" in self.installer.suggestions:
                 disks = self.installer.suggestions["esp"]
             else:
-                disk = self.installer.suggestions["disks"]
+                disks = self.installer.suggestions["disks"]
             for disk in disks:
                 self.grub_model.append([disk])
             self.grub_combo.set_model(self.grub_model)

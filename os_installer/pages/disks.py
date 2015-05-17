@@ -283,6 +283,8 @@ class DiskPage(BasePage):
 
     def build_esp(self):
         ''' Try to find an ESP '''
+        if not os.path.exists("/sys/firmware/efi"):
+            return
         esp = list()
         for path in self.disks:
             device = parted.getDevice(path)
