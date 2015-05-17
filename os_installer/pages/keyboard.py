@@ -143,6 +143,7 @@ class KeyboardPage(BasePage):
                 if child.model == self.keyboard_geom:
                     self.listbox_models.select_row(row)
                     self.wanted_model = child.model
+                    row.grab_focus()
                     break
             self._shown_model = True
         else:
@@ -153,6 +154,7 @@ class KeyboardPage(BasePage):
                 if child.layout == self.keyboard_layout:
                     self.listbox_layouts.select_row(row)
                     self.wanted_layout = child.layout
+                    row.grab_focus()
                     break
             self._shown_layout = True
                 

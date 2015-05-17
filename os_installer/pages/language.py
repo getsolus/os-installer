@@ -108,6 +108,7 @@ class LanguagePage(BasePage):
         if selected is not None:
             self.listbox.select_row(selected)
             self.installer.can_go_forward(True)
+            selected.grab_focus()
                     
     def activated(self, box, row):
         item = row.get_children()[0]
