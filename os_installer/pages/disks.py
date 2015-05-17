@@ -268,7 +268,20 @@ class DiskPage(BasePage):
                         if "/dev/" in element: 
                             self.disks.append(element)
 
+        self.installer.suggestions["disks"] = self.disks
+        self.build_esp()
 
+        index = 0
+        for disk in self.disks:
+            panel = DiskPanel(disk)
+            self.listbox_disks.add(panel)
+            row = self.listbox_disks.get_row_at_index(index)
+            row.set_name('disk-row')
+            row.set_margin_bottom(5)
+            index += 1
+            panel.show_all()
+
+    def build_esp(self):
         ''' Try to find an ESP '''
         esp = list()
         for path in self.disks:
@@ -288,17 +301,7 @@ class DiskPage(BasePage):
                         if f:
                             esp.append(partition.path)
                 partition = partition.nextPartition()
-        self.installer.suggestions["disks"] = self.disks
         self.installer.suggestions["esp"] = esp
-
-        index = 0
-        for disk in self.disks:
-            panel = DiskPanel(disk)
-            self.listbox_disks.add(panel)
-            row = self.listbox_disks.get_row_at_index(index)
-            row.set_name('disk-row')
-            row.set_margin_bottom(5)
-            index += 1
 
     def seed(self, setup):
         setup.target_disk = self.root_partition.path
@@ -438,6 +441,7 @@ class DiskPage(BasePage):
             self.treeview.set_model(model)
         except Exception, e:
             print e
+        self.build_esp()
             
     def prepare(self):
         self.installer.can_go_back(True)
