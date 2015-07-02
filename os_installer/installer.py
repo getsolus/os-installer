@@ -473,7 +473,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
         with open(solfile, "w") as solconf:
             solconf.write("title Solus\nlinux /solus/kernel\ninitrd /solus/initramfs\noptions root=%s quiet\n" % self.root_partition)
         kver = os.uname()[2]
-        sdir = get_solus_dir("/target/boot/efi")
+        sdir = self.get_solus_dir("/target/boot/efi")
         if not os.path.exists(sdir):
             os.makedirs(sdir)
         kernel = "/source/boot/kernel-%s" % kver
