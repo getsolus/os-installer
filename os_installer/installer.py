@@ -269,7 +269,7 @@ class InstallerEngine:
             # We need to get the configuration done via dbus eventually.
             our_current += 1
             self.update_progress(total=our_total, current=our_current, message=_("Removing live configuration (installer)"))
-            self.do_run_in_chroot("pisi remove os-installer --ignore-comar")
+            self.do_run_in_chroot("eopkg remove os-installer --ignore-comar")
 
             # add new user
             print " --> Adding new user"
