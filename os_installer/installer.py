@@ -383,8 +383,8 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             if(setup.grub_device is not None):
                 self.update_progress(pulse=True, total=our_total, current=our_current, message=_("Installing bootloader"))
                 if self.efi_mode:
-                    print " --> Installing gummiboot"
-                    self.do_gummy(our_total, our_current)
+                    print " --> Installing goofiboot"
+                    self.do_goofi(our_total, our_current)
                 else:
                     print " --> Running grub-install"
                     self.do_run_in_chroot("grub-install --force %s" % setup.grub_device)
@@ -447,16 +447,16 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
         return t1
 
     def get_efi_dir(self, base):
-        return self.get_ichild(base, "efi")
+        return self.get_ichild(base, "EFI")
 
     def get_loader_dir(self, base):
         return self.get_ichild(base, "loader")
 
     def get_efi_boot_dir(self, base):
-        return self.get_ichild(self.get_efi_dir(base), "boot")
+        return self.get_ichild(self.get_efi_dir(base), "Boot")
 
     def get_efi_boot_file(self, base):
-        return self.get_ichild(self.get_efi_boot_dir(base), "bootx64.efi")
+        return self.get_ichild(self.get_efi_boot_dir(base), "BOOTX64.EFI")
 
     def get_loader_entries(self, base):
         return self.get_ichild(self.get_loader_dir(base), "entries")
@@ -464,27 +464,49 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
     def get_solus_dir(self, base):
         return self.get_ichild(base, "solus")
 
-    def do_gummy(self, our_total, our_current):
+    def do_goofi(self, our_total, our_current):
         self.update_progress(pulse=True, total=our_total, current=our_current, message=_("Configuring bootloader"))
         tgt = self.get_efi_boot_file("/target/boot/efi")
-        if not os.path.exists(tgt):
-            dirn = self.get_efi_boot_dir("/target/boot/efi")
-            if not os.path.exists(dirn):
-                os.makedirs(dirn)
-            shutil.copy("/usr/lib/gummiboot/gummibootx64.efi", tgt)
 
-        entfile = os.path.join(self.get_loader_dir("/target/boot/efi"), "default.conf")
+        # Sanity
+        if not os.path.exists("/target/boot/efi"):
+            try:
+                os.makedirs("/target/boot/efi")
+            except Exception, e:
+                print("Unable to make dirs: %s" % e)
+                return
+
+        # Ensure they get efivars too
+        cmd = "goofiboot install --path=%s" % "/target/boot/efi"
+        retcode = 0
+        try:
+            p = Popen(cmd, shell=True)
+            p.wait()
+            retcode = p.returncode
+        except Exception, e:
+            print("Failed to install goofiboot: %s" % e)
+            return
+        if retcode != 0:
+            print("Failed to install goofiboot")
+            return
+
+        # Set the default entry
+        entfile = os.path.join(self.get_loader_dir("/target/boot/efi"), "loader.conf")
         if not os.path.exists(entfile):
             dirn = self.get_loader_dir("/target/boot/efi")
             if not os.path.exists(dirn):
                 os.makedirs(dirn)
             with open(entfile, "w") as defconf:
-                defconf.write("default Solus\ntimeout 4\n")
+                defconf.write("default solus\ntimeout 4\n")
+
+        # Write the Solus entry
         solfile = "/target/boot/efi/loader/entries/solus.conf"
         if not os.path.exists(os.path.dirname(solfile)):
             os.makedirs(os.path.dirname(solfile))
         with open(solfile, "w") as solconf:
-            solconf.write("title Solus\nlinux /solus/kernel\ninitrd /solus/initramfs\noptions root=%s quiet\n" % self.root_partition)
+            solconf.write("title Solus Operating System\nlinux /solus/kernel\ninitrd /solus/initramfs\noptions root=%s quiet\n" % self.root_partition)
+
+        # Now install the Solus kernel/initramfs.
         kver = os.uname()[2]
         sdir = self.get_solus_dir("/target/boot/efi")
         if not os.path.exists(sdir):
