@@ -256,7 +256,7 @@ class InstallerEngine:
                     shutil.copy2(lightdm_source, lightdm_target)
                 except Exception, e:
                     pass
-            else if os.path.exists("/target/etc/gdm"):
+            elif os.path.exists("/target/etc/gdm"):
                 gdm_source = os.path.join(RESOURCE_DIR, "gdm.conf")
                 gdm_target = "/target/etc/gdm/custom.conf"
                 try:
