@@ -254,22 +254,13 @@ class InstallerEngine:
             self.do_run_in_chroot("rm /etc/machine-id")
             self.do_run_in_chroot("systemd-machine-id-setup")
 
-            if os.path.exists("/target/etc/lightdm"):
-                # Temporary, replace the lightdm.conf file. Enable autologin later in our release cycle
-                lightdm_source = os.path.join(RESOURCE_DIR, "lightdm.conf")
-                lightdm_target = "/target/etc/lightdm/lightdm.conf"
-                try:
-                    os.makedirs("/target/etc/lightdm")
-                    shutil.copy2(lightdm_source, lightdm_target)
-                except Exception, e:
-                    pass
-            elif os.path.exists("/target/etc/gdm"):
+            if os.path.exists("/target/etc/gdm"):
                 gdm_source = os.path.join(RESOURCE_DIR, "gdm.conf")
                 gdm_target = "/target/etc/gdm/custom.conf"
                 try:
-                    os.makedirs("/target/etc/gdm")
                     shutil.copy2(gdm_source, gdm_target)
                 except Exception, e:
+                    print("GDM: %s" % e)
                     pass
 
             # Again SolusOS specific, but remove the installer from the image
