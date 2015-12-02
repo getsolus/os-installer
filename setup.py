@@ -1,7 +1,7 @@
 from setuptools import setup
             
 setup(name         = 'os-installer',
-      version      = '4.0',
+      version      = '5.0',
       author       = "Ikey Doherty",
       author_email = "ikey@solus-project.com",
       license      = "GPL-2.0",
