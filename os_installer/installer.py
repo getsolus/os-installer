@@ -60,7 +60,7 @@ class InstallerEngine:
                         cmd = "mkfs.%s -q %s" % (partition.format_as, partition.partition.path)
                     elif (partition.format_as == "xfs"):
                         cmd = "mkfs.%s -f %s" % (partition.format_as, partition.partition.path)
-                    elif (partition.format_as in ["ext", "ext3", "ext4"]:
+                    elif (partition.format_as in ["ext", "ext3", "ext4"]):
                         cmd = "mkfs.%s -F %s" % (partition.format_as, partition.partition.path)
                     elif (partition.format_as == "btrfs"):
                         cmd = "mkfs.%s -f %s" % (partition.format_as, partition.partition.path)
