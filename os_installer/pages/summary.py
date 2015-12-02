@@ -32,7 +32,7 @@ class SummaryItem(Gtk.VBox):
 
         frame = Gtk.Frame()
         container = Gtk.HBox()
-        frame.set_shadow_type(Gtk.ShadowType.OUT)
+        frame.set_shadow_type(Gtk.ShadowType.NONE)
 
         # title
         self.title = Gtk.Label("<big>%s</big>" % page.get_title())
