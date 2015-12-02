@@ -241,6 +241,9 @@ class InstallerEngine:
             # can happen
             if(os.path.exists("/target/home/%s" % live_user)):
                 self.do_run_in_chroot("rm -rf /home/%s" % live_user)
+            # Our overriden default 
+            if os.path.exists("/target/var/lib/AccountsService/users/%s" % live_user):
+                self.do_run_in_chroot("rm -f /var/lib/AccountsService/users/%s" % live_user)
 
             # Probably SolusOS specific, remove live from sudoers
             self.do_run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers")
