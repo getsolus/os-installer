@@ -282,7 +282,7 @@ class InstallerEngine:
             fstab = open("/target/etc/fstab", "a")
             fstab.write("proc\t/proc\tproc\tdefaults\t0\t0\n")
             for partition in setup.partitions:
-                if (partition.mount_as is not None and partition.mount_as != "None" and partition.type != "swap"):
+                if (partition.mount_as is not None and partition.mount_as != "None":
                     partition_uuid = self.get_uuid(partition.partition.path)
                                         
                     fstab.write("# %s\n" % (partition.partition.path))                            
@@ -298,7 +298,13 @@ class InstallerEngine:
                     else:
                         fstab_mount_options = "defaults"
 
-                    fstab.write("%s\t%s\t%s\t%s\t%s\t%s\n" % (partition_uuid, partition.mount_as, partition.type, fstab_mount_options, "0", fstab_fsck_option))
+                    if partition.type == "swap":
+                        # systemd's gpt generator automounts these guys
+                        if partition.partition.disk is not None and partition.partition.disk.type == "gpt":
+                            continue
+                        fstab.write("%s\tswap\tswap\tsw\t0\t0\n" % partition_uuid)
+                    else:
+                        fstab.write("%s\t%s\t%s\t%s\t%s\t%s\n" % (partition_uuid, partition.mount_as, partition.type, fstab_mount_options, "0", fstab_fsck_option))
             if self.efi_mode and setup.grub_device is not None:
                 fstab.write("%s\t/boot/efi\tvfat\tdefaults\t0\t0\n" % self.get_uuid(setup.grub_device))
             fstab.close()
