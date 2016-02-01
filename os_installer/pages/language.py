@@ -1,23 +1,23 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
-#  
+#
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
-#  
+#
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#  
+#
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#  
+#
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#  
+#
 #
 
 import gi.repository
@@ -26,6 +26,7 @@ from basepage import BasePage
 import os
 
 from os_installer.resources import RESOURCE_DIR
+
 
 class LanguageItem(Gtk.HBox):
 
@@ -48,14 +49,14 @@ class LanguageItem(Gtk.HBox):
         self.language_code = language_code
         self.pack_start(self.language_label, False, True, 0)
 
-        self.locale = locale # Note we need the encoding too when we hook up the installer core
+        self.locale = locale  # Note we need the encoding too when we hook up the installer core
 
 
 class LanguagePage(BasePage):
 
     def __init__(self, installer):
         BasePage.__init__(self)
-        #self.set_border_width(30)
+        # self.set_border_width(30)
         self.installer = installer
 
         # Nice listbox to hold our languages
@@ -108,7 +109,7 @@ class LanguagePage(BasePage):
             self.listbox.select_row(selected)
             self.installer.can_go_forward(True)
             selected.grab_focus()
-                    
+
     def activated(self, box, row):
         item = row.get_children()[0]
         self.locale = item.locale
@@ -116,7 +117,7 @@ class LanguagePage(BasePage):
         self.installer.can_go_forward(True)
 
     def _load_lists(self):
-        #Load countries into memory
+        # Load countries into memory
         countries = {}
         file = open(os.path.join(RESOURCE_DIR, 'countries'), "r")
         for line in file:
@@ -126,7 +127,7 @@ class LanguagePage(BasePage):
                 countries[split[0]] = split[1]
         file.close()
 
-        #Load languages into memory
+        # Load languages into memory
         languages = {}
         file = open(os.path.join(RESOURCE_DIR, 'languages'), "r")
         for line in file:
@@ -138,11 +139,11 @@ class LanguagePage(BasePage):
 
         path = os.path.join(RESOURCE_DIR, 'locales')
         locales = open(path, "r")
-        cur_index = -1 # find the locale :P
+        cur_index = -1  # find the locale :P
         set_index = None
 
         appends = []
-            
+
         for line in locales:
             cur_index += 1
             if "UTF-8" in line:
@@ -164,15 +165,16 @@ class LanguagePage(BasePage):
                         else:
                             country = country_code
 
-                        item = LanguageItem(language, country, locale_code, language_code, country_code)
+                        item = LanguageItem(
+                            language, country, locale_code, language_code, country_code)
                         appends.append(item)
-            
+
         appends.sort(key=lambda x: x.language_string.lower())
         index = 0
         selected = None
         for item in appends:
             self.listbox.add(item)
-            
+
     def get_title(self):
         return _("Choose a language")
 
@@ -187,4 +189,3 @@ class LanguagePage(BasePage):
 
     def seed(self, setup):
         setup.language = self.locale_item.locale
-
