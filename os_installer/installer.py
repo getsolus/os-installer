@@ -220,7 +220,7 @@ class InstallerEngine:
                     pass
                     
             # Steps:
-            our_total = 6
+            our_total = 10
             our_current = 0
             # chroot
             print " --> Chrooting"
@@ -269,6 +269,22 @@ class InstallerEngine:
             self.update_progress(total=our_total, current=our_current, message=_("Removing live configuration (installer)"))
             self.do_run_in_chroot("eopkg remove os-installer --ignore-comar")
 
+            # add new user
+            print " --> Adding new user"
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Adding users to system"))
+
+            # Add all users
+            newusers = open("/target/tmp/newusers.conf", "w")
+            for user in setup.users:
+                groups = "-G sudo,audio,video,cdrom" if user.admin else "-G audio,video,cdrom"
+                cmd = "useradd -s %s -c \'%s\' %s -m %s" % ("/bin/bash", user.realname, groups, user.username)
+                self.do_run_in_chroot(cmd)
+                            
+                newusers.write("%s:%s\n" % (user.username, user.password))
+            newusers.close()
+            self.do_run_in_chroot("cat /tmp/newusers.conf | chpasswd")
+            self.do_run_in_chroot("rm -rf /tmp/newusers.conf")
             # Disable direct use of root account
             self.do_run_in_chroot("passwd -d root")
             
@@ -327,6 +343,40 @@ class InstallerEngine:
             hostsfh.write("ff02::2 ip6-allrouters\n")
             hostsfh.write("ff02::3 ip6-allhosts\n")
             hostsfh.close()
+
+            # Set the locale
+            print " --> Set locale"
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Setting locale"))
+            localefh = open("/target/etc/locale.conf", "w")
+            lang = setup.language
+            if not lang.endswith(".utf8"):
+                    lc = lang.split(".")[0]
+                    lang = "%s.utf8" % lc
+            localefh.write("LANG=%s\n" % lang)
+            localefh.close()
+
+            # Set the timezone
+            print " --> Setting timezone"
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Setting timezone"))
+            timezonepath = "/usr/share/zoneinfo/%s" % setup.timezone
+            self.do_run_in_chroot("ln -s %s /etc/localtime" % timezonepath)
+
+            # Set the keyboard layout
+            print " --> Setting keyboard layout"
+            our_current += 1
+            self.update_progress(total=our_total, current=our_current, message=_("Setting keyboard options"))
+            keyboarddir = "/etc/X11/xorg.conf.d"
+            self.do_run_in_chroot("mkdir -p %s" % keyboarddir)
+            keyboardfh = open("/target/etc/X11/xorg.conf.d/00-keyboard.conf", "w")
+            keyboardfh.write("""Section "InputClass"
+        Identifier "system-keyboard"
+        MatchIsKeyboard "on"
+        Option "XkbModel" "%s"
+        Option "XkbLayout" "%s"
+EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
+            keyboardfh.close()
             
             # write MBR (grub)
             print " --> Configuring bootloader"
@@ -506,17 +556,39 @@ class InstallerEngine:
             dst.write(read)
         input.close()
         dst.close()
+
+class User:
+
+    def __init__(self, username, realname, password, autologin, admin):
+        self.username = username
+        self.realname = realname
+        self.password = password
+        self.autologin = autologin
+        self.admin = admin
         
         
 # Represents the choices made by the user
 class Setup(object):
+    language = None
+    timezone = None
+    timezone_code = None
+    keyboard_model = None    
+    keyboard_layout = None    
     partitions = [] #Array of PartitionSetup objects
     hostname = None 
     grub_device = None
     target_disk = None
+    users = None
+    
+    #Descriptions (used by the summary screen)    
+    keyboard_model_description = None
+    keyboard_layout_description = None
+    keyboard_variant_description = None
     
     def print_setup(self):
         print "-------------------------------------------------------------------------"
+        print "language: %s" % self.language
+        print "timezone: %s (%s)" % (self.timezone, self.timezone_code)        
         print "hostname: %s " % self.hostname
         print "grub_device: %s " % self.grub_device
         print "target_disk: %s " % self.target_disk
