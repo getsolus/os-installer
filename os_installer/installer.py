@@ -145,7 +145,9 @@ class InstallerEngine:
                         message=_("Mounting %(partition)s on %(mountpoint)s") % {
                             'partition': partition.partition.path,
                             'mountpoint': "/target/"})
-                    print(" ------ Mounting %s on %s" % (partition.partition.path, "/target/"))
+                    print(
+                        " ------ Mounting %s on %s" %
+                        (partition.partition.path, "/target/"))
                     self.do_mount(
                         partition.partition.path,
                         "/target",
@@ -156,7 +158,11 @@ class InstallerEngine:
         # Mount the other partitions
         for partition in setup.partitions:
             if(partition.mount_as is not None and partition.mount_as != "" and partition.mount_as != "/" and partition.mount_as != "swap"):
-                print(" ------ Mounting %s on %s" % (partition.partition.path, "/target" + partition.mount_as))
+                print(
+                    " ------ Mounting %s on %s" %
+                    (partition.partition.path,
+                     "/target" +
+                     partition.mount_as))
                 os.system("mkdir -p /target" + partition.mount_as)
                 self.do_mount(
                     partition.partition.path,
@@ -795,4 +801,5 @@ class PartitionSetup(object):
         self.end = partition.geometry.end
 
     def print_partition(self):
-        print("Device: %s, format as: %s, mount as: %s" % (self.partition.path, self.format_as, self.mount_as))
+        print("Device: %s, format as: %s, mount as: %s" %
+              (self.partition.path, self.format_as, self.mount_as))

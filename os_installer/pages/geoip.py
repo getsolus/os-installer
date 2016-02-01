@@ -23,7 +23,9 @@
 import gi.repository
 from gi.repository import Gtk, Gdk
 from .basepage import BasePage
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
+import urllib.error
+import urllib.parse
 import re
 import pygeoip
 import threading
