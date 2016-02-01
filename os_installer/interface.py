@@ -1,9 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: utf-8 -*-
-#
-#  interface.py - Main Installer UI
 #  
-#  Copyright (C) 2013-2015 Ikey Doherty <ikey@solus-project.com>
+#  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
 #  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -20,7 +18,8 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #  
-#  
+#
+
 
 import gi.repository
 from gi.repository import Gtk, Gdk, Pango
