@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/bin/true
 # -*- coding: utf-8 -*-
 #
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
@@ -22,8 +22,8 @@
 
 import gi.repository
 from gi.repository import Gtk, Gdk
-from basepage import BasePage
-import urllib2
+from .basepage import BasePage
+import urllib.request, urllib.error, urllib.parse
 import re
 import pygeoip
 import threading
@@ -62,13 +62,13 @@ we can perform a quick check to find out where you are in the world. To opt out,
 
     def _get_ip(self):
         try:
-            o = urllib2.urlopen(IP_CHECK, None, TIMEOUT)
+            o = urllib.request.urlopen(IP_CHECK, None, TIMEOUT)
             contents = o.read()
             regex = r'Address: (\d+\.\d+\.\d+\.\d+)'
             reg = re.compile(regex)
             return reg.search(contents).group(1)
         except Exception as e:
-            print e
+            print(e)
 
         return None
 

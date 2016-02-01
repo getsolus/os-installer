@@ -26,12 +26,11 @@ import time
 import shutil
 import gettext
 import stat
-import commands
+import subprocess
 import sys
 import parted
-from configobj import ConfigObj
 
-from resources import RESOURCE_DIR, CONFIG_PATH
+from .resources import LIVE_USER
 
 gettext.install("osinstaller", "/usr/share/locale")
 
@@ -42,10 +41,7 @@ class InstallerEngine:
     efi_mode = False
 
     def __init__(self):
-        self.conf_file = CONFIG_PATH
-        configuration = ConfigObj(self.conf_file)
-        self.live_user = configuration['Configuration']['LiveUser']
-
+        self.live_user = LIVE_USER
         self.media1 = "/run/initramfs/live/LiveOS/squashfs.img"
         self.media_type1 = "squashfs"
         self.media2 = "/source1/LiveOS/rootfs.img"
@@ -102,14 +98,14 @@ class InstallerEngine:
                         cmd = "mkfs.%s %s" % (
                             partition.format_as, partition.partition.path)
 
-                print "EXECUTING: '%s'" % cmd
+                print("EXECUTING: '%s'" % cmd)
                 p = Popen(cmd, shell=True)
                 p.wait()  # this blocks
                 partition.type = partition.format_as
 
     def step_mount_partitions(self, setup):
         # Mount the installation media
-        print " --> Mounting partitions"
+        print(" --> Mounting partitions")
 
         # Mount the squashfs.img
         self.update_progress(
@@ -118,7 +114,7 @@ class InstallerEngine:
             message=_("Mounting %(partition)s on %(mountpoint)s") % {
                 'partition': self.media1,
                 'mountpoint': "/source1/"})
-        print " ------ Mounting %s on %s" % (self.media1, "/source1/")
+        print(" ------ Mounting %s on %s" % (self.media1, "/source1/"))
         self.do_mount(
             self.media1,
             "/source1/",
@@ -132,7 +128,7 @@ class InstallerEngine:
             message=_("Mounting %(partition)s on %(mountpoint)s") % {
                 'partition': self.media2,
                 'mountpoint': "/source/"})
-        print " ------ Mounting %s on %s" % (self.media2, "/source/")
+        print(" ------ Mounting %s on %s" % (self.media2, "/source/"))
         self.do_mount(
             self.media2,
             "/source/",
@@ -149,7 +145,7 @@ class InstallerEngine:
                         message=_("Mounting %(partition)s on %(mountpoint)s") % {
                             'partition': partition.partition.path,
                             'mountpoint': "/target/"})
-                    print " ------ Mounting %s on %s" % (partition.partition.path, "/target/")
+                    print(" ------ Mounting %s on %s" % (partition.partition.path, "/target/"))
                     self.do_mount(
                         partition.partition.path,
                         "/target",
@@ -160,7 +156,7 @@ class InstallerEngine:
         # Mount the other partitions
         for partition in setup.partitions:
             if(partition.mount_as is not None and partition.mount_as != "" and partition.mount_as != "/" and partition.mount_as != "swap"):
-                print " ------ Mounting %s on %s" % (partition.partition.path, "/target" + partition.mount_as)
+                print(" ------ Mounting %s on %s" % (partition.partition.path, "/target" + partition.mount_as))
                 os.system("mkdir -p /target" + partition.mount_as)
                 self.do_mount(
                     partition.partition.path,
@@ -178,7 +174,7 @@ class InstallerEngine:
     def get_uuid(self, path):
         partition_uuid = path
         try:
-            blkid = commands.getoutput('blkid').split('\n')
+            blkid = subprocess.getoutput('blkid').split('\n')
             for blkid_line in blkid:
                 blkid_elements = blkid_line.split(':')
                 if blkid_elements[0] == path:
@@ -190,12 +186,12 @@ class InstallerEngine:
                             break
                     break
         except Exception as detail:
-            print detail
+            print(detail)
         return partition_uuid
 
     def install(self, setup):
         # mount the media location.
-        print " --> Installation started"
+        print(" --> Installation started")
         try:
             if(not os.path.exists("/target")):
                 os.mkdir("/target")
@@ -205,7 +201,7 @@ class InstallerEngine:
                 os.mkdir("/source1")
             # find the squashfs..
             if(not os.path.exists(self.media1)):
-                print "Base filesystem does not exist! Critical error (exiting)."
+                print("Base filesystem does not exist! Critical error (exiting).")
                 sys.exit(1)  # change to report
 
             self.step_format_partitions(setup)
@@ -219,13 +215,13 @@ class InstallerEngine:
             our_current = -1
             os.chdir(SOURCE)
             # index the files
-            print " --> Indexing files"
+            print(" --> Indexing files")
             for top, dirs, files in os.walk(SOURCE, topdown=False):
                 our_total += len(dirs) + len(files)
                 self.update_progress(
                     pulse=True, message=_("Indexing files to be copied.."))
             our_total += 1  # safenessness
-            print " --> Copying files"
+            print(" --> Copying files")
             for top, dirs, files in os.walk(SOURCE):
                 # Sanity check. Python is a bit schitzo
                 dirpath = top
@@ -285,7 +281,7 @@ class InstallerEngine:
                         os.utime(targetpath, (st.st_atime, st.st_mtime))
                 # Apply timestamps to all directories now that the items within them
                 # have been copied.
-            print " --> Restoring meta-info"
+            print(" --> Restoring meta-info")
             for dirtime in directory_times:
                 (directory, atime, mtime) = dirtime
                 try:
@@ -301,7 +297,7 @@ class InstallerEngine:
             our_total = 10
             our_current = 0
             # chroot
-            print " --> Chrooting"
+            print(" --> Chrooting")
             self.update_progress(
                 total=our_total,
                 current=our_current,
@@ -314,7 +310,7 @@ class InstallerEngine:
             os.system("cp -f /etc/resolv.conf /target/etc/resolv.conf")
 
             # remove live user
-            print " --> Removing live user"
+            print(" --> Removing live user")
             live_user = self.live_user
             our_current += 1
             self.update_progress(
@@ -351,7 +347,7 @@ class InstallerEngine:
                 try:
                     shutil.copy2(gdm_source, gdm_target)
                 except Exception as e:
-                    print("GDM: %s" % e)
+                    print(("GDM: %s" % e))
                     pass
 
             # Again SolusOS specific, but remove the installer from the image
@@ -364,7 +360,7 @@ class InstallerEngine:
             self.do_run_in_chroot("eopkg remove os-installer --ignore-comar")
 
             # add new user
-            print " --> Adding new user"
+            print(" --> Adding new user")
             our_current += 1
             self.update_progress(
                 total=our_total,
@@ -387,7 +383,7 @@ class InstallerEngine:
             self.do_run_in_chroot("passwd -d root")
 
             # write the /etc/fstab
-            print " --> Writing fstab"
+            print(" --> Writing fstab")
             our_current += 1
             self.update_progress(
                 total=our_total,
@@ -440,7 +436,7 @@ class InstallerEngine:
             fstab.close()
 
             # write host+hostname infos
-            print " --> Writing hostname"
+            print(" --> Writing hostname")
             our_current += 1
             self.update_progress(
                 total=our_total,
@@ -463,7 +459,7 @@ class InstallerEngine:
             hostsfh.close()
 
             # Set the locale
-            print " --> Set locale"
+            print(" --> Set locale")
             our_current += 1
             self.update_progress(
                 total=our_total,
@@ -478,7 +474,7 @@ class InstallerEngine:
             localefh.close()
 
             # Set the timezone
-            print " --> Setting timezone"
+            print(" --> Setting timezone")
             our_current += 1
             self.update_progress(
                 total=our_total,
@@ -488,7 +484,7 @@ class InstallerEngine:
             self.do_run_in_chroot("ln -s %s /etc/localtime" % timezonepath)
 
             # Set the keyboard layout
-            print " --> Setting keyboard layout"
+            print(" --> Setting keyboard layout")
             our_current += 1
             self.update_progress(
                 total=our_total,
@@ -507,7 +503,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             keyboardfh.close()
 
             # write MBR (grub)
-            print " --> Configuring bootloader"
+            print(" --> Configuring bootloader")
             our_current += 1
             if(setup.grub_device is not None):
                 self.update_progress(
@@ -516,17 +512,17 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
                     current=our_current,
                     message=_("Installing bootloader"))
                 if self.efi_mode:
-                    print " --> Installing goofiboot"
+                    print(" --> Installing goofiboot")
                     self.do_goofi(our_total, our_current)
                 else:
-                    print " --> Running grub-install"
+                    print(" --> Running grub-install")
                     self.do_run_in_chroot(
                         "grub-install --force %s" %
                         setup.grub_device)
                     self.do_configure_grub(our_total, our_current)
 
             # now unmount it
-            print " --> Unmounting partitions"
+            print(" --> Unmounting partitions")
             try:
                 os.system("sync")
                 if self.efi_mode and setup.grub_device is not None:
@@ -545,10 +541,10 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
                 self.do_unmount("/source1")
             except Exception as detail:
                 # best effort, no big deal if we can't umount something
-                print detail
+                print(detail)
 
             self.update_progress(done=True, message=_("Installation finished"))
-            print " --> All done"
+            print(" --> All done")
 
         except Exception:
             import traceback
@@ -564,9 +560,9 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             total=our_total,
             current=our_current,
             message=_("Configuring bootloader"))
-        print " --> Running grub-mkconfig"
+        print(" --> Running grub-mkconfig")
         self.do_run_in_chroot("grub-mkconfig -o /boot/grub/grub.cfg")
-        grub_output = commands.getoutput(
+        grub_output = subprocess.getoutput(
             "chroot /target/ /bin/sh -c \"grub-mkconfig -o /boot/grub/grub.cfg\"")
         grubfh = open("/var/log/os-installer-grub-output.log", "w")
         grubfh.writelines(grub_output)
@@ -582,7 +578,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
                 if i2 == child:
                     return os.path.join(root, i)
         except Exception as ex:
-            print("Error obtaining %s dir: %s" % (child, ex))
+            print(("Error obtaining %s dir: %s" % (child, ex)))
         return t1
 
     def get_efi_dir(self, base):
@@ -616,7 +612,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             try:
                 os.makedirs("/target/boot/efi")
             except Exception as e:
-                print("Unable to make dirs: %s" % e)
+                print(("Unable to make dirs: %s" % e))
                 return
 
         # Ensure they get efivars too
@@ -627,7 +623,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             p.wait()
             retcode = p.returncode
         except Exception as e:
-            print("Failed to install goofiboot: %s" % e)
+            print(("Failed to install goofiboot: %s" % e))
             return
         if retcode != 0:
             print("Failed to install goofiboot")
@@ -663,9 +659,9 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
         tkernel = os.path.join(sdir, "kernel")
         tinitrd = os.path.join(sdir, "initramfs")
         if os.path.exists(tkernel):
-            print "Removing %s" % tkernel
+            print("Removing %s" % tkernel)
         if os.path.exists(tinitrd):
-            print "Removing %s" % tinitrd
+            print("Removing %s" % tinitrd)
         shutil.copy(kernel, tkernel)
         shutil.copy(initrd, tinitrd)
 
@@ -676,7 +672,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             cmd = "mount -o %s -t %s %s %s" % (options, type, device, dest)
         else:
             cmd = "mount -t %s %s %s" % (type, device, dest)
-        print "EXECUTING: '%s'" % cmd
+        print("EXECUTING: '%s'" % cmd)
         p = Popen(cmd, shell=True)
         p.wait()
         return p.returncode
@@ -684,7 +680,7 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
     def do_unmount(self, mountpoint):
         ''' Unmount a filesystem '''
         cmd = "umount %s" % mountpoint
-        print "EXECUTING: '%s'" % cmd
+        print("EXECUTING: '%s'" % cmd)
         p = Popen(cmd, shell=True)
         p.wait()
         return p.returncode
@@ -732,16 +728,16 @@ class Setup(object):
     keyboard_variant_description = None
 
     def print_setup(self):
-        print "-------------------------------------------------------------------------"
-        print "language: %s" % self.language
-        print "timezone: %s (%s)" % (self.timezone, self.timezone_code)
-        print "hostname: %s " % self.hostname
-        print "grub_device: %s " % self.grub_device
-        print "target_disk: %s " % self.target_disk
-        print "partitions:"
+        print("-------------------------------------------------------------------------")
+        print("language: %s" % self.language)
+        print("timezone: %s (%s)" % (self.timezone, self.timezone_code))
+        print("hostname: %s " % self.hostname)
+        print("grub_device: %s " % self.grub_device)
+        print("target_disk: %s " % self.target_disk)
+        print("partitions:")
         for partition in self.partitions:
             partition.print_partition()
-        print "-------------------------------------------------------------------------"
+        print("-------------------------------------------------------------------------")
 
 
 class PartitionSetup(object):
@@ -799,4 +795,4 @@ class PartitionSetup(object):
         self.end = partition.geometry.end
 
     def print_partition(self):
-        print "Device: %s, format as: %s, mount as: %s" % (self.partition.path, self.format_as, self.mount_as)
+        print("Device: %s, format as: %s, mount as: %s" % (self.partition.path, self.format_as, self.mount_as))

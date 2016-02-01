@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/bin/true
 # -*- coding: utf-8 -*-
 #
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
@@ -22,7 +22,7 @@
 
 import gi.repository
 from gi.repository import Gtk, Gdk, GObject
-from basepage import BasePage
+from .basepage import BasePage
 import threading
 
 from os_installer.installer import Setup, InstallerEngine
@@ -114,7 +114,7 @@ class InstallationPage(BasePage):
                 self.engine.efi_mode = True
             self.engine.install(self.setup)
         except Exception as e:
-            print e
+            print(e)
 
     def prepare(self, pages=None):
         self.installer.can_go_back(False)
@@ -122,7 +122,7 @@ class InstallationPage(BasePage):
 
         for page in pages:
             page.seed(self.setup)
-        print "Seeded"
+        print("Seeded")
         self.setup.print_setup()
 
         t = threading.Thread(target=self.install)

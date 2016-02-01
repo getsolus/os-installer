@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/bin/true
 # -*- coding: utf-8 -*-
 #
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
@@ -22,7 +22,7 @@
 
 import gi.repository
 from gi.repository import Gtk, GObject
-from basepage import BasePage
+from .basepage import BasePage
 import os
 
 from os_installer.resources import RESOURCE_DIR

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/bin/true
 # -*- coding: utf-8 -*-
 #
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
@@ -19,20 +19,19 @@
 #  MA 02110-1301, USA.
 #
 #
-
 import gi.repository
 from gi.repository import Gtk, Gdk, Pango
-from resources import *
+from .resources import *
 
-from pages.geoip import GeoPage
-from pages.language import LanguagePage
-from pages.timezone import TimezonePage
-from pages.summary import SummaryPage
-from pages.users import UsersPage
-from pages.keyboard import KeyboardPage
-from pages.disks import DiskPage
-from pages.install import InstallationPage
-from pages.system import SystemPage
+from .pages.geoip import GeoPage
+from .pages.language import LanguagePage
+from .pages.timezone import TimezonePage
+from .pages.summary import SummaryPage
+from .pages.users import UsersPage
+from .pages.keyboard import KeyboardPage
+from .pages.disks import DiskPage
+from .pages.install import InstallationPage
+from .pages.system import SystemPage
 
 
 class InstallerSection(Gtk.VBox):
@@ -100,7 +99,7 @@ class InstallerSection(Gtk.VBox):
         if page.get_name() != "summary" and page.get_name() != "installing":
             page.prepare()
         else:
-            page.prepare([p for p in self.pages.values()
+            page.prepare([p for p in list(self.pages.values())
                           if p.get_name() != "summary" and not p.is_hidden()])
         self.stack.set_visible_child_name(page.get_name())
         self.selected_page = index

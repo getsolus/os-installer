@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/bin/true
 # -*- coding: utf-8 -*-
 #
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
@@ -20,18 +20,11 @@
 #
 #
 
-from configobj import ConfigObj
 import os.path
 
-
-CONFIG_PATH = "/etc/os-installer/install.conf" if os.path.exists(
-    "/etc/os-installer/install.conf") else os.path.join(os.getcwd(), "dist/install.conf")
-
-config = ConfigObj(CONFIG_PATH)
-
-DISTRO_NAME = config["Branding"]["Name"]
-DISTRO_VERSION = config["Branding"]["Version"]
-UI_THEME = config["Branding"]["Theme"]
+DISTRO_NAME = "Solus Operating System"
+DISTRO_VERSION = "1.1"
+LIVE_USER = "live"
 
 RESOURCE_DIR = "/usr/share/os-installer" if os.path.exists(
     "/usr/share/os-installer") else os.path.join(os.getcwd(), "data")

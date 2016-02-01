@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/bin/true
 # -*- coding: utf-8 -*-
 #
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
@@ -22,7 +22,7 @@
 
 import gi.repository
 from gi.repository import Gtk
-from basepage import BasePage
+from .basepage import BasePage
 import re
 from os_installer.installer import User
 
@@ -129,7 +129,7 @@ class NewUserPage(Gtk.Grid):
         else:
             self.scores[widget] = score
 
-        total_score = len([i for i in self.scores.values() if i])
+        total_score = len([i for i in list(self.scores.values()) if i])
         self.ok.set_sensitive(total_score == self.needed_score)
 
     def __init__(self, owner):

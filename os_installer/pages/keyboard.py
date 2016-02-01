@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/bin/true
 # -*- coding: utf-8 -*-
 #
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
@@ -22,7 +22,7 @@
 
 import gi.repository
 from gi.repository import Gtk, GObject
-from basepage import BasePage
+from .basepage import BasePage
 
 import xml.dom.minidom
 from xml.dom.minidom import parse
@@ -175,7 +175,8 @@ class KeyboardPage(BasePage):
         p = subprocess.Popen(
             "setxkbmap -print",
             shell=True,
-            stdout=subprocess.PIPE)
+            stdout=subprocess.PIPE,
+            universal_newlines=True)
         for line in p.stdout:
             # strip it
             line = line.rstrip("\r\n")

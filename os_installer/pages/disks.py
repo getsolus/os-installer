@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/bin/true
 # -*- coding: utf-8 -*-
 #
 #  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
@@ -22,11 +22,11 @@
 
 import gi.repository
 from gi.repository import Gtk, GObject
-from basepage import BasePage
+from .basepage import BasePage
 
 import subprocess
 import os
-import commands
+import subprocess
 import parted
 import string
 from os_installer.installer import PartitionSetup
@@ -212,7 +212,7 @@ class DiskPage(BasePage):
         model.set_value(self.selected_row, INDEX_PARTITION_MOUNT_AS, "/")
 
         self.queue_draw()
-        print "Assigned root (/) to %s" % self.root_partition.path
+        print("Assigned root (/) to %s" % self.root_partition.path)
 
         # Only *really* need a root in alpha stages
         self.installer.can_go_forward(True)
@@ -243,7 +243,7 @@ class DiskPage(BasePage):
         model.set_value(self.selected_row, INDEX_PARTITION_MOUNT_AS, "swap")
 
         self.queue_draw()
-        print "Assigned swap to %s" % self.swap_partition.path
+        print("Assigned swap to %s" % self.swap_partition.path)
 
     def _launch_gparted(self, btn):
         os.system("gparted %s" % self.target_disk)
@@ -279,6 +279,7 @@ class DiskPage(BasePage):
         inxi = subprocess.Popen(
             "inxi -c0 -D",
             shell=True,
+            universal_newlines=True,
             stdout=subprocess.PIPE)
         for line in inxi.stdout:
             line = line.rstrip("\r\n")
@@ -354,8 +355,8 @@ class DiskPage(BasePage):
                 str,
                 object,
                 bool,
-                long,
-                long,
+                int,
+                int,
                 bool)
             model2 = Gtk.ListStore(str)
 
@@ -383,18 +384,18 @@ class DiskPage(BasePage):
                         if partition.number != - \
                                 1 and "swap" not in last_added_partition.type and partition.type != parted.PARTITION_EXTENDED:
                             # Umount temp folder
-                            if ('/tmp/os-installer/tmpmount' in commands.getoutput('mount')):
+                            if ('/tmp/os-installer/tmpmount' in subprocess.getoutput('mount')):
                                 os.popen('umount /tmp/os-installer/tmpmount')
 
                             # Mount partition if not mounted
-                            if (partition.path not in commands.getoutput('mount')):
+                            if (partition.path not in subprocess.getoutput('mount')):
                                 os.system(
                                     "mount %s /tmp/os-installer/tmpmount" %
                                     partition.path)
 
                             # Identify partition's description and used space
-                            if (partition.path in commands.getoutput('mount')):
-                                df_lines = commands.getoutput(
+                            if (partition.path in subprocess.getoutput('mount')):
+                                df_lines = subprocess.getoutput(
                                     "df 2>/dev/null | grep %s" % partition.path).split('\n')
                                 for df_line in df_lines:
                                     df_elements = df_line.split()
@@ -410,19 +411,19 @@ class DiskPage(BasePage):
                                                 last_added_partition.size) * (float(100) - float(used_space_pct)) / float(100))
                                         if os.path.exists(os.path.join(
                                                 mount_point, 'etc/issue')):
-                                            last_added_partition.description = commands.getoutput(
+                                            last_added_partition.description = subprocess.getoutput(
                                                 "cat " + os.path.join(mount_point, 'etc/issue')).replace('\\n', '').replace('\l', '').strip()
                                         if os.path.exists(
                                             os.path.join(
                                                 mount_point,
                                                 'etc/evolveos-release')):
-                                            last_added_partition.description = commands.getoutput(
+                                            last_added_partition.description = subprocess.getoutput(
                                                 "cat " + os.path.join(mount_point, 'etc/evolveos-release')).strip()
                                         if os.path.exists(
                                             os.path.join(
                                                 mount_point,
                                                 'etc/lsb-release')):
-                                            last_added_partition.description = commands.getoutput(
+                                            last_added_partition.description = subprocess.getoutput(
                                                 "cat " +
                                                 os.path.join(
                                                     mount_point,
@@ -438,7 +439,7 @@ class DiskPage(BasePage):
                                             os.path.join(
                                                 mount_point,
                                                 'Windows/servicing/Version')):
-                                            version = commands.getoutput("ls %s" % os.path.join(
+                                            version = subprocess.getoutput("ls %s" % os.path.join(
                                                 mount_point, 'Windows/servicing/Version'))
                                             if version.startswith("6.1"):
                                                 last_added_partition.description = "Windows 7"
@@ -475,10 +476,10 @@ class DiskPage(BasePage):
                                             last_added_partition.description = "Windows"
                                         break
                             else:
-                                print "Failed to mount %s" % partition.path
+                                print("Failed to mount %s" % partition.path)
 
                             # Umount temp folder
-                            if ('/tmp/os-installer/tmpmount' in commands.getoutput('mount')):
+                            if ('/tmp/os-installer/tmpmount' in subprocess.getoutput('mount')):
                                 os.popen('umount /tmp/os-installer/tmpmount')
 
                     if last_added_partition.size > 1.0:
@@ -538,7 +539,7 @@ class DiskPage(BasePage):
                     partition = partition.nextPartition()
             self.treeview.set_model(model)
         except Exception as e:
-            print e
+            print(e)
         self.build_esp()
 
     def prepare(self):
