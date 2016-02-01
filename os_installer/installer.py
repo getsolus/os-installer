@@ -31,7 +31,7 @@ import sys
 import parted
 from configobj import ConfigObj
 
-from resources import RESOURCE_DIR
+from resources import RESOURCE_DIR, CONFIG_PATH
 
 gettext.install("osinstaller", "/usr/share/locale")
 
@@ -42,7 +42,7 @@ class InstallerEngine:
     efi_mode = False
 
     def __init__(self):
-        self.conf_file = '/etc/os-installer/install.conf'
+        self.conf_file = CONFIG_PATH
         configuration = ConfigObj(self.conf_file)     
         self.live_user = configuration['Configuration']['LiveUser']
 
@@ -319,7 +319,7 @@ class InstallerEngine:
             fstab = open("/target/etc/fstab", "a")
             fstab.write("proc\t/proc\tproc\tdefaults\t0\t0\n")
             for partition in setup.partitions:
-                if (partition.mount_as is not None and partition.mount_as != "None":
+                if partition.mount_as is not None and partition.mount_as != "None":
                     partition_uuid = self.get_uuid(partition.partition.path)
                                         
                     fstab.write("# %s\n" % (partition.partition.path))                            

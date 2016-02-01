@@ -82,7 +82,10 @@ class InstallerWindow(Gtk.Window):
 
         context = self.get_style_context()
         css_provider = Gtk.CssProvider()
-        css_provider.load_from_path('%s/styling.css' % RESOURCE_DIR)
+        if os.path.exists("%s/styling.css" % RESOURCE_DIR):
+            css_provider.load_from_path("%s/styling.css" % RESOURCE_DIR)
+        else:
+            css_provider.load_from_path("data/styling.css")
         screen = Gdk.Screen.get_default()
         context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
