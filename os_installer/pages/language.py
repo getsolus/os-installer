@@ -49,7 +49,8 @@ class LanguageItem(Gtk.HBox):
         self.language_code = language_code
         self.pack_start(self.language_label, False, True, 0)
 
-        self.locale = locale  # Note we need the encoding too when we hook up the installer core
+        # Note we need the encoding too when we hook up the installer core
+        self.locale = locale
 
 
 class LanguagePage(BasePage):
@@ -93,7 +94,8 @@ class LanguagePage(BasePage):
         selected = None
         for child in self.listbox.get_children():
             item = child.get_children()[0]
-            if known_country is not None and known_country.lower() == item.country_code:
+            if known_country is not None and
+            known_country.lower() == item.country_code:
                 if selected is None:
                     selected = child
                     self.locale = item.locale
@@ -166,7 +168,9 @@ class LanguagePage(BasePage):
                             country = country_code
 
                         item = LanguageItem(
-                            language, country, locale_code, language_code, country_code)
+                            language, country, locale_code, language_code,
+                            country_code
+                        )
                         appends.append(item)
 
         appends.sort(key=lambda x: x.language_string.lower())
