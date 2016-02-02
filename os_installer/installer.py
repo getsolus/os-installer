@@ -36,7 +36,7 @@ gettext.install("osinstaller", "/usr/share/locale")
 
 
 class InstallerEngine:
-    ''' This is central to the live installer '''
+    """ This is central to the live installer """
 
     efi_mode = False
 
@@ -48,9 +48,11 @@ class InstallerEngine:
         self.media_type2 = "ext4"
 
     def set_progress_hook(self, progresshook):
-        ''' Set a callback to be called on progress updates '''
-        ''' i.e. def my_callback(progress_type, message, current_progress, total) '''
-        ''' Where progress_type is any off PROGRESS_START, PROGRESS_UPDATE, PROGRESS_COMPLETE, PROGRESS_ERROR '''
+        """ Set a callback to be called on progress updates
+            def my_callback(progress_type, message, current, total)
+            Where progress_type is any off PROGRESS_START,
+            PROGRESS_UPDATE, PROGRESS_COMPLETE, PROGRESS_ERROR
+        """
         self.update_progress = progresshook
 
     def set_error_hook(self, errorhook):
@@ -142,9 +144,9 @@ class InstallerEngine:
                     self.update_progress(
                         total=5,
                         current=5,
-                        message=_("Mounting %(partition)s on %(mountpoint)s") % {
-                            'partition': partition.partition.path,
-                            'mountpoint': "/target/"})
+                        message=_("Mounting %(part)s on %(mount)s") % {
+                            'part': partition.partition.path,
+                            'mount': "/target/"})
                     print(
                         " ------ Mounting %s on %s" %
                         (partition.partition.path, "/target/"))
@@ -157,7 +159,9 @@ class InstallerEngine:
 
         # Mount the other partitions
         for partition in setup.partitions:
-            if(partition.mount_as is not None and partition.mount_as != "" and partition.mount_as != "/" and partition.mount_as != "swap"):
+            if partition.mount_as is not None and
+            partition.mount_as != "" and partition.mount_as != "/" and
+            partition.mount_as != "swap":
                 print(
                     " ------ Mounting %s on %s" %
                     (partition.partition.path,
@@ -207,7 +211,7 @@ class InstallerEngine:
                 os.mkdir("/source1")
             # find the squashfs..
             if(not os.path.exists(self.media1)):
-                print("Base filesystem does not exist! Critical error (exiting).")
+                print("Base filesystem does not exist! Critical error")
                 sys.exit(1)  # change to report
 
             self.step_format_partitions(setup)
@@ -285,8 +289,8 @@ class InstallerEngine:
                     # os.utime() sets timestamp of target, not link
                     elif not stat.S_ISLNK(st.st_mode):
                         os.utime(targetpath, (st.st_atime, st.st_mtime))
-                # Apply timestamps to all directories now that the items within them
-                # have been copied.
+                # Apply timestamps to all directories now that the items
+                # within them have been copied.
             print(" --> Restoring meta-info")
             for dirtime in directory_times:
                 (directory, atime, mtime) = dirtime
@@ -376,7 +380,8 @@ class InstallerEngine:
             # Add all users
             newusers = open("/target/tmp/newusers.conf", "w")
             for user in setup.users:
-                groups = "-G sudo,audio,video,cdrom" if user.admin else "-G audio,video,cdrom"
+                groups = "-G sudo,audio,video,cdrom" if user.admin else \
+                    "-G audio,video,cdrom"
                 cmd = "useradd -s %s -c \'%s\' %s -m %s" % (
                     "/bin/bash", user.realname, groups, user.username)
                 self.do_run_in_chroot(cmd)
@@ -398,11 +403,13 @@ class InstallerEngine:
             # make sure fstab has default /proc and /sys entries
             if(not os.path.exists("/target/etc/fstab")):
                 os.system(
-                    "echo \"#### Static Filesystem Table File\" > /target/etc/fstab")
+                    "echo \"#### Static Filesystem Table File\" >\
+                    /target/etc/fstab")
             fstab = open("/target/etc/fstab", "a")
             fstab.write("proc\t/proc\tproc\tdefaults\t0\t0\n")
             for partition in setup.partitions:
-                if partition.mount_as is not None and partition.mount_as != "None":
+                if partition.mount_as is not None and
+                partition.mount_as != "None":
                     partition_uuid = self.get_uuid(partition.partition.path)
 
                     fstab.write("# %s\n" % (partition.partition.path))
@@ -420,7 +427,8 @@ class InstallerEngine:
 
                     if partition.type == "swap":
                         # systemd's gpt generator automounts these guys
-                        if partition.partition.disk is not None and partition.partition.disk.type == "gpt":
+                        if partition.partition.disk is not None and
+                        partition.partition.disk.type == "gpt":
                             continue
                         fstab.write(
                             "%s\tswap\tswap\tsw\t0\t0\n" %
@@ -540,7 +548,10 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
                 os.system("umount --force /target/proc/")
                 os.system("rm -rf /target/etc/resolv.conf")
                 for partition in setup.partitions:
-                    if(partition.mount_as is not None and partition.mount_as != "" and partition.mount_as != "/" and partition.mount_as != "swap"):
+                    if partition.mount_as is not None and
+                    partition.mount_as != "" and
+                    partition.mount_as != "/" and
+                    partition.mount_as != "swap":
                         self.do_unmount("/target" + partition.mount_as)
                 self.do_unmount("/target")
                 self.do_unmount("/source")
@@ -569,7 +580,8 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
         print(" --> Running grub-mkconfig")
         self.do_run_in_chroot("grub-mkconfig -o /boot/grub/grub.cfg")
         grub_output = subprocess.getoutput(
-            "chroot /target/ /bin/sh -c \"grub-mkconfig -o /boot/grub/grub.cfg\"")
+            "chroot /target/ /bin/sh -c \"grub-mkconfig -o \
+            /boot/grub/grub.cfg\"")
         grubfh = open("/var/log/os-installer-grub-output.log", "w")
         grubfh.writelines(grub_output)
         grubfh.close()
@@ -652,7 +664,8 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             os.makedirs(os.path.dirname(solfile))
         with open(solfile, "w") as solconf:
             solconf.write(
-                "title Solus Operating System\nlinux /solus/kernel\ninitrd /solus/initramfs\noptions root=%s quiet\n" %
+                "title Solus Operating System\nlinux /solus/kernel\ninitrd \
+                /solus/initramfs\noptions root=%s quiet\n" %
                 self.root_partition)
 
         # Now install the Solus kernel/initramfs.
@@ -734,7 +747,7 @@ class Setup(object):
     keyboard_variant_description = None
 
     def print_setup(self):
-        print("-------------------------------------------------------------------------")
+        print("--------------------------------------------------------------")
         print("language: %s" % self.language)
         print("timezone: %s (%s)" % (self.timezone, self.timezone_code))
         print("hostname: %s " % self.hostname)
@@ -743,7 +756,7 @@ class Setup(object):
         print("partitions:")
         for partition in self.partitions:
             partition.print_partition()
-        print("-------------------------------------------------------------------------")
+        print("--------------------------------------------------------------")
 
 
 class PartitionSetup(object):
