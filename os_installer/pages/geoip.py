@@ -42,8 +42,9 @@ class GeoPage(BasePage):
         self.installer = installer
 
         label_info = _(
-            """The next few questions will relate to your location and language. In order to speed things up,
-we can perform a quick check to find out where you are in the world. To opt out, just click Next.""")
+          "The next few questions will relate to your location and language.\n"
+          "In order to speed things up, we can perform a quick check to find\n"
+          "out where you are in the world. To opt out, just click Next.")
 
         lab_w = Gtk.Label(label_info)
 
