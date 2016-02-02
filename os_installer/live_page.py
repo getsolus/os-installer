@@ -29,8 +29,11 @@ class LivePage(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
 
-        label = "<big>%s</big>\n\n%s" % (_("Thank you for using Solus Operating System."), _(
-            "Please use the button in the top right corner to close this window.\nYou may restart the installer at any time from the Budgie Menu"))
+        thank_vendor = _("Thank you for using Solus Operating System.")
+
+        label = "<big>%s</big>\n\n%s" % (thank_vendor, _(
+            """Please use the button in the top right corner to close this window.
+\nYou may restart the installer at any time from the Budgie Menu"""))
         label_wid = Gtk.Label(label)
         label_wid.set_use_markup(True)
         self.pack_start(label_wid, True, False, 0)
