@@ -177,10 +177,12 @@ class NewUserPage(Gtk.Grid):
         self.attach(pword_label2, LABEL_COLUMN, row, 1, 1)
         self.attach(self.pword_field2, DATA_COLUMN, row, 1, 1)
 
-        #row += 1
+        # Note to self: Put this back you spanner.
+        # row += 1
         # Now we have an automatic login field
-        #self.autologin = Gtk.CheckButton(_("Log this user into the computer automatically"))
-        #self.attach(self.autologin, DATA_COLUMN, row, 1, 1)
+        # self.autologin = Gtk.CheckButton(_("Log this user into the computer
+        #   automatically"))
+        # self.attach(self.autologin, DATA_COLUMN, row, 1, 1)
 
         row += 1
         # And now an administrative user check
@@ -249,7 +251,9 @@ class UsersPage(BasePage):
         scroller.add(self.listbox)
         scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        scroller.get_style_context().set_junction_sides(Gtk.JunctionSides.BOTTOM)
+
+        st = scroller.get_style_context()
+        st.set_junction_sides(Gtk.JunctionSides.BOTTOM)
 
         # Placeholder stuff
         placeholder = Gtk.Label(
