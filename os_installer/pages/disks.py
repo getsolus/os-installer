@@ -95,7 +95,8 @@ class DiskPage(BasePage):
             Gtk.PolicyType.NEVER,
             Gtk.PolicyType.AUTOMATIC)
         self.scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        self.scroller.get_style_context().set_junction_sides(Gtk.JunctionSides.BOTTOM)
+        st = self.scroller.get_style_context()
+        st.set_junction_sides(Gtk.JunctionSides.BOTTOM)
         self.partition_page.pack_start(self.scroller, True, True, 0)
 
         # device
@@ -140,7 +141,8 @@ class DiskPage(BasePage):
         self.column9.add_attribute(ren, "markup", INDEX_PARTITION_FREE_SPACE)
         self.treeview.append_column(self.column9)
 
-        self.treeview.get_selection().connect("changed", self._partition_selected)
+        self.treeview.get_selection().connect("changed",
+                                              self._partition_selected)
 
         toolbar = Gtk.Toolbar()
         toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_INLINE_TOOLBAR)
@@ -275,7 +277,7 @@ class DiskPage(BasePage):
 
     def build_hdds(self):
         self.disks = []
-        #model = Gtk.ListStore(str, str)
+        # model = Gtk.ListStore(str, str)
         inxi = subprocess.Popen(
             "inxi -c0 -D",
             shell=True,
@@ -362,181 +364,7 @@ class DiskPage(BasePage):
 
             swap_found = False
 
-            if self.target_disk is not None:
-                path = self.target_disk  # i.e. /dev/sda
-                device = parted.getDevice(path)
-                try:
-                    disk = parted.Disk(device)
-                except Exception:
-                    pass
-                partition = disk.getFirstPartition()
-                last_added_partition = PartitionSetup(partition)
-                partition = partition.nextPartition()
-                while (partition is not None):
-                    if last_added_partition.partition.number == -1 and partition.number == -1:
-                        last_added_partition.add_partition(partition)
-                    else:
-                        last_added_partition = PartitionSetup(partition)
-
-                        if "swap" in last_added_partition.type:
-                            last_added_partition.type = "swap"
-
-                        if partition.number != - \
-                                1 and "swap" not in last_added_partition.type and partition.type != parted.PARTITION_EXTENDED:
-                            # Umount temp folder
-                            if ('/tmp/os-installer/tmpmount' in subprocess.getoutput('mount')):
-                                os.popen('umount /tmp/os-installer/tmpmount')
-
-                            # Mount partition if not mounted
-                            if (partition.path not in subprocess.getoutput('mount')):
-                                os.system(
-                                    "mount %s /tmp/os-installer/tmpmount" %
-                                    partition.path)
-
-                            # Identify partition's description and used space
-                            if (partition.path in subprocess.getoutput('mount')):
-                                df_lines = subprocess.getoutput(
-                                    "df 2>/dev/null | grep %s" % partition.path).split('\n')
-                                for df_line in df_lines:
-                                    df_elements = df_line.split()
-                                    if df_elements[0] == partition.path:
-                                        last_added_partition.used_space = df_elements[
-                                            4]
-                                        mount_point = df_elements[5]
-                                        if "%" in last_added_partition.used_space:
-                                            used_space_pct = int(
-                                                last_added_partition.used_space.replace(
-                                                    "%", "").strip())
-                                            last_added_partition.free_space = int(float(
-                                                last_added_partition.size) * (float(100) - float(used_space_pct)) / float(100))
-                                        if os.path.exists(os.path.join(
-                                                mount_point, 'etc/issue')):
-                                            last_added_partition.description = subprocess.getoutput(
-                                                "cat " + os.path.join(mount_point, 'etc/issue')).replace('\\n', '').replace('\l', '').strip()
-                                        if os.path.exists(
-                                            os.path.join(
-                                                mount_point,
-                                                'etc/evolveos-release')):
-                                            last_added_partition.description = subprocess.getoutput(
-                                                "cat " + os.path.join(mount_point, 'etc/evolveos-release')).strip()
-                                        if os.path.exists(
-                                            os.path.join(
-                                                mount_point,
-                                                'etc/lsb-release')):
-                                            last_added_partition.description = subprocess.getoutput(
-                                                "cat " +
-                                                os.path.join(
-                                                    mount_point,
-                                                    'etc/lsb-release') +
-                                                " | grep DISTRIB_DESCRIPTION").replace(
-                                                'DISTRIB_DESCRIPTION',
-                                                '').replace(
-                                                '=',
-                                                '').replace(
-                                                '"',
-                                                '').strip()
-                                        if os.path.exists(
-                                            os.path.join(
-                                                mount_point,
-                                                'Windows/servicing/Version')):
-                                            version = subprocess.getoutput("ls %s" % os.path.join(
-                                                mount_point, 'Windows/servicing/Version'))
-                                            if version.startswith("6.1"):
-                                                last_added_partition.description = "Windows 7"
-                                            elif version.startswith("6.0"):
-                                                last_added_partition.description = "Windows Vista"
-                                            elif version.startswith("5.1") or version.startswith("5.2"):
-                                                last_added_partition.description = "Windows XP"
-                                            elif version.startswith("5.0"):
-                                                last_added_partition.description = "Windows 2000"
-                                            elif version.startswith("4.90"):
-                                                last_added_partition.description = "Windows Me"
-                                            elif version.startswith("4.1"):
-                                                last_added_partition.description = "Windows 98"
-                                            elif version.startswith("4.0.1381"):
-                                                last_added_partition.description = "Windows NT"
-                                            elif version.startswith("4.0.950"):
-                                                last_added_partition.description = "Windows 95"
-                                        elif os.path.exists(os.path.join(mount_point, 'Boot/BCD')):
-                                            if os.system(
-                                                "grep -qs \"V.i.s.t.a\" " +
-                                                os.path.join(
-                                                    mount_point,
-                                                    'Boot/BCD')) == 0:
-                                                last_added_partition.description = "Windows Vista bootloader"
-                                            elif os.system("grep -qs \"W.i.n.d.o.w.s. .7\" " + os.path.join(mount_point, 'Boot/BCD')) == 0:
-                                                last_added_partition.description = "Windows 7 bootloader"
-                                            elif os.system("grep -qs \"W.i.n.d.o.w.s. .R.e.c.o.v.e.r.y. .E.n.v.i.r.o.n.m.e.n.t\" " + os.path.join(mount_point, 'Boot/BCD')) == 0:
-                                                last_added_partition.description = "Windows recovery"
-                                            elif os.system("grep -qs \"W.i.n.d.o.w.s. .S.e.r.v.e.r. .2.0.0.8\" " + os.path.join(mount_point, 'Boot/BCD')) == 0:
-                                                last_added_partition.description = "Windows Server 2008 bootloader"
-                                            else:
-                                                last_added_partition.description = "Windows bootloader"
-                                        elif os.path.exists(os.path.join(mount_point, 'Windows/System32')):
-                                            last_added_partition.description = "Windows"
-                                        break
-                            else:
-                                print("Failed to mount %s" % partition.path)
-
-                            # Umount temp folder
-                            if ('/tmp/os-installer/tmpmount' in subprocess.getoutput('mount')):
-                                os.popen('umount /tmp/os-installer/tmpmount')
-
-                    if last_added_partition.size > 1.0:
-                        if last_added_partition.partition.type == parted.PARTITION_LOGICAL:
-                            display_name = "  " + last_added_partition.name
-                        else:
-                            display_name = last_added_partition.name
-
-                        iter = model.append([display_name,
-                                             last_added_partition.type,
-                                             last_added_partition.description,
-                                             "",
-                                             "",
-                                             '%.0f' % round(last_added_partition.size,
-                                                            0),
-                                             str(last_added_partition.free_space),
-                                             last_added_partition,
-                                             False,
-                                             last_added_partition.start,
-                                             last_added_partition.end,
-                                             False])
-                        if last_added_partition.partition.number == -1:
-                            model.set_value(
-                                iter,
-                                INDEX_PARTITION_TYPE,
-                                "<span foreground='#a9a9a9'>%s</span>" %
-                                last_added_partition.type)
-                        elif last_added_partition.partition.type == parted.PARTITION_EXTENDED:
-                            model.set_value(
-                                iter,
-                                INDEX_PARTITION_TYPE,
-                                "<span foreground='#a9a9a9'>%s</span>" %
-                                _("Extended"))
-                        else:
-                            if last_added_partition.type == "ntfs":
-                                color = "#42e5ac"
-                            elif last_added_partition.type == "fat32":
-                                color = "#18d918"
-                            elif last_added_partition.type == "ext4":
-                                color = "#4b6983"
-                            elif last_added_partition.type == "ext3":
-                                color = "#7590ae"
-                            elif last_added_partition.type in ["linux-swap", "swap"]:
-                                color = "#c1665a"
-                                last_added_partition.mount_as = "swap"
-                                model.set_value(
-                                    iter, INDEX_PARTITION_MOUNT_AS, "swap")
-                            else:
-                                color = "#a9a9a9"
-                            model.set_value(
-                                iter, INDEX_PARTITION_TYPE, "<span foreground='%s'>%s</span>" %
-                                (color, last_added_partition.type))
-                            # deviceSize = float(device.getSize()) * float(0.9) # Hack.. reducing the real size to 90% of what it is, to make sure our partitions fit..
-                            #space = int((float(partition.getSize()) / deviceSize) * float(80))
-                            self.partitions.append(last_added_partition)
-
-                    partition = partition.nextPartition()
+            print("THE AUTHOR IS A GOBSHITE AND NEEDS TO FIX ALL OF THIS.")
             self.treeview.set_model(model)
         except Exception as e:
             print(e)
@@ -557,8 +385,10 @@ class DiskPage(BasePage):
 
     def get_primary_answer(self):
         answer = _(
-            "Format %s as %s for root (/)") % (self.root_partition.path, "ext4")
+            "Format %s as %s for root (/)") % \
+            (self.root_partition.path, "ext4")
         if self.swap_partition is not None:
             answer += "\n" + \
-                _("Format and use %s as swap device") % self.swap_partition.path
+                _("Format and use %s as swap device") % \
+                self.swap_partition.path
         return answer
