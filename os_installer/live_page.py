@@ -33,7 +33,7 @@ class LivePage(Gtk.VBox):
 
         label = "<big>%s</big>\n\n%s" % (thank_vendor, _(
             """Please use the button in the top right corner to close this window.
-\nYou may restart the installer at any time from the Budgie Menu"""))
+You may restart the installer at any time from the Budgie Menu"""))
         label_wid = Gtk.Label(label)
         label_wid.set_use_markup(True)
         self.pack_start(label_wid, True, False, 0)
