@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
+from __future__ import print_function
 
 import datetime
 import hashlib
@@ -36,7 +37,6 @@ def _seconds_since_epoch(dt):
 
 
 class SystemTzInfo(datetime.tzinfo):
-
     def __init__(self, tz=None):
         self.tz = tz
 
@@ -114,7 +114,6 @@ class SystemTzInfo(datetime.tzinfo):
 
 
 class Iso3166(object):
-
     def __init__(self):
         self.names = {}
         document = xml.dom.minidom.parse(ISO_3166_FILE)
@@ -155,7 +154,6 @@ def _parse_position(position, wholedigits):
 
 
 class Location(object):
-
     def __init__(self, zonetab_line, iso3166):
         bits = zonetab_line.rstrip().split('\t', 3)
         latlong = bits[1]
@@ -206,7 +204,6 @@ class Location(object):
 
 
 class _Database(object):
-
     def __init__(self):
         self.locations = []
         iso3166 = Iso3166()

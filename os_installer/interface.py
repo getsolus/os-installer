@@ -1,30 +1,32 @@
-#!/bin/true
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  Copyright (C) 2013-2016 Ikey Doherty <ikey@solus-project.com>
-#
+#  interface.py - Main Installer UI
+#  
+#  Copyright 2013 Ikey Doherty <ikey@solusos.com>
+#  
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
 #  the Free Software Foundation; either version 2 of the License, or
 #  (at your option) any later version.
-#
+#  
 #  This program is distributed in the hope that it will be useful,
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
-#
+#  
 #  You should have received a copy of the GNU General Public License
 #  along with this program; if not, write to the Free Software
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
-#
-#
+#  
+#  
 
 import gi.repository
 from gi.repository import Gtk, Gdk, Pango
-from .live_page import LivePage
-from .installer_section import InstallerSection
-from .resources import *
+from live_page import LivePage
+from installer_section import InstallerSection
+from resources import *
 import os
 
 
@@ -41,11 +43,12 @@ class InstallerWindow(Gtk.Window):
         Gtk.Window.__init__(self)
         self.connect("destroy", Gtk.main_quit)
 
-        self.set_size_request(700, 500)
-        self.set_position(Gtk.WindowPosition.CENTER)
+        self.set_size_request (700, 500)
+        self.set_position (Gtk.WindowPosition.CENTER)
         self.set_title(_("Installer"))
         self.set_icon_name("system-software-install")
         self._init_theme()
+
 
         boxen = Gtk.HeaderBar()
         boxen.set_show_close_button(True)
@@ -69,15 +72,20 @@ class InstallerWindow(Gtk.Window):
         self.show_all()
 
     def _init_theme(self):
+        # TEMPORARY: Needs to be read from config
+        theme = config[UI_THEME]
+        self.get_settings().set_string_property("gtk-icon-theme-name", theme["IconTheme"], "0")
+        self.get_settings().set_string_property("gtk-theme-name", theme["Widgets"], "Adwaita")
+        self.use_symbolic = theme["SymbolicIcons"].lower() == "true"
+
+        if theme["DarkControls"].lower() == "true":
+            self.get_settings().set_property("gtk-application-prefer-dark-theme", True)
+
         context = self.get_style_context()
         css_provider = Gtk.CssProvider()
-        if os.path.exists("%s/styling.css" % RESOURCE_DIR):
-            css_provider.load_from_path("%s/styling.css" % RESOURCE_DIR)
-        else:
-            css_provider.load_from_path("data/styling.css")
+        css_provider.load_from_path('%s/styling.css' % RESOURCE_DIR)
         screen = Gdk.Screen.get_default()
-        context.add_provider_for_screen(
-            screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+        context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
     def create_intro_page(self):
         layout = Gtk.VBox()
@@ -90,7 +98,7 @@ class InstallerWindow(Gtk.Window):
         header = Gtk.HBox()
         layout.pack_start(header, False, True, 0)
 
-        layout.pack_start(label_widg, True, True, 0)
+        layout.pack_start(label_widg, True, True, 0)        
 
         self.listbox = Gtk.ListBox()
         self.rows = dict()
@@ -98,15 +106,9 @@ class InstallerWindow(Gtk.Window):
         row = Gtk.HBox(5)
         button = self.nice_button("Install Solus", "installsolus192.png")
         row.pack_start(button, False, False, 0)
-        button.connect(
-            "clicked",
-            lambda x: self.stack.set_visible_child_name("install"))
-        button = self.nice_button(
-            "Continue using the live preview",
-            "livepreview192.png")
-        button.connect(
-            "clicked",
-            lambda x: self.stack.set_visible_child_name("live"))
+        button.connect("clicked", lambda x: self.stack.set_visible_child_name("install"))
+        button = self.nice_button("Continue using the live preview", "livepreview192.png")
+        button.connect("clicked", lambda x: self.stack.set_visible_child_name("live"))
         row.pack_start(button, False, False, 0)
 
         layout.pack_end(row, True, True, 0)
