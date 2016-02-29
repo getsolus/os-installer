@@ -299,7 +299,7 @@ class DiskPage(BasePage):
             while (partition is not None):
                 fs = partition.fileSystem
                 if fs is not None:
-                    if fs.type in ["fat", "fat32"]:
+                    if fs.type in ["fat", "fat32", "fat16", "vfat", "fat12"]:
                         f = partition.getFlag(parted.PARTITION_BOOT)
                         if f:
                             if partition.path not in esp:
