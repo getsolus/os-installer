@@ -366,7 +366,8 @@ class InstallerEngine:
             our_current += 1
             self.update_progress(total=our_total, current=our_current, message=_("Setting timezone"))
             timezonepath = "/usr/share/zoneinfo/%s" % setup.timezone
-            self.do_run_in_chroot("ln -s %s /etc/localtime" % timezonepath)
+            self.do_run_in_chroot("rm /etc/localtime")
+            self.do_run_in_chroot("ln -sf %s /etc/localtime" % timezonepath)
 
             # Set the keyboard layout
             print " --> Setting keyboard layout"
