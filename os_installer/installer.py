@@ -46,7 +46,7 @@ class InstallerEngine:
         
     def step_format_partitions(self, setup):        
         for partition in setup.partitions:                    
-            if(partition.format_as is not None and partition.format_as != ""):                
+            if partition.format_as is not None and partition.format_as != "":                
                 # report it. should grab the total count of filesystems to be formatted ..
                 self.update_progress(total=5, current=1, pulse=True, message=_("Formatting %(partition)s as %(format)s..." % {'partition':partition.partition.path, 'format':partition.format_as}))
                 
@@ -84,7 +84,7 @@ class InstallerEngine:
                 
         # Mount the target partition
         for partition in setup.partitions:                    
-            if(partition.mount_as is not None and partition.mount_as != ""):   
+            if partition.mount_as is not None and partition.mount_as != "":   
                   if partition.mount_as == "/":
                         self.update_progress(total=5, current=5, message=_("Mounting %(partition)s on %(mountpoint)s") % {'partition':partition.partition.path, 'mountpoint':"/target/"})
                         print " ------ Mounting %s on %s" % (partition.partition.path, "/target/")
@@ -93,7 +93,7 @@ class InstallerEngine:
         
         # Mount the other partitions        
         for partition in setup.partitions:
-            if(partition.mount_as is not None and partition.mount_as != "" and partition.mount_as != "/" and partition.mount_as != "swap"):
+            if partition.mount_as is not None and partition.mount_as != "" and partition.mount_as != "/" and partition.mount_as != "swap":
                 print " ------ Mounting %s on %s" % (partition.partition.path, "/target" + partition.mount_as)
                 os.system("mkdir -p /target" + partition.mount_as)
                 self.do_mount(partition.partition.path, "/target" + partition.mount_as, partition.type, None)
@@ -299,7 +299,7 @@ class InstallerEngine:
             our_current += 1
             self.update_progress(total=our_total, current=our_current, message=_("Writing filesystem mount information"))
             # make sure fstab has default /proc and /sys entries
-            if(not os.path.exists("/target/etc/fstab")):
+            if not os.path.exists("/target/etc/fstab"):
                 os.system("echo \"#### Static Filesystem Table File\" > /target/etc/fstab")
             fstab = open("/target/etc/fstab", "a")
             fstab.write("proc\t/proc\tproc\tdefaults\t0\t0\n")
