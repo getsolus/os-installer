@@ -304,23 +304,26 @@ class InstallerEngine:
             fstab = open("/target/etc/fstab", "a")
             fstab.write("proc\t/proc\tproc\tdefaults\t0\t0\n")
             for partition in setup.partitions:
-                if (partition.mount_as is not None and partition.mount_as != "None"):
+                if partition.mount_as is not None and partition.mount_as != "None":
                     partition_uuid = self.get_uuid(partition.partition.path)
-                                        
-                    fstab.write("# %s\n" % (partition.partition.path))                            
-                    
-                    if(partition.mount_as == "/"):
-                        fstab_fsck_option = "1"
-                        self.root_partition = partition_uuid
-                    else:
-                        fstab_fsck_option = "0" 
-                                            
-                    if("ext" in partition.type):
+
+                    # systemd/initramfs take care of /
+                    if partition.mount_as == "/":
+                        continue
+
+                    # systemd auto-detects swap on GPT systems
+                    if partition.type == "swap" and partition.partition.disk is not None and partition.partition.disk.type == "gpt":
+                        continue
+
+                    if "ext" in partition.type:
                         fstab_mount_options = "rw,errors=remount-ro"
                     else:
                         fstab_mount_options = "defaults"
-                        
-                    if(partition.type == "swap"):                    
+
+                    fstab.write("# %s\n" % (partition.partition.path))
+
+                    # MBR swap
+                    if partition.type == "swap":
                         fstab.write("%s\tswap\tswap\tsw\t0\t0\n" % partition_uuid)
                     else:                                                    
                         fstab.write("%s\t%s\t%s\t%s\t%s\t%s\n" % (partition_uuid, partition.mount_as, partition.type, fstab_mount_options, "0", fstab_fsck_option))
