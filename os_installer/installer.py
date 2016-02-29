@@ -281,7 +281,9 @@ class InstallerEngine:
             # Add all users
             newusers = open("/target/tmp/newusers.conf", "w")
             for user in setup.users:
-                groups = "-G sudo,audio,video,cdrom" if user.admin else "-G audio,video,cdrom"
+                groups = "audio,video,cdrom,lpadmin"
+                if user.admin:
+                    groups = "sudo,%s" % groups
                 cmd = "useradd -s %s -c \'%s\' %s -m %s" % ("/bin/bash", user.realname, groups, user.username)
                 self.do_run_in_chroot(cmd)
                             
