@@ -8,9 +8,9 @@ import stat
 import commands
 import sys
 import parted
-from configobj import ConfigObj
 
 from resources import RESOURCE_DIR
+from resources import LIVE_USER
 
 gettext.install("osinstaller", "/usr/share/locale")
 
@@ -21,9 +21,7 @@ class InstallerEngine:
     efi_mode = False
 
     def __init__(self):
-        self.conf_file = '/etc/os-installer/install.conf'
-        configuration = ConfigObj(self.conf_file)     
-        self.live_user = configuration['Configuration']['LiveUser']
+        self.live_user = LIVE_USER
 
         self.media1 = "/run/initramfs/live/LiveOS/squashfs.img"
         self.media_type1 = "squashfs"

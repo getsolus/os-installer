@@ -21,13 +21,9 @@
 #  MA 02110-1301, USA.
 #  
 #
-from configobj import ConfigObj
-
-config = ConfigObj("/etc/os-installer/install.conf")
-
-DISTRO_NAME = config["Branding"]["Name"]
-DISTRO_VERSION = config["Branding"]["Version"]
-UI_THEME = config["Branding"]["Theme"]
+DISTRO_NAME = "Solus Operating System"
+DISTRO_VERSION = "1.1"
 
 RESOURCE_DIR = "/usr/share/os-installer"
 
+LIVE_USER = "live"
