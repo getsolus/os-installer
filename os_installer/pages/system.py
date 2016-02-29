@@ -26,8 +26,7 @@ from gi.repository import Gtk
 from basepage import BasePage
 import re
 
-ValidHostnameRegex = \
-"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$";
+ValidHostnameRegex = "^[a-z_][a-z0-9_-]*[$]?$"
 
 class SystemPage(BasePage):
 
