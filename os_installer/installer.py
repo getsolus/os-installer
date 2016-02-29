@@ -282,6 +282,7 @@ class InstallerEngine:
                 groups = "audio,video,cdrom,lpadmin"
                 if user.admin:
                     groups = "sudo,%s" % groups
+                groups = "-G %s" % groups
                 cmd = "useradd -s %s -c \'%s\' %s -m %s" % ("/bin/bash", user.realname, groups, user.username)
                 self.do_run_in_chroot(cmd)
                             
