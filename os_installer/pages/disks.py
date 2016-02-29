@@ -371,7 +371,13 @@ class DiskPage(BasePage):
                                         if os.path.exists(os.path.join(mount_point, 'etc/lsb-release')):
                                             last_added_partition.description = commands.getoutput("cat " + os.path.join(mount_point, 'etc/lsb-release') + " | grep DISTRIB_DESCRIPTION").replace('DISTRIB_DESCRIPTION', '').replace('=', '').replace('"', '').strip()                                    
                                         if os.path.exists(os.path.join(mount_point, 'Windows/servicing/Version')):
-                                            version = commands.getoutput("ls %s" % os.path.join(mount_point, 'Windows/servicing/Version'))                                    
+                                            version = commands.getoutput("ls %s" % os.path.join(mount_point, 'Windows/servicing/Version'))
+                                            if version.startswith("10."):
+                                                last_added_partition.description = "Windows 10"
+                                            elif version.startswith("6.3"):
+                                                last_added_partition.description = "Windows 8.1"
+                                            elif version.startswith("6.2"):
+                                                last_added_partition.description = "Windows 8"
                                             if version.startswith("6.1"):
                                                 last_added_partition.description = "Windows 7"
                                             elif version.startswith("6.0"):
