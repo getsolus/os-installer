@@ -309,6 +309,7 @@ class InstallerEngine:
 
                     # systemd/initramfs take care of /
                     if partition.mount_as == "/":
+                        self.root_partition = partition_uuid
                         continue
 
                     # systemd auto-detects swap on GPT systems
