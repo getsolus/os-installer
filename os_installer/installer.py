@@ -506,14 +506,14 @@ EndSection\n""" % (setup.keyboard_model, setup.keyboard_layout))
             if not os.path.exists(dirn):
                 os.makedirs(dirn)
             with open(entfile, "w") as defconf:
-                defconf.write("default solus\ntimeout 4\n")
+                defconf.write("timeout 4\ndefault solus\n")
 
         # Write the Solus entry
         solfile = "/target/boot/efi/loader/entries/solus.conf"
         if not os.path.exists(os.path.dirname(solfile)):
             os.makedirs(os.path.dirname(solfile))
         with open(solfile, "w") as solconf:
-            solconf.write("title Solus Operating System\nlinux /solus/kernel\ninitrd /solus/initramfs\noptions root=%s quiet\n" % self.root_partition)
+            solconf.write("title Solus Operating System 1.1\nlinux /solus/kernel\ninitrd /solus/initramfs\noptions root=%s quiet ro\n" % self.root_partition)
 
         # Now install the Solus kernel/initramfs.
         kver = os.uname()[2]
