@@ -67,6 +67,15 @@ class InstallerEngine:
                 p = Popen(cmd, shell=True)
                 p.wait() # this blocks
                 partition.type = partition.format_as
+
+                # Now set the mount type
+                if partition.format_as in ["ext3", "ext4"]:
+                    cmd = "tune2fs -c 31 {}".format(partition.partition_path)
+                    try:
+                        p = Popen(cmd, shell=True)
+                        p.wait()
+                    except Exception as e:
+                        print("Failed setting mount-count: {}".format(e)
                                         
     def step_mount_partitions(self, setup):
         # Mount the installation media
