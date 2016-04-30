@@ -277,7 +277,7 @@ class InstallerEngine:
             # Again Solus specific, but remove the installer from the image
             our_current += 1
             self.update_progress(total=our_total, current=our_current, message=_("Removing live configuration (installer)"))
-            self.do_run_in_chroot("eopkg remove os-installer --ignore-comar")
+            self.do_run_in_chroot("eopkg remove os-installer budgie-desktop-branding-livecd --ignore-comar")
             # Ensure we clean this due to livecd overrides
             self.do_run_in_chroot("glib-compile-schemas /usr/share/glib-2.0/schemas")
 
