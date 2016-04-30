@@ -75,7 +75,7 @@ class InstallerEngine:
                         p = Popen(cmd, shell=True)
                         p.wait()
                     except Exception as e:
-                        print("Failed setting mount-count: {}".format(e)
+                        print("Failed setting mount-count: {}".format(e))
                                         
     def step_mount_partitions(self, setup):
         # Mount the installation media
