@@ -12,13 +12,52 @@
 #
 
 from .basepage import BasePage
+from gi.repository import Gtk
 
 
 class InstallerKeyboardPage(BasePage):
     """ Basic location detection page. """
 
+    tview_layouts = None
+    tview_variants = None
+
     def __init__(self):
         BasePage.__init__(self)
+
+        # Hold everything up in a grid
+        grid = Gtk.Grid()
+        self.pack_start(grid, True, True, 0)
+        grid.set_column_spacing(6)
+        grid.set_row_spacing(6)
+        grid.set_margin_start(32)
+        grid.set_margin_end(32)
+
+        # Init main layouts view
+        self.tview_layouts = Gtk.TreeView()
+        scroll = Gtk.ScrolledWindow(None, None)
+        scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        scroll.add(self.tview_layouts)
+        scroll.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        scroll.set_hexpand(True)
+        scroll.set_vexpand(True)
+        grid.attach(scroll, 0, 0, 1, 1)
+
+        # Variants view
+        self.tview_variants = Gtk.TreeView()
+        scroll = Gtk.ScrolledWindow(None, None)
+        scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        scroll.add(self.tview_variants)
+        scroll.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        scroll.set_hexpand(True)
+        scroll.set_vexpand(True)
+        grid.attach(scroll, 1, 0, 1, 1)
+
+        # Input tester
+        inp_entry = Gtk.Entry()
+        t_str = "Type here to test your keyboard layout"
+        inp_entry.set_placeholder_text(t_str)
+
+        grid.attach(inp_entry, 0, 1, 2, 1)
 
     def get_title(self):
         return "Choose a keyboard layout"
