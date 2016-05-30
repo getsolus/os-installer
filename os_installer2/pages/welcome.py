@@ -17,13 +17,17 @@ from os_installer2 import join_resource_path as jrp
 
 class InstallerWelcomePage(Gtk.EventBox):
 
-    def __init__(self):
+    owner = None
+
+    def __init__(self, owner):
         Gtk.EventBox.__init__(self)
 
         self.grid = Gtk.Grid()
         self.grid.set_row_spacing(32)
         self.grid.set_column_spacing(64)
         self.add(self.grid)
+
+        self.owner = owner
 
         # TODO: Stuff this into CSS
         label = Gtk.Label.new("<span font=\"20.5\">%s</span>" % "Welcome")
@@ -40,6 +44,7 @@ class InstallerWelcomePage(Gtk.EventBox):
         # Install
         img = Gtk.Image.new_from_file(jrp("install-solus-192-arc-style.png"))
         button = Gtk.Button()
+        button.connect("clicked", self.on_install_clicked)
         button.get_style_context().add_class("flat")
         button.add(img)
         self.grid.attach(button, 0, 1, 1, 1)
@@ -52,6 +57,8 @@ class InstallerWelcomePage(Gtk.EventBox):
         # Continue
         img = Gtk.Image.new_from_file(jrp("livepreview-192-arc-style.png"))
         button = Gtk.Button()
+        button.connect("clicked", self.on_return_clicked)
+
         button.add(img)
         button.get_style_context().add_class("flat")
         self.grid.attach(button, 1, 1, 1, 1)
@@ -61,4 +68,10 @@ class InstallerWelcomePage(Gtk.EventBox):
         label.set_use_markup(True)
         self.grid.attach(label, 1, 2, 1, 1)
 
-        # Construct the buttons
+    def on_install_clicked(self, btn, udata=None):
+        """ Start the installer fully """
+        self.owner.phase_install()
+
+    def on_return_clicked(self, btn, udata=None):
+        """ Continue live session """
+        self.owner.phase_live()

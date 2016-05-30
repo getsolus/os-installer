@@ -12,15 +12,19 @@
 #
 from gi.repository import Gtk
 from .pages.welcome import InstallerWelcomePage
+from .pages.language import InstallerLanguagePage
 from . import join_resource_path as jrp
 
 
 class MainWindow(Gtk.ApplicationWindow):
 
     stack = None
+    installer_stack = None
+    application = None
 
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
+        self.application = app
 
         headerbar = Gtk.HeaderBar()
         headerbar.set_show_close_button(True)
@@ -35,10 +39,26 @@ class MainWindow(Gtk.ApplicationWindow):
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_default_size(800, 600)
 
+        # Main view
         self.stack = Gtk.Stack()
+        ltr = Gtk.StackTransitionType.SLIDE_LEFT_RIGHT
+        self.stack.set_transition_type(ltr)
         self.add(self.stack)
 
-        self.stack.add_named(InstallerWelcomePage(), "welcome")
-        # TODO: Load other pages here
+        self.stack.add_named(InstallerWelcomePage(self), "welcome")
+        self.installer_stack = Gtk.Stack()
+        self.installer_stack.set_transition_type(ltr)
+        self.stack.add_named(self.installer_stack, "install")
+
+        # Load other pages here into installer_stack
+        self.installer_stack.add_named(InstallerLanguagePage(), "language")
 
         self.show_all()
+
+    def phase_install(self):
+        self.stack.set_visible_child_name("install")
+
+    def phase_live(self):
+        """ Consider switching to another view showing how to restart the
+            installer ? """
+        self.application.quit()
