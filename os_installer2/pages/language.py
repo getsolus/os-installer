@@ -23,11 +23,11 @@ class LcLabel(Gtk.Label):
         self.set_text(lc_code)
         self.set_halign(Gtk.Align.START)
 
-        transl = GnomeDesktop.get_language_from_locale(lc_code, lc_code)
-        # untransl = GnomeDesktop.get_language_from_locale(lc_code, None)
+        # transl = GnomeDesktop.get_language_from_locale(lc_code, lc_code)
+        untransl = GnomeDesktop.get_language_from_locale(lc_code, None)
         self.set_property("margin", 10)
 
-        self.set_text(transl)
+        self.set_text(untransl)
 
         self.show()
 
