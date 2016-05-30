@@ -11,9 +11,12 @@
 #  (at your option) any later version.
 #
 from gi.repository import Gtk
+from .pages.welcome import InstallerWelcomePage
 
 
 class MainWindow(Gtk.ApplicationWindow):
+
+    stack = None
 
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
@@ -26,5 +29,11 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_default_size(800, 600)
+
+        self.stack = Gtk.Stack()
+        self.add(self.stack)
+
+        self.stack.add_named(InstallerWelcomePage(), "welcome")
+        # TODO: Load other pages here
 
         self.show_all()
