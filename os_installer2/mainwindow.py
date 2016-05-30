@@ -12,6 +12,7 @@
 #
 from gi.repository import Gtk
 from .pages.welcome import InstallerWelcomePage
+from . import join_resource_path as jrp
 
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -24,6 +25,10 @@ class MainWindow(Gtk.ApplicationWindow):
         headerbar = Gtk.HeaderBar()
         headerbar.set_show_close_button(True)
         self.set_titlebar(headerbar)
+        try:
+            self.set_icon_from_file(jrp("install-solus-192-arc-style.svg"))
+        except:
+            pass
 
         self.set_title("Installer")
 
