@@ -12,13 +12,58 @@
 #
 
 from .basepage import BasePage
+from gi.repository import Gtk, GnomeDesktop
+
+
+class LcLabel(Gtk.Label):
+    """ View label for locales, save code duping """
+
+    def __init__(self, lc_code):
+        Gtk.Label.__init__(self)
+        self.set_text(lc_code)
+        self.set_halign(Gtk.Align.START)
+
+        transl = GnomeDesktop.get_language_from_locale(lc_code, lc_code)
+        # untransl = GnomeDesktop.get_language_from_locale(lc_code, None)
+        self.set_property("margin", 10)
+
+        self.set_text(transl)
+
+        self.show()
 
 
 class InstallerLanguagePage(BasePage):
     """ Basic language page. """
 
+    # Scrollbox
+    scroll = None
+
+    # Main content
+    listbox = None
+
     def __init__(self):
         BasePage.__init__(self)
+
+        self.scroll = Gtk.ScrolledWindow(None, None)
+        self.scroll.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        self.scroll.set_border_width(40)
+        self.add(self.scroll)
+
+        self.listbox = Gtk.ListBox()
+        self.scroll.add(self.listbox)
+        self.scroll.set_halign(Gtk.Align.CENTER)
+
+        # Fix up policy
+        self.scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        self.init_view()
+
+    def init_view(self):
+        """ Do the hard work of actually setting up the view """
+        locales = sorted(GnomeDesktop.get_all_locales())
+        for lc in locales:
+            item = LcLabel(lc)
+            self.listbox.add(item)
 
     def get_title(self):
         return "Choose a language"

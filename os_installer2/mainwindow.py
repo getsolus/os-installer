@@ -14,6 +14,7 @@ from gi.repository import Gtk
 from .pages.welcome import InstallerWelcomePage
 from .pages.language import InstallerLanguagePage
 from . import join_resource_path as jrp
+import sys
 
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -51,7 +52,11 @@ class MainWindow(Gtk.ApplicationWindow):
         self.stack.add_named(self.installer_stack, "install")
 
         # Load other pages here into installer_stack
-        self.installer_stack.add_named(InstallerLanguagePage(), "language")
+        try:
+            self.installer_stack.add_named(InstallerLanguagePage(), "language")
+        except Exception as e:
+            print("Fatal error during startup: %s" % e)
+            sys.exit(1)
 
         self.show_all()
 
