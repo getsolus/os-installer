@@ -22,7 +22,7 @@ class InstallerWelcomePage(Gtk.EventBox):
 
         self.grid = Gtk.Grid()
         self.grid.set_row_spacing(32)
-        self.grid.set_column_spacing(32)
+        self.grid.set_column_spacing(64)
         self.add(self.grid)
 
         # TODO: Stuff this into CSS
