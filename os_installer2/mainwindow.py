@@ -26,6 +26,9 @@ class MainWindow(Gtk.ApplicationWindow):
     prev_button = None
     next_button = None
 
+    pages = list()
+    page_index = 0
+
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
@@ -71,13 +74,18 @@ class MainWindow(Gtk.ApplicationWindow):
         bbox.set_margin_end(20)
         self.prev_button.set_property("margin", 4)
         self.next_button.set_property("margin", 4)
+
+        # Hook up actions
+        self.prev_button.connect("clicked", lambda x: self.prev_page())
+        self.next_button.connect("clicked", lambda x: self.next_page())
         # Load other pages here into installer_stack
         try:
-            self.installer_stack.add_named(InstallerLanguagePage(), "language")
+            self.add_installer_page(InstallerLanguagePage())
         except Exception as e:
             print("Fatal error during startup: %s" % e)
             sys.exit(1)
 
+        self.update_current_page()
         self.show_all()
 
     def phase_install(self):
@@ -87,3 +95,30 @@ class MainWindow(Gtk.ApplicationWindow):
         """ Consider switching to another view showing how to restart the
             installer ? """
         self.application.quit()
+
+    def add_installer_page(self, page):
+        """ Work a page into the set """
+        self.installer_stack.add_named(page, page.get_name())
+        self.pages.append(page)
+
+    def next_page(self):
+        """ Move to next page """
+        index = self.page_index + 1
+        if index >= len(self.pages):
+            return
+        print("Moving to page %s" % index)
+        self.page_index = index
+        self.update_current_page()
+
+    def prev_page(self):
+        """ Move to previous page """
+        index = self.page_index - 1
+        if index < 0:
+            return
+        self.page_index = index
+        self.update_current_page()
+
+    def update_current_page(self):
+        page = self.pages[self.page_index]
+        # TODO: Re-seed
+        self.installer_stack.set_visible_child_name(page.get_name())

@@ -18,10 +18,13 @@ from gi.repository import Gtk, GnomeDesktop
 class LcLabel(Gtk.Label):
     """ View label for locales, save code duping """
 
+    lc_code = None
+
     def __init__(self, lc_code):
         Gtk.Label.__init__(self)
         self.set_text(lc_code)
         self.set_halign(Gtk.Align.START)
+        self.lc_code = lc_code
 
         # transl = GnomeDesktop.get_language_from_locale(lc_code, lc_code)
         untransl = GnomeDesktop.get_language_from_locale(lc_code, None)
