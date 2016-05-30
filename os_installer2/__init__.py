@@ -10,3 +10,7 @@
 #  the Free Software Foundation, either version 2 of the License, or
 #  (at your option) any later version.
 #
+
+import gi.repository
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gio', '2.0')
