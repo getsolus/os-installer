@@ -37,8 +37,8 @@ class BasePage(Gtk.VBox):
 
         self.pack_start(header, False, True, 10)
 
-        self.set_margin_start(40)
-        self.set_margin_end(40)
+        self.set_margin_start(20)
+        self.set_margin_end(20)
 
     def get_title(self):
         return None

@@ -30,7 +30,6 @@ class InstallerKeyboardPage(BasePage):
         grid.set_column_spacing(6)
         grid.set_row_spacing(6)
         grid.set_margin_start(32)
-        grid.set_margin_end(32)
 
         # Init main layouts view
         self.tview_layouts = Gtk.TreeView()

@@ -73,9 +73,9 @@ class MainWindow(Gtk.ApplicationWindow):
         bbox.add(self.prev_button)
         bbox.add(self.next_button)
         bbox.set_margin_bottom(20)
-        bbox.set_margin_end(20)
-        self.prev_button.set_property("margin", 4)
-        self.next_button.set_property("margin", 4)
+        bbox.set_margin_end(30)
+        self.prev_button.set_property("margin-start", 4)
+        self.next_button.set_property("margin-start", 4)
 
         # Hook up actions
         self.prev_button.connect("clicked", lambda x: self.prev_page())
