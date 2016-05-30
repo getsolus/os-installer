@@ -12,9 +12,7 @@
 #
 
 from .mainwindow import MainWindow
-from gi.repository import Gio, Gtk, Gdk
-
-import os
+from gi.repository import Gio, Gtk
 
 APP_ID = "com.solus_project.Installer"
 
