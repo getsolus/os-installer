@@ -21,7 +21,10 @@ class MainWindow(Gtk.ApplicationWindow):
 
     stack = None
     installer_stack = None
+    installer_page = None
     application = None
+    prev_button = None
+    next_button = None
 
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
@@ -46,11 +49,28 @@ class MainWindow(Gtk.ApplicationWindow):
         self.stack.set_transition_type(ltr)
         self.add(self.stack)
 
-        self.stack.add_named(InstallerWelcomePage(self), "welcome")
+        # Main "install" page
+        self.installer_page = Gtk.VBox(0)
         self.installer_stack = Gtk.Stack()
-        self.installer_stack.set_transition_type(ltr)
-        self.stack.add_named(self.installer_stack, "install")
+        self.installer_page.pack_start(self.installer_stack, True, True, 0)
 
+        self.stack.add_named(InstallerWelcomePage(self), "welcome")
+        self.installer_stack.set_transition_type(ltr)
+        self.stack.add_named(self.installer_page, "install")
+
+        # nav buttons
+        bbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
+        bbox.set_layout(Gtk.ButtonBoxStyle.SPREAD)
+        bbox.set_halign(Gtk.Align.END)
+        self.installer_page.pack_end(bbox, False, 0, 0)
+        self.prev_button = Gtk.Button.new_with_label("Previous")
+        self.next_button = Gtk.Button.new_with_label("Next")
+        bbox.add(self.prev_button)
+        bbox.add(self.next_button)
+        bbox.set_margin_bottom(20)
+        bbox.set_margin_end(20)
+        self.prev_button.set_property("margin", 4)
+        self.next_button.set_property("margin", 4)
         # Load other pages here into installer_stack
         try:
             self.installer_stack.add_named(InstallerLanguagePage(), "language")
