@@ -37,6 +37,13 @@ class KbLabel(Gtk.HBox):
         self.layout = info[3]
         self.variant = info[4]
 
+        self.language = info[2]
+        self.country = info[3]
+
+        self.extras = info[4]
+
+        print("Made a %s %s %s %s" % (info[1], info[2], info[3], info[4]))
+
         self.set_property("margin", 10)
 
         lab.set_text(self.dname)
@@ -56,6 +63,8 @@ class InstallerKeyboardPage(BasePage):
     layouts = None
     info = None
     had_init = False
+    xkb = None
+    shown_layouts = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -91,12 +100,86 @@ class InstallerKeyboardPage(BasePage):
         if self.had_init:
             return
         self.had_init = True
-        xkb = GnomeDesktop.XkbInfo()
-        layouts = xkb.get_all_layouts()
+        self.xkb = GnomeDesktop.XkbInfo()
+
+    
+        items = GnomeDesktop.parse_locale(self.info.locale)
+        if items[0]:
+            lang = items[1];
+            country = items[2]
+            print(items[3])
+            print(items[4])
+        else:
+            # Shouldn't ever happen, but ya never know.
+            lang = "en"
+            country = "US"
+        print("Grabbing for %s %s %s" % (lang, country, self.info.locale))
+
+        l = self.info.locale
+        success, type_, id_ = GnomeDesktop.get_input_source_from_locale(l)
+
+        kbset = set()
+        kbset.update(self.xkb.get_layouts_for_country(country))
+        kbset.update(self.xkb.get_layouts_for_language(lang))
+
+        major_layouts = self.xkb.get_all_layouts()
+        for item in major_layouts:
+            xkbinf = self.xkb.get_layout_info(item)
+            if not xkbinf[0]:
+                continue
+            if xkbinf[3].lower() == country.lower():
+                kbset.add(item)
+
+        layouts = list()
+        for x in kbset:
+            info = self.xkb.get_layout_info(x)
+            if not info[0]:
+                continue
+            widget = KbLabel(x, info)
+            layouts.append(widget)
+
+        native = filter(lambda x: x.country.lower() == country.lower(), layouts)
+
+        primary = None
+
+        if not native:
+            native = layouts
+            for item in native:
+                if item.layout[:2].lower() == lang.lower() and not item.extras:
+                    print("Primary set" + item.sname)
+                    primary = item
+        else:
+            for item in native:
+                if not item.extras:
+                    primary = item
+                    break
+
+        if not primary:
+            print("Options: %s" % self.xkb.get_layouts_for_language(lang))
+        else:
+            print("Primary keyboard should be %s" % primary.dname)
+
+        def append_inner(layout, item):
+            if layout in self.shown_layouts:
+                return
+            self.shown_layouts.add(layout)
+            self.layouts.add(item)
+
+        self.shown_layouts = set()
+        if primary:
+            append_inner(primary.kb, primary)
+        for item in native:
+            append_inner(item.kb, item)
+
+    def init_remaining(self):
+        layouts = self.xkb.get_all_layouts()
 
         appends = list()
         for layout in layouts:
-            info = xkb.get_layout_info(layout)
+            # Don't dupe
+            if layout in self.shown_layouts:
+                continue
+            info = self.xkb.get_layout_info(layout)
             success = info[0]
             if not success:
                 continue
