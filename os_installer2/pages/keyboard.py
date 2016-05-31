@@ -123,10 +123,9 @@ class InstallerKeyboardPage(BasePage):
         self.had_init = True
         self.xkb = GnomeDesktop.XkbInfo()
 
-    
         items = GnomeDesktop.parse_locale(self.info.locale)
         if items[0]:
-            lang = items[1];
+            lang = items[1]
             country = items[2]
             print(items[3])
             print(items[4])
@@ -159,7 +158,8 @@ class InstallerKeyboardPage(BasePage):
             widget = KbLabel(x, info)
             layouts.append(widget)
 
-        native = filter(lambda x: x.country.lower() == country.lower(), layouts)
+        c = country.lower()
+        native = filter(lambda x: x.country.lower() == c, layouts)
 
         primary = None
 
@@ -182,6 +182,7 @@ class InstallerKeyboardPage(BasePage):
 
         self.added = 0
         self.extras = list()
+
         def append_inner(layout, item):
             if layout in self.shown_layouts:
                 return
