@@ -12,6 +12,7 @@
 #
 
 from .basepage import BasePage
+from . import default_locales
 from gi.repository import Gtk, GnomeDesktop
 
 
@@ -29,7 +30,7 @@ class LcLabel(Gtk.Label):
 
         # transl = GnomeDesktop.get_language_from_locale(lc_code, lc_code)
         untransl = GnomeDesktop.get_language_from_locale(lc_code, None)
-        self.set_property("margin", 10)
+        self.set_property("margin", 8)
 
         self.dname = untransl
 
@@ -46,6 +47,7 @@ class InstallerLanguagePage(BasePage):
 
     # Main content
     listbox = None
+    moar_button = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -58,17 +60,40 @@ class InstallerLanguagePage(BasePage):
         self.listbox = Gtk.ListBox()
         self.scroll.add(self.listbox)
         self.scroll.set_halign(Gtk.Align.CENTER)
+        self.listbox.set_size_request(500, -1)
 
         # Fix up policy
-        self.scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
 
+        self.moar_button = Gtk.Image.new_from_icon_name("view-more-symbolic",
+                                                         Gtk.IconSize.MENU)
+        self.moar_button.set_property("margin", 8)
         self.init_view()
+        self.listbox.connect_after("row-selected", self.on_row_select)
+
+    def on_row_select(self, lbox, newrb=None):
+        if not newrb:
+            return
+        child = newrb.get_child()
+        if child == self.moar_button:
+            self.init_remaining()
+            return
 
     def init_view(self):
         """ Do the hard work of actually setting up the view """
-        locales = sorted(GnomeDesktop.get_all_locales())
+        for lc in default_locales:
+            self.listbox.add(LcLabel(lc))
+        self.listbox.add(self.moar_button)
+
+    def init_remaining(self):
+        """ Add the rest to the list """
+        self.scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        locales = GnomeDesktop.get_all_locales()
+        self.moar_button.get_parent().hide()
         appends = list()
         for lc in locales:
+            if lc in default_locales:
+                continue
             item = LcLabel(lc)
             appends.append(item)
         appends.sort(key=lambda x: x.dname.lower())
