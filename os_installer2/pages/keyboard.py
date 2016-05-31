@@ -12,14 +12,47 @@
 #
 
 from .basepage import BasePage
-from gi.repository import Gtk
+from gi.repository import Gtk, GnomeDesktop
 
+class KbLabel(Gtk.HBox):
+    """ View label for locales, save code duping """
+
+    kb = None
+    dname = None
+
+    def on_link_activate(self, lbl, udata=None):
+        # Consume link
+        return True
+
+    def __init__(self, kb, info):
+        Gtk.HBox.__init__(self)
+        self.kb = kb
+
+        lab = Gtk.Label("")
+        lab.set_halign(Gtk.Align.START)
+
+        self.dname = info[1]
+        self.sname = info[2]
+        self.layout = info[3]
+        self.variant = info[4]
+    
+        self.set_property("margin", 10)
+
+        lab.set_text(self.dname)
+        self.pack_start(lab, True, True, 0)
+
+        preview = Gtk.Label("<a href=\"preview\">%s</a>" % "Preview")
+        preview.connect("activate-link", self.on_link_activate)
+        preview.set_use_markup(True)
+        self.pack_end(preview, False, False, 0)
+
+        self.show()
 
 class InstallerKeyboardPage(BasePage):
     """ Basic location detection page. """
 
-    tview_layouts = None
-    tview_variants = None
+
+    layouts = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -30,26 +63,16 @@ class InstallerKeyboardPage(BasePage):
         grid.set_column_spacing(6)
         grid.set_row_spacing(6)
         grid.set_margin_start(32)
+        grid.set_halign(Gtk.Align.CENTER)
 
         # Init main layouts view
-        self.tview_layouts = Gtk.TreeView()
+        self.layouts = Gtk.ListBox()
         scroll = Gtk.ScrolledWindow(None, None)
-        scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scroll.add(self.tview_layouts)
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroll.add(self.layouts)
         scroll.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        scroll.set_hexpand(True)
         scroll.set_vexpand(True)
-        grid.attach(scroll, 0, 0, 1, 1)
-
-        # Variants view
-        self.tview_variants = Gtk.TreeView()
-        scroll = Gtk.ScrolledWindow(None, None)
-        scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scroll.add(self.tview_variants)
-        scroll.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        scroll.set_hexpand(True)
-        scroll.set_vexpand(True)
-        grid.attach(scroll, 1, 0, 1, 1)
+        grid.attach(scroll, 0, 0, 2, 1)
 
         # Input tester
         inp_entry = Gtk.Entry()
@@ -57,6 +80,27 @@ class InstallerKeyboardPage(BasePage):
         inp_entry.set_placeholder_text(t_str)
 
         grid.attach(inp_entry, 0, 1, 2, 1)
+
+        self.init_view()
+
+    def init_view(self):
+        """ Initialise ourself from GNOME XKB """
+        xkb = GnomeDesktop.XkbInfo()
+        layouts = xkb.get_all_layouts()
+
+        appends = list()
+        for layout in layouts:
+            info = xkb.get_layout_info(layout)
+            success = info[0]
+            if not success:
+                continue
+
+            widget = KbLabel(layout, info)
+            appends.append(widget)
+        appends.sort(key=lambda x: x.dname.lower())
+        for app in appends:
+            self.layouts.add(app)
+
 
     def get_title(self):
         return "Choose a keyboard layout"
