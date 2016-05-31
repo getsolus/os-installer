@@ -65,6 +65,8 @@ class InstallerKeyboardPage(BasePage):
     had_init = False
     xkb = None
     shown_layouts = None
+    moar_button = None
+    extras = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -94,6 +96,25 @@ class InstallerKeyboardPage(BasePage):
         inp_entry.set_placeholder_text(t_str)
 
         grid.attach(inp_entry, 0, 1, 2, 1)
+
+        self.moar_button = Gtk.Image.new_from_icon_name("view-more-symbolic",
+                                                        Gtk.IconSize.MENU)
+        self.moar_button.set_property("margin", 8)
+
+        self.layouts.connect_after("row-selected", self.on_row_select)
+
+    def on_row_select(self, lbox, newrb=None):
+        """ Handle selections of locales """
+        self.info.keyboard = None
+        if not newrb:
+            return
+        child = newrb.get_child()
+        if child == self.moar_button:
+            self.init_remaining()
+            return
+        self.info.keyboard = child.kb
+        # DEBUG
+        print("Keyboard is now %s" % self.info.keyboard)
 
     def init_view(self):
         """ Initialise ourself from GNOME XKB """
@@ -159,22 +180,43 @@ class InstallerKeyboardPage(BasePage):
         else:
             print("Primary keyboard should be %s" % primary.dname)
 
+        self.added = 0
+        self.extras = list()
         def append_inner(layout, item):
             if layout in self.shown_layouts:
                 return
+            if self.added >= 5:
+                self.extras.append(item)
+                return
             self.shown_layouts.add(layout)
             self.layouts.add(item)
+            self.added += 1
 
         self.shown_layouts = set()
         if primary:
             append_inner(primary.kb, primary)
         for item in native:
             append_inner(item.kb, item)
+        for item in layouts:
+            append_inner(item.kb, item)
+
+        self.moar_button.show_all()
+        self.layouts.add(self.moar_button)
 
     def init_remaining(self):
         layouts = self.xkb.get_all_layouts()
 
+        self.moar_button.get_parent().hide()
+
         appends = list()
+        # Deal with extras first
+        self.extras = sorted(self.extras, key=lambda x: x.dname)
+        for item in self.extras:
+            if item.kb in self.shown_layouts:
+                continue
+            self.shown_layouts.add(item.dname)
+            self.layouts.add(item)
+
         for layout in layouts:
             # Don't dupe
             if layout in self.shown_layouts:
