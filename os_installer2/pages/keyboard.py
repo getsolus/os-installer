@@ -75,6 +75,8 @@ class InstallerKeyboardPage(BasePage):
         scroll.set_vexpand(True)
         grid.attach(scroll, 0, 0, 2, 1)
 
+        self.layouts.set_size_request(500, -1)
+
         # Input tester
         inp_entry = Gtk.Entry()
         t_str = "Type here to test your keyboard layout"
