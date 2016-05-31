@@ -13,12 +13,31 @@
 
 from .basepage import BasePage
 
+from gi.repository import TimezoneMap, Gtk
+
 
 class InstallerTimezonePage(BasePage):
     """ timezone setup page. """
 
+    tmap = None
+    locations = None
+
     def __init__(self):
         BasePage.__init__(self)
+        self.frame = Gtk.AspectFrame()
+        self.frame.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        self.tmap = TimezoneMap.TimezoneMap()
+        self.pack_start(self.frame, True, True, 0)
+        self.frame.set_margin_end(20)
+        self.frame.set_margin_start(20)
+        self.frame.add(self.tmap)
+
+        self.locations = Gtk.Entry()
+        self.locations.set_margin_end(10)
+        self.locations.set_margin_top(10)
+        self.locations.set_margin_end(35)
+        self.locations.set_margin_start(35)
+        self.pack_end(self.locations, False, False, 0)
 
     def get_title(self):
         return "Choose your timezone"

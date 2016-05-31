@@ -16,6 +16,7 @@ import os
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gio', '2.0')
 gi.require_version('GnomeDesktop', '3.0')
+gi.require_version('TimezoneMap', '1.0')
 
 
 def get_resource_path():
