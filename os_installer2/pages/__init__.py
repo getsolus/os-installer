@@ -10,3 +10,15 @@
 #  the Free Software Foundation, either version 2 of the License, or
 #  (at your option) any later version.
 #
+
+# Credit: gnome-inital-setup
+default_locales = [
+    "en_US.UTF-8",
+    "en_GB.UTF-8",
+    "fr_FR.UTF-8",
+    "es_ES.UTF-8",
+    "zh_CN.UTF-8",
+    "ja_JP.UTF-8",
+    "ru_RU.UTF-8",
+    "ar_EG.UTF-8"
+]
