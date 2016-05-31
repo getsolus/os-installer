@@ -66,7 +66,7 @@ class InstallerLanguagePage(BasePage):
         self.scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
 
         self.moar_button = Gtk.Image.new_from_icon_name("view-more-symbolic",
-                                                         Gtk.IconSize.MENU)
+                                                        Gtk.IconSize.MENU)
         self.moar_button.set_property("margin", 8)
         self.init_view()
         self.listbox.connect_after("row-selected", self.on_row_select)
