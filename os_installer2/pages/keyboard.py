@@ -14,6 +14,7 @@
 from .basepage import BasePage
 from gi.repository import Gtk, GnomeDesktop
 
+
 class KbLabel(Gtk.HBox):
     """ View label for locales, save code duping """
 
@@ -35,7 +36,7 @@ class KbLabel(Gtk.HBox):
         self.sname = info[2]
         self.layout = info[3]
         self.variant = info[4]
-    
+
         self.set_property("margin", 10)
 
         lab.set_text(self.dname)
@@ -48,9 +49,9 @@ class KbLabel(Gtk.HBox):
 
         self.show()
 
+
 class InstallerKeyboardPage(BasePage):
     """ Basic location detection page. """
-
 
     layouts = None
 
@@ -100,7 +101,6 @@ class InstallerKeyboardPage(BasePage):
         appends.sort(key=lambda x: x.dname.lower())
         for app in appends:
             self.layouts.add(app)
-
 
     def get_title(self):
         return "Choose a keyboard layout"
