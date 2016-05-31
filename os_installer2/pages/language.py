@@ -19,6 +19,7 @@ class LcLabel(Gtk.Label):
     """ View label for locales, save code duping """
 
     lc_code = None
+    untransl = None
 
     def __init__(self, lc_code):
         Gtk.Label.__init__(self)
@@ -29,6 +30,8 @@ class LcLabel(Gtk.Label):
         # transl = GnomeDesktop.get_language_from_locale(lc_code, lc_code)
         untransl = GnomeDesktop.get_language_from_locale(lc_code, None)
         self.set_property("margin", 10)
+
+        self.dname = untransl
 
         self.set_text(untransl)
 
@@ -64,8 +67,12 @@ class InstallerLanguagePage(BasePage):
     def init_view(self):
         """ Do the hard work of actually setting up the view """
         locales = sorted(GnomeDesktop.get_all_locales())
+        appends = list()
         for lc in locales:
             item = LcLabel(lc)
+            appends.append(item)
+        appends.sort(key=lambda x: x.dname.lower())
+        for item in appends:
             self.listbox.add(item)
 
     def get_title(self):
