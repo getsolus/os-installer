@@ -49,6 +49,8 @@ class InstallerLanguagePage(BasePage):
     listbox = None
     moar_button = None
 
+    info = None
+
     def __init__(self):
         BasePage.__init__(self)
 
@@ -72,12 +74,17 @@ class InstallerLanguagePage(BasePage):
         self.listbox.connect_after("row-selected", self.on_row_select)
 
     def on_row_select(self, lbox, newrb=None):
+        """ Handle selections of locales """
+        self.info.locale = None
         if not newrb:
             return
         child = newrb.get_child()
         if child == self.moar_button:
             self.init_remaining()
             return
+        self.info.locale = child.lc_code
+        # DEBUG
+        print("Locale is now %s" % self.info.locale)
 
     def init_view(self):
         """ Do the hard work of actually setting up the view """
@@ -99,6 +106,10 @@ class InstallerLanguagePage(BasePage):
         appends.sort(key=lambda x: x.dname.lower())
         for item in appends:
             self.listbox.add(item)
+
+    def prepare(self, info):
+        # Nothing to seed with.
+        self.info = info
 
     def get_title(self):
         return "Choose a language"

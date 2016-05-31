@@ -19,6 +19,16 @@ from . import join_resource_path as jrp
 import sys
 
 
+class InstallInfo:
+    """ For tracking purposes between pages """
+
+    # Chosen locale
+    locale = None
+
+    # Chosen keyboard
+    keyboard = None
+
+
 class MainWindow(Gtk.ApplicationWindow):
 
     stack = None
@@ -30,6 +40,8 @@ class MainWindow(Gtk.ApplicationWindow):
 
     pages = list()
     page_index = 0
+
+    info = None
 
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
@@ -76,6 +88,8 @@ class MainWindow(Gtk.ApplicationWindow):
         bbox.set_margin_end(30)
         self.prev_button.set_property("margin-start", 4)
         self.next_button.set_property("margin-start", 4)
+
+        self.info = InstallInfo()
 
         # Hook up actions
         self.prev_button.connect("clicked", lambda x: self.prev_page())
@@ -125,4 +139,5 @@ class MainWindow(Gtk.ApplicationWindow):
     def update_current_page(self):
         page = self.pages[self.page_index]
         # TODO: Re-seed
+        page.prepare(self.info)
         self.installer_stack.set_visible_child_name(page.get_name())

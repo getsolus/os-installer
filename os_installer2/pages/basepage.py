@@ -52,7 +52,7 @@ class BasePage(Gtk.VBox):
     def get_primary_answer(self):
         return None
 
-    def prepare(self):
+    def prepare(self, info):
         pass
 
     def seed(self, setup):

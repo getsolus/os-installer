@@ -47,13 +47,15 @@ class KbLabel(Gtk.HBox):
         preview.set_use_markup(True)
         self.pack_end(preview, False, False, 0)
 
-        self.show()
+        self.show_all()
 
 
 class InstallerKeyboardPage(BasePage):
     """ Basic location detection page. """
 
     layouts = None
+    info = None
+    had_init = False
 
     def __init__(self):
         BasePage.__init__(self)
@@ -84,10 +86,11 @@ class InstallerKeyboardPage(BasePage):
 
         grid.attach(inp_entry, 0, 1, 2, 1)
 
-        self.init_view()
-
     def init_view(self):
         """ Initialise ourself from GNOME XKB """
+        if self.had_init:
+            return
+        self.had_init = True
         xkb = GnomeDesktop.XkbInfo()
         layouts = xkb.get_all_layouts()
 
@@ -112,3 +115,8 @@ class InstallerKeyboardPage(BasePage):
 
     def get_icon_name(self):
         return "input-keyboard-symbolic"
+
+    def prepare(self, info):
+        self.info = info
+        print("Catering view based on %s" % self.info.locale)
+        self.init_view()
