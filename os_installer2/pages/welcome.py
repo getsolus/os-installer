@@ -13,14 +13,15 @@
 
 from gi.repository import Gtk
 from os_installer2 import join_resource_path as jrp
+from .basepage import BasePage
 
 
-class InstallerWelcomePage(Gtk.EventBox):
+class InstallerWelcomePage(BasePage):
 
     owner = None
 
     def __init__(self, owner):
-        Gtk.EventBox.__init__(self)
+        BasePage.__init__(self)
 
         self.grid = Gtk.Grid()
         self.grid.set_row_spacing(32)
@@ -29,17 +30,11 @@ class InstallerWelcomePage(Gtk.EventBox):
 
         self.owner = owner
 
-        # TODO: Stuff this into CSS
-        label = Gtk.Label.new("<span font=\"20.5\">%s</span>" % "Welcome")
-        label.set_margin_top(20)
-        label.get_style_context().add_class("dim-label")
-        label.set_use_markup(True)
-        self.grid.attach(label, 0, 0, 2, 1)
+        self.set_halign(Gtk.Align.FILL)
+        self.grid.set_halign(Gtk.Align.CENTER)
+        self.grid.set_valign(Gtk.Align.CENTER)
 
-        self.set_halign(Gtk.Align.CENTER)
-
-        self.set_margin_top(20)
-        self.set_margin_bottom(20)
+        self.grid.set_margin_bottom(20)
 
         # Install
         img = Gtk.Image.new_from_file(jrp("install-solus-192-arc-style.png"))
@@ -49,7 +44,9 @@ class InstallerWelcomePage(Gtk.EventBox):
         button.add(img)
         self.grid.attach(button, 0, 1, 1, 1)
         # Install label
-        label = Gtk.Label.new("<big>%s</big>" % "Install Solus")
+        label = Gtk.Label.new("<big>%s</big>\n<small>%s</small>" %
+                              ("Install Solus to disk",
+                               "Permanently use Solus on your device"))
         label.get_style_context().add_class("dim-label")
         label.set_use_markup(True)
         self.grid.attach(label, 0, 2, 1, 1)
@@ -63,7 +60,9 @@ class InstallerWelcomePage(Gtk.EventBox):
         button.get_style_context().add_class("flat")
         self.grid.attach(button, 1, 1, 1, 1)
         # Continue label
-        label = Gtk.Label.new("<big>%s</big>" % "Continue using live preview")
+        label = Gtk.Label.new("<big>%s</big>\n<small>%s</small>" %
+                              ("Continue using live preview",
+                              "No changes will be made to your system"))
         label.get_style_context().add_class("dim-label")
         label.set_use_markup(True)
         self.grid.attach(label, 1, 2, 1, 1)
@@ -75,3 +74,12 @@ class InstallerWelcomePage(Gtk.EventBox):
     def on_return_clicked(self, btn, udata=None):
         """ Continue live session """
         self.owner.phase_live()
+
+    def get_icon_name(self):
+        return "start-here-solus"
+
+    def get_name(self):
+        return "welcome"
+
+    def get_title(self):
+        return "Install Solus"
