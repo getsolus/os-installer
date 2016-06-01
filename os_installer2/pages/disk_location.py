@@ -39,6 +39,28 @@ class WhoopsPage(Gtk.VBox):
         self.set_halign(Gtk.Align.CENTER)
 
 
+class LoadingPage(Gtk.HBox):
+    """ Spinner/load box """
+
+    def __init__(self):
+        Gtk.HBox.__init__(self)
+
+        self.spinner = Gtk.Spinner()
+        self.pack_start(self.spinner, False, False, 10)
+
+        self.label = Gtk.Label("Examining local storage devices" + u"…")
+        self.pack_start(self.label, False, False, 10)
+
+        self.set_valign(Gtk.Align.CENTER)
+        self.set_halign(Gtk.Align.CENTER)
+
+    def start(self):
+        self.spinner.start()
+
+    def stop(self):
+        self.spinner.stop()
+
+
 class InstallerDiskLocationPage(BasePage):
     """ Disk location selection. """
 
@@ -54,9 +76,7 @@ class InstallerDiskLocationPage(BasePage):
         self.stack = Gtk.Stack()
         self.pack_start(self.stack, True, True, 0)
 
-        self.spinner = Gtk.Spinner()
-        self.spinner.set_halign(Gtk.Align.CENTER)
-        self.spinner.set_valign(Gtk.Align.CENTER)
+        self.spinner = LoadingPage()
 
         self.whoops = WhoopsPage()
         self.stack.add_named(self.whoops, "whoops")
@@ -73,6 +93,17 @@ class InstallerDiskLocationPage(BasePage):
     def get_icon_name(self):
         return "drive-harddisk-system-symbolic"
 
+    def check_os(self, partition, mtab):
+        """ Check a partition and process further to identify OS """
+        fs = partition.fileSystem
+        if not fs:
+            print("Skipping %s" % partition.path)
+            return
+
+        dm = self.info.owner.get_disk_manager()
+        os = dm.detect_operating_system(partition.path, mtab)
+        print("OS: %s %s" % (partition.path, str(os)))
+
     def load_disks(self):
         """ Load the disks within a thread """
         # Scan parts
@@ -81,6 +112,7 @@ class InstallerDiskLocationPage(BasePage):
         dm.scan_parts()
 
         perms.up_permissions()
+        mtab = dm.get_mount_points()
         for item in dm.devices:
             disk = None
             try:
@@ -91,6 +123,8 @@ class InstallerDiskLocationPage(BasePage):
                 continue
             if not disk:
                 continue
+            for partition in disk.partitions:
+                self.check_os(partition, mtab)
             print("Got disk of type: {}".format(disk.type))
             sz = dm.get_disk_size_string(disk)
             dString = "{} {}".format(dm.get_disk_vendor(item),
@@ -116,6 +150,7 @@ class InstallerDiskLocationPage(BasePage):
             return
         self.stack.set_visible_child_name("loading")
         self.spinner.start()
+        self.spinner.show_all()
         self.had_init = True
         self.info.owner.set_can_previous(False)
 

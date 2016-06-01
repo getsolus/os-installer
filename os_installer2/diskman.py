@@ -342,7 +342,7 @@ class DiskManager:
             except Exception as e:
                 print("Error creating mount point: %s" % e)
                 return None
-            if not self.do_mount(device, mount_point, "auto"):
+            if not self.do_mount(device, mount_point, "auto", "ro"):
                 try:
                     os.rmdir(mount_point)
                 except Exception as e:
@@ -353,8 +353,13 @@ class DiskManager:
             # Reuse existing mountpoint
             mount_point = mpoints[device]
 
+        ret = None
         # Try Windows first
-        # win = self.get_windows_version(mount_point)
+        ret = self.get_windows_version(mount_point)
+        if not ret:
+            ret = self.get_windows_bootloader(mount_point)
+        if not ret:
+            ret = self.get_linux_version(mount_point)
 
         # Unmount again
         if mounted:
@@ -363,7 +368,7 @@ class DiskManager:
                     os.rmdir(mount_point)
                 except Exception as e:
                     print("Failed to remove stagnant directory: %s" % e)
-        return None
+        return ret
 
     def _read_line_complete(self, path):
         with open(path, "r") as inp:
