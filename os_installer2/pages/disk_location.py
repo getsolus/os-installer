@@ -137,9 +137,6 @@ class InstallerDiskLocationPage(BasePage):
                 continue
 
             drive = dm.parse_system_disk(disk, mtab)
-            if not drive:
-                print("Error: Missing drive!")
-                continue
             self.drives.append(drive)
 
         print("Debug: {}".format(" ".join(dm.devices)))
