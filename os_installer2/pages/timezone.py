@@ -24,19 +24,18 @@ class InstallerTimezonePage(BasePage):
 
     def __init__(self):
         BasePage.__init__(self)
-        self.frame = Gtk.AspectFrame()
-        self.frame.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        self.frame = Gtk.Frame()
+        self.frame.set_shadow_type(Gtk.ShadowType.NONE)
         self.tmap = TimezoneMap.TimezoneMap()
         self.pack_start(self.frame, True, True, 0)
-        self.frame.set_margin_end(20)
-        self.frame.set_margin_start(20)
+        self.frame.set_margin_end(0)
+        self.frame.set_margin_start(0)
         self.frame.add(self.tmap)
 
         self.locations = Gtk.Entry()
-        self.locations.set_margin_end(10)
-        self.locations.set_margin_top(10)
-        self.locations.set_margin_end(35)
-        self.locations.set_margin_start(35)
+        self.locations.set_property("margin-right", 30)
+        self.locations.set_property("margin-start", 30)
+        self.locations.set_property("margin-top", 10)
         self.pack_end(self.locations, False, False, 0)
 
     def get_title(self):

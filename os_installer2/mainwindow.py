@@ -47,10 +47,6 @@ class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
-
-        headerbar = Gtk.HeaderBar()
-        headerbar.set_show_close_button(True)
-        self.set_titlebar(headerbar)
         try:
             self.set_icon_from_file(jrp("install-solus-192-arc-style.svg"))
         except:
@@ -59,7 +55,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.set_title("Installer")
 
         self.set_position(Gtk.WindowPosition.CENTER)
-        self.set_default_size(800, 600)
+        self.set_default_size(768, 500)
 
         # Main view
         self.stack = Gtk.Stack()
@@ -87,6 +83,7 @@ class MainWindow(Gtk.ApplicationWindow):
         bbox.add(self.next_button)
         bbox.set_margin_bottom(20)
         bbox.set_margin_end(30)
+        bbox.set_margin_top(20)
         self.prev_button.set_property("margin-start", 4)
         self.next_button.set_property("margin-start", 4)
 

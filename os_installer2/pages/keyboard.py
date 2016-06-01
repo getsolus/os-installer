@@ -77,6 +77,7 @@ class InstallerKeyboardPage(BasePage):
         grid.set_column_spacing(6)
         grid.set_row_spacing(6)
         grid.set_margin_start(32)
+        grid.set_margin_top(40)
         grid.set_halign(Gtk.Align.CENTER)
 
         # Init main layouts view

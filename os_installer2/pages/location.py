@@ -25,6 +25,7 @@ class InstallerLocationPage(BasePage):
 speed things up, the installer can perform a quick check to detect where you \
 are in the world and proceed automatically.")
         lab.set_property("xalign", 0.0)
+        lab.set_margin_top(40)
 
         lab.set_margin_start(32)
 
