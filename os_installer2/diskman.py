@@ -258,6 +258,66 @@ class DiskManager:
 
         return "Windows bootloader"
 
+    def extract_os_release_key(self, path, find_key):
+        """ Grab a key from the given os-release file """
+        with open(path, "r") as inp_file:
+            for line in inp_file.readlines():
+                line = line.replace("\r", "").replace("\n", "").strip()
+                if line == "":
+                    continue
+
+                if "=" not in line:
+                    continue
+                splits = line.split("=")
+                key = splits[0].lower()
+                val = "=".join(splits[1:]).strip()
+
+                if val[0] == "\"":
+                    val = val[1:]
+                if val[-1] == "\"":
+                    val = val[0:-1]
+
+                if key != find_key.lower():
+                    continue
+                return val
+        return None
+
+    def get_linux_version(self, path):
+        """ Attempt to get the Linux version string """
+        # os-release files, with stateless support
+        os_paths = [
+            "etc/os-release",
+            "usr/lib/os-release"
+        ]
+        # lsb-release files, with stateless support
+        lsb_paths = [
+            "etc/lsb-release",
+            "usr/lib/lsb-release",
+            "usr/share/defaults/etc/lsb-release"
+        ]
+
+        key_checks = [
+            ("PRETTY_NAME", "NAME", os_paths),
+            ("DISTRIB_DESCRIPTION", "DISTRIB_ID", lsb_paths),
+        ]
+
+        # Iterate os-release files and then fallback to lsb-release files,
+        # respecting stateless heirarchy
+        for key_main, key_fallback, paths in key_checks:
+            for item in paths:
+                fpath = os.path.join(path, item)
+                if not os.path.exists(fpath):
+                    continue
+
+                pname = self.extract_os_release_key(fpath, key_main)
+                if not pname:
+                    pname = self.extract_os_release_key(fpath, key_fallback)
+                if not pname:
+                    continue
+                return pname
+
+        return None
+
     def detect_operating_system(self, device, mpoints):
         """ Determine the operating system for a given device """
         mounted = False
