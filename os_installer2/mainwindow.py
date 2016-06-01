@@ -32,6 +32,9 @@ class InstallInfo:
     # Main Window reference
     owner = None
 
+    # Timezone for the system
+    timezone = None
+
 
 class MainWindow(Gtk.ApplicationWindow):
 

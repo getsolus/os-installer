@@ -12,6 +12,7 @@
 #
 
 from .basepage import BasePage
+from os_installer2.tz import Database
 
 from gi.repository import TimezoneMap, Gtk
 
@@ -21,6 +22,7 @@ class InstallerTimezonePage(BasePage):
 
     tmap = None
     locations = None
+    db = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -38,6 +40,27 @@ class InstallerTimezonePage(BasePage):
         self.locations.set_property("margin-top", 10)
         self.pack_end(self.locations, False, False, 0)
 
+        # Set up timezone database
+        self.db = Database()
+
+        self.locations.set_placeholder_text("Search for your timezone" + u"…")
+
+        tz_model = Gtk.ListStore(str, str, str, str, float, float, str)
+
+        for item in self.db.locations:
+            tz_model.append([item.human_zone, item.human_country,  None,
+                             item.country, item.longitude, item.latitude,
+                             item.zone])
+
+        completion = TimezoneMap.TimezoneCompletion()
+        completion.set_model(tz_model)
+        completion.set_text_column(0)
+        completion.set_inline_completion(True)
+        completion.set_inline_selection(True)
+        completion.connect("match-selected", self.change_timezone)
+        self.locations.set_completion(completion)
+        self.tmap.connect("location-changed", self.changed)
+
     def get_title(self):
         return "Choose your timezone"
 
@@ -46,3 +69,29 @@ class InstallerTimezonePage(BasePage):
 
     def get_icon_name(self):
         return "preferences-system-time-symbolic"
+
+    def change_timezone(self, completion, model, selection):
+        item = model[selection]
+        zone = item[6]
+        self.tmap.set_timezone(zone)
+
+    def changed(self, map, location):
+        zone = location.get_property("zone")
+        nice_loc = self.db.tz_to_loc[zone]
+
+        self.timezone_human = "%s (%s)" % (nice_loc.human_zone,
+                                           nice_loc.human_country)
+        self.tmap.set_watermark(self.timezone_human)
+        self.locations.set_text(nice_loc.human_zone)
+
+        # Ok to go forward
+        self.info.owner.set_can_next(True)
+        self.info.timezone = zone
+
+    def prepare(self, info):
+        self.info = info
+        # TODO: Seed based on geoip
+        if self.info.timezone:
+            self.info.owner.set_can_next(True)
+        else:
+            self.info.owner.set_can_next(False)
