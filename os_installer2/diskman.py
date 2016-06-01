@@ -16,6 +16,7 @@ import os
 import subprocess
 import tempfile
 import time
+import locale
 
 
 class DiskManager:
@@ -40,8 +41,6 @@ class DiskManager:
             "^[\t ]+[0-9]+[\t ]+[0-9]+[\t ]+[0-9]+[\t ]+(nvme[0-9]+n[0-9]+)$")
         self.re_raid = re.compile(
             "^[\t ]+[0-9]+[\t ]+[0-9]+[\t ]+[0-9]+[\t ]+(md[0-9]+)$")
-        self.scan_parts()
-        print(self.get_mount_points())
 
         # Rough versioning matches for Windows
         self.win_prefixes = {
@@ -335,3 +334,43 @@ class DiskManager:
                 except Exception as e:
                     print("Failed to remove stagnant directory: %s" % e)
         return None
+
+    def _read_line_complete(self, path):
+        with open(path, "r") as inp:
+            l = inp.readlines()[0].strip().replace("\r", "").replace("\n", "")
+            return l
+        return None
+
+    def get_disk_model(self, device):
+        """ Get the model of the device """
+        node = os.path.basename(device)
+        fpath = "/sys/block/{}/device/model".format(node)
+
+        if not os.path.exists(fpath):
+            return None
+        return self._read_line_complete(fpath)
+
+    def get_disk_vendor(self, device):
+        """ Get the vendor for the device """
+        node = os.path.basename(device)
+        fpath = "/sys/block/{}/device/vendor".format(node)
+
+        if not os.path.exists(fpath):
+            return None
+        return self._read_line_complete(fpath)
+
+    def format_size(self, size):
+        """ Get the *abyte size (not mebibyte) format """
+        labels = ["B", "KB", "MB", "GB", "PB", "EB", "ZB", "YB"]
+
+        for i, label in enumerate(labels):
+            if size < 1000 or i == len(labels) - 1:
+                return size, label
+            size = float(size / 1000)
+
+    def format_size_local(self, size, double_precision=False):
+        """ Get the locale appropriate representation of the size """
+        numeric, code = self.format_size(size)
+        fmt = "%.1f" if not double_precision else "%.2f"
+        SZ = "%s %s" % (locale.format(fmt, numeric, grouping=True), code)
+        return SZ

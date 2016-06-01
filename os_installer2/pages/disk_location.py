@@ -12,10 +12,13 @@
 #
 
 from .basepage import BasePage
+import parted
 
 
 class InstallerDiskLocationPage(BasePage):
     """ Disk location selection. """
+
+    had_init = False
 
     def __init__(self):
         BasePage.__init__(self)
@@ -28,3 +31,44 @@ class InstallerDiskLocationPage(BasePage):
 
     def get_icon_name(self):
         return "drive-harddisk-system-symbolic"
+
+    def init_view(self):
+        """ Prepare for viewing... """
+        if self.had_init:
+            return
+        self.had_init = True
+
+        # Scan parts
+        dm = self.info.owner.get_disk_manager()
+        perms = self.info.owner.get_perms_manager()
+        dm.scan_parts()
+
+        perms.up_permissions()
+        for item in dm.devices:
+            disk = None
+            try:
+                p = parted.getDevice(item)
+                disk = parted.Disk(p)
+            except Exception as e:
+                print("Cannot probe disk: {}".format(e))
+                continue
+            if not disk:
+                continue
+            print("Got disk of type: {}".format(disk.type))
+            sz = self.get_disk_size_string(disk)
+            print("Disk: {} {}".format(dm.get_disk_model(item), sz))
+        print("Debug: {}".format(" ".join(dm.devices)))
+        perms.down_permissions()
+
+    def prepare(self, info):
+        self.info = info
+        self.init_view()
+
+    def get_disk_size_bytes(self, disk):
+        """ Return byte length of disk """
+        return disk.device.getLength() * disk.device.sectorSize
+
+    def get_disk_size_string(self, disk):
+        """ Return formatted size of disk """
+        dm = self.info.owner.get_disk_manager()
+        return dm.format_size_local(self.get_disk_size_bytes(disk))

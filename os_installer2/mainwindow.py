@@ -122,10 +122,6 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Test unprivileged disk_manager
         self.disk_manager = DiskManager()
-        '''mpoints = self.disk_manager.get_mount_points()
-        for part in ["/dev/sda1", "/dev/sda2"]:
-            ooper = self.disk_manager.detect_operating_system(part, mpoints)
-            print("Return: %s" % str(ooper))'''
 
         self.update_current_page()
         self.show_all()
@@ -184,3 +180,7 @@ class MainWindow(Gtk.ApplicationWindow):
     def get_disk_manager(self):
         """ Return our disk manager object """
         return self.disk_manager
+
+    def get_perms_manager(self):
+        """ Return permission manager """
+        return self.perms
