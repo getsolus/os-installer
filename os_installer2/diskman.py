@@ -28,6 +28,7 @@ class DiskManager:
     devices = None
 
     win_prefixes = None
+    win_bootloaders = None
 
     def __init__(self):
         # Gratefully borrowed from gparted, Proc_Partitions_Info.cc
@@ -56,6 +57,16 @@ class DiskManager:
             "4.1": "Windows 98",
             "4.0.1381": "Windows NT",
             "4.0.950": "Windows 95",
+        }
+
+        # Rough match for BCD
+        self.win_bootloaders = {
+            "V.i.s.t.a": "Windows Vista bootloader",
+            "W.i.n.d.o.w.s. .7": "Windows 7 bootloader",
+            "W.i.n.d.o.w.s. .R.e.c.o.v.e.r.y. .E.n.v.i.r.o.n.m.e.n.t":
+                "Windows recovery",
+            "W.i.n.d.o.w.s. .S.e.r.v.e.r. .2.0.0.8":
+                "Windows Server 2008 bootloader"
         }
 
     def scan_parts(self):
@@ -206,6 +217,11 @@ class DiskManager:
         """ Attempt to gain the Windows version """
         fpath = os.path.join(path, "Windows/servicing/Version")
         if not os.path.exists(fpath):
+            # Still Windows of some variety
+            fpath = os.path.join(path, "Windows/System32")
+            if os.path.exists(fpath):
+                return "Windows (Unknown)"
+            # Definitely not Windows.
             return None
 
         try:
@@ -225,6 +241,22 @@ class DiskManager:
                 return self.win_prefixes[item]
 
         return "Windows (Unknown)"
+
+    def get_windows_bootloader(self, path):
+        """ Determine the bootloader version """
+        fpath = os.path.join(path, "Boot/BCD")
+        if not os.path.exists(fpath):
+            return None
+
+        for key in self.win_bootloaders:
+            cmd = "grep -qs \"{}\" \"{}\"".format(key, fpath)
+            try:
+                subprocess.check_call(cmd)
+                return self.win_bootloaders[key]
+            except Exception:
+                continue
+
+        return "Windows bootloader"
 
     def detect_operating_system(self, device, mpoints):
         """ Determine the operating system for a given device """
