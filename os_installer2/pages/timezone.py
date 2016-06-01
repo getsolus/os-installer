@@ -14,7 +14,7 @@
 from .basepage import BasePage
 from os_installer2.tz import Database
 
-from gi.repository import TimezoneMap, Gtk
+from gi.repository import TimezoneMap, Gtk, Gdk
 
 
 class InstallerTimezonePage(BasePage):
@@ -40,10 +40,19 @@ class InstallerTimezonePage(BasePage):
         self.locations.set_property("margin-top", 10)
         self.pack_end(self.locations, False, False, 0)
 
+        self.locations.set_placeholder_text("Search for your timezone" + u"…")
+
+        completion = TimezoneMap.TimezoneCompletion()
+        completion.set_text_column(0)
+        completion.set_inline_completion(True)
+        completion.set_inline_selection(True)
+        completion.connect("match-selected", self.change_timezone)
+        self.locations.set_completion(completion)
+        self.tmap.connect("location-changed", self.changed)
+
+    def do_expensive_init(self):
         # Set up timezone database
         self.db = Database()
-
-        self.locations.set_placeholder_text("Search for your timezone" + u"…")
 
         tz_model = Gtk.ListStore(str, str, str, str, float, float, str)
 
@@ -52,14 +61,9 @@ class InstallerTimezonePage(BasePage):
                              item.country, item.longitude, item.latitude,
                              item.zone])
 
-        completion = TimezoneMap.TimezoneCompletion()
-        completion.set_model(tz_model)
-        completion.set_text_column(0)
-        completion.set_inline_completion(True)
-        completion.set_inline_selection(True)
-        completion.connect("match-selected", self.change_timezone)
-        self.locations.set_completion(completion)
-        self.tmap.connect("location-changed", self.changed)
+        Gdk.threads_enter()
+        self.locations.get_completion().set_model(tz_model)
+        Gdk.threads_leave()
 
     def get_title(self):
         return "Choose your timezone"

@@ -10,7 +10,7 @@
 #  the Free Software Foundation, either version 2 of the License, or
 #  (at your option) any later version.
 #
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib, Gdk
 from .diskman import DiskManager
 from .permissions import PermissionsManager
 from .pages.welcome import InstallerWelcomePage
@@ -21,6 +21,7 @@ from .pages.timezone import InstallerTimezonePage
 from .pages.disk_location import InstallerDiskLocationPage
 from . import join_resource_path as jrp
 import sys
+import threading
 
 
 class InstallInfo:
@@ -125,6 +126,28 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.update_current_page()
         self.show_all()
+
+        GLib.idle_add(self.start_threads)
+
+    def start_threads(self):
+        self.set_can_next(False)
+        start_thr = threading.Thread(target=self.perform_inits)
+        start_thr.daemon = True
+        start_thr.start()
+        return False
+
+    def perform_inits(self):
+        """ Force expensive children to init outside main thread """
+        for page in self.pages:
+            try:
+                page.do_expensive_init()
+            except Exception as e:
+                print("Fatal exception initialising: %s" % e)
+
+        # Allow next again
+        Gdk.threads_enter()
+        self.set_can_next(True)
+        Gdk.threads_leave()
 
     def phase_install(self):
         self.stack.set_visible_child_name("install")

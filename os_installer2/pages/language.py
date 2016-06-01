@@ -13,7 +13,7 @@
 
 from .basepage import BasePage
 from . import default_locales
-from gi.repository import Gtk, GnomeDesktop
+from gi.repository import Gtk, GnomeDesktop, Gdk
 
 
 class LcLabel(Gtk.Label):
@@ -70,7 +70,6 @@ class InstallerLanguagePage(BasePage):
         self.moar_button = Gtk.Image.new_from_icon_name("view-more-symbolic",
                                                         Gtk.IconSize.MENU)
         self.moar_button.set_property("margin", 8)
-        self.init_view()
         self.listbox.connect_after("row-selected", self.on_row_select)
 
     def on_row_select(self, lbox, newrb=None):
@@ -88,11 +87,13 @@ class InstallerLanguagePage(BasePage):
         # DEBUG
         print("Locale is now %s" % self.info.locale)
 
-    def init_view(self):
+    def do_expensive_init(self):
         """ Do the hard work of actually setting up the view """
+        Gdk.threads_enter()
         for lc in default_locales:
             self.listbox.add(LcLabel(lc))
         self.listbox.add(self.moar_button)
+        Gdk.threads_leave()
 
     def init_remaining(self):
         """ Add the rest to the list """

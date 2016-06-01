@@ -59,3 +59,7 @@ class BasePage(Gtk.VBox):
 
     def is_hidden(self):
         return False
+
+    def do_expensive_init(self):
+        """ Do expensive startup tasks outside of the main thread """
+        pass
