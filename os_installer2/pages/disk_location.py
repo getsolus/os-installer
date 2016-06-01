@@ -31,6 +31,40 @@ class ChooserPage(Gtk.VBox):
 
         self.pack_start(self.combo, False, False, 0)
 
+        # Install side-by-side
+        self.side_by_side = Gtk.RadioButton.new_with_label_from_widget(
+            None,
+            "Install a fresh copy of Solus alongside your existing Operating "
+            "System.\nYou can choose how much space Solus should use in the "
+            "next screen.")
+        self.side_by_side.get_child().set_margin_start(10)
+        self.pack_start(self.side_by_side, False, False, 12)
+        self.side_by_side.set_margin_top(20)
+
+        # Set up the nuke&pave option
+        self.nuke_and_pave = Gtk.RadioButton.new_with_label_from_widget(
+            self.side_by_side,
+            "Erase all content on this disk and install a fresh copy of Solus"
+            "\nThis will <b>destroy all existing data on the disk</b>.")
+        self.nuke_and_pave.get_child().set_use_markup(True)
+        self.nuke_and_pave.get_child().set_margin_start(10)
+        self.pack_start(self.nuke_and_pave, False, False, 12)
+
+        # blank disk
+        self.blank_disk = Gtk.RadioButton.new_with_label_from_widget(
+            self.side_by_side,
+            "Automatically configure your device's disk and install a fresh "
+            "copy of Solus.")
+        # self.pack_start(self.blank_disk, False, False, 20)
+
+        # Manual
+        self.manual = Gtk.RadioButton.new_with_label_from_widget(
+            self.side_by_side,
+            "Create, resize and manually configure disk partitions yourself. "
+            "This method\nmay lead to data loss.")
+        self.manual.get_child().set_margin_start(10)
+        self.pack_start(self.manual, False, False, 12)
+
 
 class WhoopsPage(Gtk.VBox):
     """ No disks on this system """
