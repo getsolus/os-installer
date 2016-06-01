@@ -211,7 +211,7 @@ class DiskManager:
                 return True
             except Exception:
                 # wait 500ms, try again
-                time.sleep(500)
+                time.sleep(0.5)
                 continue
 
         umount_cmd = "umount -l \"{}\"".format(thing)
