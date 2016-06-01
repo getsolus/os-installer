@@ -77,34 +77,21 @@ class DiskManager:
             print("Failed to scan parts: %s" % ex)
             return
 
-        for line in part_file.readlines():
-            device = None
+        groups = [self.re_whole_disk,
+                  self.re_mmcblk,
+                  self.re_nvme,
+                  self.re_raid]
 
+        for line in part_file.readlines():
             # readlines doesn't consume
             line = line.replace("\r", "").replace("\n", "")
 
-            m = self.re_whole_disk.match(line)
-            if m:
-                device = m.group(1)
-                self.push_device(device)
-                continue
-
-            m = self.re_mmcblk.match(line)
-            if m:
-                device = m.group(1)
-                self.push_device(device)
-                continue
-
-            m = self.re_nvme.match(line)
-            if m:
-                device = m.group(1)
-                self.push_device(device)
-                continue
-
-            m = self.re_raid.match(line)
-            if m:
-                device = m.group(1)
-                self.push_device(device)
+            for x in groups:
+                m = x.match(line)
+                if not m:
+                    continue
+                self.push_device(m.group(1))
+                break
 
         part_file.close()
 
