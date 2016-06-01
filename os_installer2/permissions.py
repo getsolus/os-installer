@@ -37,7 +37,6 @@ class PermissionsManager:
                 self.down_gid = uid
             except Exception as e:
                 print("Defaulting on fallback UID: %s" % e)
-            return
 
     def down_permissions(self):
         """ Drop our current permissions """
