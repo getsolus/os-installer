@@ -27,6 +27,8 @@ class DiskManager:
     re_raid = None
     devices = None
 
+    win_prefixes = None
+
     def __init__(self):
         # Gratefully borrowed from gparted, Proc_Partitions_Info.cc
         self.re_whole_disk = re.compile(
@@ -39,6 +41,22 @@ class DiskManager:
             "^[\t ]+[0-9]+[\t ]+[0-9]+[\t ]+[0-9]+[\t ]+(md[0-9]+)$")
         self.scan_parts()
         print(self.get_mount_points())
+
+        # Rough versioning matches for Windows
+        self.win_prefixes = {
+            "10.": "Windows 10",
+            "6.3": "Windows 8.1",
+            "6.2": "Windows 8",
+            "6.1": "Windows 7",
+            "6.0": "Windows Vista",
+            "5.2": "Windows XP",
+            "5.1": "Windows XP",
+            "5.0": "Windows 2000",
+            "4.90": "Windows Me",
+            "4.1": "Windows 98",
+            "4.0.1381": "Windows NT",
+            "4.0.950": "Windows 95",
+        }
 
     def scan_parts(self):
         self.devices = []
@@ -184,6 +202,30 @@ class DiskManager:
         # Finally umounted with lazy.
         return True
 
+    def get_windows_version(self, path):
+        """ Attempt to gain the Windows version """
+        fpath = os.path.join(path, "Windows/servicing/Version")
+        if not os.path.exists(fpath):
+            return None
+
+        try:
+            r = os.listdir(fpath)
+        except Exception:
+            return None
+
+        vers = None
+        if len(r) > 0:
+            r = sorted(r)
+        elif len(r) == 0:
+            return "Corrupt Windows Installation"
+        vers = r[0]
+
+        for item in self.win_prefixes:
+            if vers.startswith(item):
+                return self.win_prefixes[item]
+
+        return "Windows (Unknown)"
+
     def detect_operating_system(self, device, mpoints):
         """ Determine the operating system for a given device """
         mounted = False
@@ -203,8 +245,8 @@ class DiskManager:
             # Reuse existing mountpoint
             mount_point = mpoints[device]
 
-        # Do something interesting here
-        print("Testing?!")
+        # Try Windows first
+        # win = self.get_windows_version(mount_point)
 
         # Unmount again
         if mounted:
