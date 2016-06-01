@@ -14,6 +14,7 @@
 import sys
 import os
 from os_installer2.application import InstallerApplication
+from gi.repository import Gdk, GObject
 
 if __name__ == "__main__":
     if os.geteuid() != 0:
@@ -21,5 +22,9 @@ if __name__ == "__main__":
         sys.stderr.flush()
         sys.exit(1)
 
+    GObject.threads_init()
+    Gdk.threads_init()
+
     app = InstallerApplication()
-    app.run(sys.argv)
+    r = app.run(sys.argv)
+    sys.exit(r)

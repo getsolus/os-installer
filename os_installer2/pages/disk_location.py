@@ -12,7 +12,9 @@
 #
 
 from .basepage import BasePage
+from gi.repository import Gdk
 import parted
+import threading
 
 
 class InstallerDiskLocationPage(BasePage):
@@ -32,12 +34,8 @@ class InstallerDiskLocationPage(BasePage):
     def get_icon_name(self):
         return "drive-harddisk-system-symbolic"
 
-    def init_view(self):
-        """ Prepare for viewing... """
-        if self.had_init:
-            return
-        self.had_init = True
-
+    def load_disks(self):
+        """ Load the disks within a thread """
         # Scan parts
         dm = self.info.owner.get_disk_manager()
         perms = self.info.owner.get_perms_manager()
@@ -61,6 +59,22 @@ class InstallerDiskLocationPage(BasePage):
             print("Disk: {} {}".format(dString, sz))
         print("Debug: {}".format(" ".join(dm.devices)))
         perms.down_permissions()
+
+        # Currently the only GTK call here
+        Gdk.threads_enter()
+        self.info.owner.set_can_previous(True)
+        Gdk.threads_leave()
+
+    def init_view(self):
+        """ Prepare for viewing... """
+        if self.had_init:
+            return
+        self.had_init = True
+        self.info.owner.set_can_previous(False)
+
+        t = threading.Thread(target=self.load_disks)
+        t.daemon = True
+        t.start()
 
     def prepare(self, info):
         self.info = info
