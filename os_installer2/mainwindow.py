@@ -137,6 +137,21 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def update_current_page(self):
         page = self.pages[self.page_index]
-        # TODO: Re-seed
+
+        if self.page_index == len(self.pages) - 1:
+            self.set_can_next(False)
+        else:
+            # TODO: Have pages check next-ness
+            self.set_can_next(True)
+        if self.page_index == 0:
+            self.set_can_previous(False)
+        else:
+            self.set_can_previous(True)
         page.prepare(self.info)
         self.installer_stack.set_visible_child_name(page.get_name())
+
+    def set_can_previous(self, can_prev):
+        self.prev_button.set_sensitive(can_prev)
+
+    def set_can_next(self, can_next):
+        self.next_button.set_sensitive(can_next)
