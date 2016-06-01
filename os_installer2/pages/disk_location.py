@@ -13,7 +13,7 @@
 
 from .basepage import BasePage
 from gi.repository import Gdk, Gtk, GLib
-import parted
+from os_installer2.diskman import DriveProber
 import threading
 
 
@@ -85,9 +85,7 @@ class InstallerDiskLocationPage(BasePage):
     stack = None
     whoops = None
     chooser = None
-
-    # Known drives
-    drives = None
+    prober = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -119,33 +117,16 @@ class InstallerDiskLocationPage(BasePage):
         # Scan parts
         dm = self.info.owner.get_disk_manager()
         perms = self.info.owner.get_perms_manager()
-        dm.scan_parts()
-
-        self.drives = list()
 
         perms.up_permissions()
-        mtab = dm.get_mount_points()
-        for item in dm.devices:
-            disk = None
-            try:
-                p = parted.getDevice(item)
-                disk = parted.Disk(p)
-            except Exception as e:
-                print("Cannot probe disk: {}".format(e))
-                continue
-            if not disk:
-                continue
-
-            drive = dm.parse_system_disk(disk, mtab)
-            self.drives.append(drive)
-
-        print("Debug: {}".format(" ".join(dm.devices)))
+        self.prober = DriveProber(dm)
+        self.prober.probe()
         perms.down_permissions()
 
         # Currently the only GTK call here
         Gdk.threads_enter()
         self.info.owner.set_can_previous(True)
-        if len(self.drives) == 0:
+        if len(self.prober.drives) == 0:
             # No drives
             self.stack.set_visible_child_name("whoops")
         else:
@@ -159,7 +140,7 @@ class InstallerDiskLocationPage(BasePage):
     def update_disks(self):
         """ Thread load finished, update UI from discovered info """
         self.chooser.combo.remove_all()
-        for drive in self.drives:
+        for drive in self.prober.drives:
             print("Debug: Add device: {}".format(drive.path))
             for os_path in drive.operating_systems:
                 os = drive.operating_systems[os_path]

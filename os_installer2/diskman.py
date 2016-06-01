@@ -17,7 +17,44 @@ import subprocess
 import tempfile
 import time
 import locale
+import parted
 import struct
+
+
+class DriveProber:
+    """ Handle the mundane work of probing and querying all of the drives """
+
+    # Our disk manager
+    dm = None
+
+    drives = None
+    mtab = None
+
+    def __init__(self, dm):
+        self.dm = dm
+        pass
+
+    def probe(self):
+        """ Probe all the drives for juicy information """
+        self.drives = list()
+
+        # Cache the current mount points, gonna need it.
+        self.mtab = self.dm.get_mount_points()
+        self.dm.scan_parts()
+
+        for item in self.dm.devices:
+            disk = None
+            try:
+                p = parted.getDevice(item)
+                disk = parted.Disk(p)
+            except Exception as e:
+                print("Cannot probe disk: {}".format(e))
+                continue
+            if not disk:
+                continue
+
+            drive = self.dm.parse_system_disk(disk, self.mtab)
+            self.drives.append(drive)
 
 
 class SystemDrive:
