@@ -20,6 +20,37 @@ import locale
 import struct
 
 
+class SystemDrive:
+    """ Handy helper for monitoring disks """
+
+    # The parted.Disk
+    disk = None
+
+    # Vendor of the device
+    vendor = None
+
+    # Model of the device
+    model = None
+
+    # Localised size representation with units
+    sizeString = None
+
+    # Mapping of partition -> OsType
+    operating_systems = None
+
+    def __init__(self, disk, vendor, model, sizeString, operating_systems):
+        self.disk = disk
+        self.vendor = vendor
+        self.model = model
+        self.sizeString = sizeString
+        self.operating_systems = operating_systems
+
+    def get_display_string(self):
+        """ Format usable in UIs """
+        return "{} {} {} ({})".format(self.vendor, self.model,
+                                      self.sizeString, self.disk.device.path)
+
+
 class OsType:
     """ OS detection code ensuring we don't lose information """
 
@@ -449,3 +480,21 @@ class DiskManager:
     def get_platform_size(self):
         """ 64-bit or 32-bit firmware """
         return self.uefi_fw_size
+
+    def parse_system_disk(self, disk, mpoints):
+        """ Parse a given parted.Disk into a SystemDevice """
+        operating_systems = dict()
+        for partition in disk.partitions:
+            if not partition.fileSystem:
+                continue
+
+            os = self.detect_operating_system(partition.path, mpoints)
+            if not os:
+                continue
+            operating_systems[partition.path] = os
+
+        sz = self.get_disk_size_string(disk)
+
+        vendor = self.get_disk_vendor(disk.device.path)
+        model = self.get_disk_model(disk.device.path)
+        return SystemDrive(disk, vendor, model, sz, operating_systems)

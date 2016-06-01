@@ -12,9 +12,24 @@
 #
 
 from .basepage import BasePage
-from gi.repository import Gdk, Gtk
+from gi.repository import Gdk, Gtk, GLib
 import parted
 import threading
+
+
+class ChooserPage(Gtk.VBox):
+    """ Main chooser UI """
+
+    combo = None
+
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+        self.set_border_width(40)
+
+        # set up the disk selector
+        self.combo = Gtk.ComboBoxText()
+
+        self.pack_start(self.combo, False, False, 0)
 
 
 class WhoopsPage(Gtk.VBox):
@@ -69,8 +84,11 @@ class InstallerDiskLocationPage(BasePage):
 
     stack = None
     whoops = None
+    chooser = None
 
     os_icons = None
+
+    drives = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -83,6 +101,8 @@ class InstallerDiskLocationPage(BasePage):
         self.whoops = WhoopsPage()
         self.stack.add_named(self.whoops, "whoops")
         self.stack.add_named(self.spinner, "loading")
+        self.chooser = ChooserPage()
+        self.stack.add_named(self.chooser, "chooser")
 
         self.stack.set_visible_child_name("loading")
 
@@ -102,20 +122,6 @@ class InstallerDiskLocationPage(BasePage):
 
     def get_icon_name(self):
         return "drive-harddisk-system-symbolic"
-
-    def check_os(self, partition, mtab):
-        """ Check a partition and process further to identify OS """
-        fs = partition.fileSystem
-        if not fs:
-            print("Skipping %s" % partition.path)
-            return
-
-        dm = self.info.owner.get_disk_manager()
-        os = dm.detect_operating_system(partition.path, mtab)
-        if not os:
-            return
-        icon = self.get_os_icon(os)
-        print("OS: %s %s %s" % (partition.path, os.name, icon))
 
     def get_os_icon(self, os):
         """ Return the display icon for a given OS """
@@ -140,6 +146,8 @@ class InstallerDiskLocationPage(BasePage):
         perms = self.info.owner.get_perms_manager()
         dm.scan_parts()
 
+        self.drives = list()
+
         perms.up_permissions()
         mtab = dm.get_mount_points()
         for item in dm.devices:
@@ -152,26 +160,37 @@ class InstallerDiskLocationPage(BasePage):
                 continue
             if not disk:
                 continue
-            for partition in disk.partitions:
-                self.check_os(partition, mtab)
-            print("Got disk of type: {}".format(disk.type))
-            sz = dm.get_disk_size_string(disk)
-            dString = "{} {}".format(dm.get_disk_vendor(item),
-                                     dm.get_disk_model(item))
-            print("Disk: {} {}".format(dString, sz))
+
+            drive = dm.parse_system_disk(disk, mtab)
+            if not drive:
+                print("Error: Missing drive!")
+                continue
+            self.drives.append(drive)
+
         print("Debug: {}".format(" ".join(dm.devices)))
         perms.down_permissions()
 
         # Currently the only GTK call here
         Gdk.threads_enter()
         self.info.owner.set_can_previous(True)
-        if len(dm.devices) == 1:
+        if len(self.drives) == 0:
+            # No drives
             self.stack.set_visible_child_name("whoops")
         else:
-            # TODO: Move to main successful view.
-            self.stack.set_visible_child_name("whoops")
+            # Let them choose
+            self.stack.set_visible_child_name("chooser")
         self.spinner.stop()
         Gdk.threads_leave()
+
+        GLib.idle_add(self.update_disks)
+
+    def update_disks(self):
+        """ Thread load finished, update UI from discovered info """
+        self.chooser.combo.remove_all()
+        for drive in self.drives:
+            self.chooser.combo.append_text(drive.get_display_string())
+        self.chooser.combo.set_active(0)
+        return False
 
     def init_view(self):
         """ Prepare for viewing... """
