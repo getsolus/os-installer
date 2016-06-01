@@ -16,4 +16,17 @@ class DiskManager:
     """ Manage all disk operations """
 
     def __init__(self):
-        pass
+        self.scan_parts()
+
+    def scan_parts(self):
+        try:
+            part_file = open("/proc/partitions")
+        except Exception as ex:
+            print("Failed to scan parts: %s" % ex)
+            return
+
+        for line in part_file.readlines():
+            # TODO: Anything useful.
+            pass
+
+        part_file.close()
