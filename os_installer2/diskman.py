@@ -83,5 +83,28 @@ class DiskManager:
             return
 
         if device not in self.devices:
-            print("Debug: Discovered %s" % fpath)
+            ssd = str(self.is_device_ssd(fpath))
+            print("Debug: Discovered %s (SSD? %s)" % (fpath, ssd))
             self.devices.append(fpath)
+
+    def is_device_ssd(self, path):
+        """ Determine if the device is an SSD """
+        nodename = os.path.basename(path)
+        fpath = "/sys/block/{}/queue/rotational".format(nodename)
+        if not os.path.exists(fpath):
+            return False
+
+        # Don't try using SSD trim with eMMC
+        if nodename.startswith("mmcblk"):
+            return False
+
+        try:
+            with open(fpath, "r") as inp_file:
+                items = inp_file.readlines()
+                if len(items) == 1:
+                    line = items[0].replace("\n", "").replace("\r", "")
+                    if line == "0":
+                        return True
+        except Exception:
+            pass
+        return False
