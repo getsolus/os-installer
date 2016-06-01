@@ -20,6 +20,24 @@ import locale
 import struct
 
 
+class OsType:
+    """ OS detection code ensuring we don't lose information """
+
+    # Valid: windows, windows-boot, linux, none
+    otype = None
+
+    # String name for this detected Thing.
+    name = None
+
+    # The device_path this OS was found on
+    device_path = None
+
+    def __init__(self, otype, name, device_path):
+        self.otype = otype
+        self.name = name
+        self.device_path = device_path
+
+
 class DiskManager:
     """ Manage all disk operations """
 
@@ -353,13 +371,19 @@ class DiskManager:
             # Reuse existing mountpoint
             mount_point = mpoints[device]
 
+        possibles = [
+            ("windows", self.get_windows_bootloader),
+            ("windows-boot", self.get_windows_bootloader),
+            ("linux", self.get_linux_version),
+        ]
+
         ret = None
-        # Try Windows first
-        ret = self.get_windows_version(mount_point)
-        if not ret:
-            ret = self.get_windows_bootloader(mount_point)
-        if not ret:
-            ret = self.get_linux_version(mount_point)
+
+        for os_type, vfunc in possibles:
+            dname = vfunc(mount_point)
+            if dname:
+                ret = OsType(os_type, dname, device)
+                break
 
         # Unmount again
         if mounted:

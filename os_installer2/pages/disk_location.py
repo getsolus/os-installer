@@ -102,7 +102,9 @@ class InstallerDiskLocationPage(BasePage):
 
         dm = self.info.owner.get_disk_manager()
         os = dm.detect_operating_system(partition.path, mtab)
-        print("OS: %s %s" % (partition.path, str(os)))
+        if not os:
+            return
+        print("OS: %s %s" % (partition.path, os.name))
 
     def load_disks(self):
         """ Load the disks within a thread """
