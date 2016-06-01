@@ -82,6 +82,49 @@ class DriveProber:
         return False
 
 
+class SystemPartition:
+    """ Wrapper around partition information """
+
+    # Our parted.Partition reference
+    partition = None
+
+    # Our actual path, i.e. /dev/sda3
+    path = None
+
+    # How much free space remains, in bytes and with string rep
+    freespace = None
+    freespace_string = None
+
+    # How much total space this
+    totalspace = None
+    totalspace_string = None
+
+    # How much used space in bytes, with string rep
+    usedspace = None
+    usedspace_string = None
+
+    def __init__(self, partition, mount_point, dm):
+        self.partition = partition
+        self.path = partition.path
+
+        # TODO: Something useful with the vfs_stat
+        try:
+            vfs = os.statvfs(mount_point)
+            self.freespace = vfs.f_bavail * vfs.f_frsize
+            self.totalspace = vfs.f_blocks * vfs.f_frsize
+            self.usedspace = (vfs.f_blocks - vfs.f_bfree) * vfs.f_frsize
+
+            self.freespace_string = dm.format_size_local(self.freespace)
+            self.totalspace_string = dm.format_size_local(self.totalspace)
+            self.usedspace_string = dm.format_size_local(self.usedspace)
+        except Exception as e:
+            print("Failed to stat {}: {}".format( mount_point, e))
+
+        print("{}: Used {} with {} left".format(self.path,
+                                                self.usedspace_string,
+                                                self.freespace_string))
+
+
 class SystemDrive:
     """ Handy helper for monitoring disks """
 
@@ -106,6 +149,9 @@ class SystemDrive:
     # List of EFI System Partitions
     list_esp = None
 
+    # Encapsulated partitions
+    partitions = None
+
     def __init__(self, disk, vendor, model, sizeString, operating_systems):
         self.disk = disk
         self.vendor = vendor
@@ -113,6 +159,7 @@ class SystemDrive:
         self.sizeString = sizeString
         self.operating_systems = operating_systems
         self.path = disk.device.path
+        self.partitions = dict()
 
     def get_display_string(self):
         """ Format usable in UIs """
@@ -500,28 +547,30 @@ class DiskManager:
                 return "distributor-logo-{}".format(x)
         return "system-software-install"
 
-    def detect_operating_system(self, device, mpoints):
-        """ Determine the operating system for a given device """
+    def detect_operating_system_and_space(self, device, mpoints):
+        """ Determine the operating system and space for a given device """
         mounted = False
         mount_point = None
 
+        path = device.path
+
         # Mount it if not already mounted
-        if device not in mpoints:
+        if path not in mpoints:
             try:
                 mount_point = tempfile.mkdtemp(suffix='installer')
             except Exception as e:
                 print("Error creating mount point: %s" % e)
-                return None
-            if not self.do_mount(device, mount_point, "auto", "ro"):
+                return (None, None)
+            if not self.do_mount(path, mount_point, "auto", "ro"):
                 try:
                     os.rmdir(mount_point)
                 except Exception as e:
                     print("Failed to remove stagnant directory: %s" % e)
-                return None
+                return (None, None)
             mounted = True
         else:
             # Reuse existing mountpoint
-            mount_point = mpoints[device]
+            mount_point = mpoints[path]
 
         possibles = [
             ("windows", self.get_windows_bootloader),
@@ -538,6 +587,7 @@ class DiskManager:
                 ret.icon_name = self.get_os_icon(ret)
                 break
 
+        part = SystemPartition(device, mount_point, self)
         # Unmount again
         if mounted:
             if self.do_umount(mount_point):
@@ -545,7 +595,7 @@ class DiskManager:
                     os.rmdir(mount_point)
                 except Exception as e:
                     print("Failed to remove stagnant directory: %s" % e)
-        return ret
+        return (part, ret)
 
     def _read_line_complete(self, path):
         with open(path, "r") as inp:
@@ -607,6 +657,7 @@ class DiskManager:
         """ Parse a given parted.Disk into a SystemDevice """
         operating_systems = dict()
         list_esp = list()
+        partitions = dict()
         for partition in disk.partitions:
             if not partition.fileSystem:
                 continue
@@ -615,7 +666,9 @@ class DiskManager:
                 print("Debug: Discovered ESP: %s" % partition.path)
                 list_esp.append(partition)
 
-            os = self.detect_operating_system(partition.path, mpoints)
+            (part, os) = self.detect_operating_system_and_space(partition,
+                                                                mpoints)
+            partitions[partition.path] = part
             if not os:
                 continue
             operating_systems[partition.path] = os
@@ -627,4 +680,5 @@ class DiskManager:
         r = SystemDrive(disk, vendor, model, sz, operating_systems)
         # Cache ESP
         r.list_esp = list_esp
+        r.partitions = partitions
         return r
