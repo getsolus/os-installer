@@ -56,6 +56,31 @@ class DriveProber:
             drive = self.dm.parse_system_disk(disk, self.mtab)
             self.drives.append(drive)
 
+    def is_broken_windows_uefi(self):
+        """ Determine if we booted with UEFI on a MBR Windows system """
+        if not self.dm.is_efi_booted():
+            return False
+        gpt_disks = [x for x in self.drives if x.disk.type == "gpt"]
+        have_windows = False
+        efi_sps = []
+        for drive in self.drives:
+            win = [x for x in drive.operating_systems.values()
+                   if x.otype == "windows"]
+            if len(win) != 0:
+                have_windows = True
+            efi_sps.extend(drive.list_esp)
+
+        if not have_windows:
+            return False
+        # No GPT? Instafail
+        if len(gpt_disks) == 0:
+            return True
+        # No ESP? Also fail
+        if len(efi_sps) == 0:
+            return True
+        # All seems good here.
+        return False
+
 
 class SystemDrive:
     """ Handy helper for monitoring disks """

@@ -148,6 +148,10 @@ class InstallerDiskLocationPage(BasePage):
                                                       os.name, os.icon_name))
             self.chooser.combo.append_text(drive.get_display_string())
         self.chooser.combo.set_active(0)
+        if self.prober.is_broken_windows_uefi():
+            print("Broken UEFI system detected")
+        else:
+            print("UEFI in good order")
         return False
 
     def init_view(self):
