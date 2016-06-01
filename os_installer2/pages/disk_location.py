@@ -12,7 +12,7 @@
 #
 
 from .basepage import BasePage
-from gi.repository import Gdk
+from gi.repository import Gdk, Gtk
 import parted
 import threading
 
@@ -21,9 +21,16 @@ class InstallerDiskLocationPage(BasePage):
     """ Disk location selection. """
 
     had_init = False
+    spinner = None
 
     def __init__(self):
         BasePage.__init__(self)
+
+        self.spinner = Gtk.Spinner()
+
+        self.pack_start(self.spinner, True, True, 0)
+        self.spinner.set_halign(Gtk.Align.CENTER)
+        self.spinner.set_valign(Gtk.Align.CENTER)
 
     def get_title(self):
         return "Where should we install?"
@@ -63,12 +70,14 @@ class InstallerDiskLocationPage(BasePage):
         # Currently the only GTK call here
         Gdk.threads_enter()
         self.info.owner.set_can_previous(True)
+        # self.spinner.stop()
         Gdk.threads_leave()
 
     def init_view(self):
         """ Prepare for viewing... """
         if self.had_init:
             return
+        self.spinner.start()
         self.had_init = True
         self.info.owner.set_can_previous(False)
 
