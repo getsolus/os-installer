@@ -38,12 +38,16 @@ class SystemDrive:
     # Mapping of partition -> OsType
     operating_systems = None
 
+    # Make accessing the path easier..
+    path = None
+
     def __init__(self, disk, vendor, model, sizeString, operating_systems):
         self.disk = disk
         self.vendor = vendor
         self.model = model
         self.sizeString = sizeString
         self.operating_systems = operating_systems
+        self.path = disk.device.path
 
     def get_display_string(self):
         """ Format usable in UIs """
@@ -62,6 +66,9 @@ class OsType:
 
     # The device_path this OS was found on
     device_path = None
+
+    # Icon name for use in user interfaces
+    icon_name = None
 
     def __init__(self, otype, name, device_path):
         self.otype = otype
@@ -84,6 +91,8 @@ class DiskManager:
     is_uefi = False
     uefi_fw_size = 64
     host_size = 64
+
+    os_icons = None
 
     def __init__(self):
         # Gratefully borrowed from gparted, Proc_Partitions_Info.cc
@@ -142,6 +151,15 @@ class DiskManager:
             self.host_size = 32
         else:
             self.host_size = 64
+
+        # For populating OsType's
+        self.os_icons = [
+            "antergos", "archlinux", "crunchbang", "debian", "deepin",
+            "edubuntu", "elementary", "fedora", "frugalware", "gentoo",
+            "kubuntu", "linux-mint", "mageia", "mandriva", "manjaro",
+            "solus", "opensuse", "slackware", "steamos", "ubuntu-gnome",
+            "ubuntu-mate", "ubuntu"
+        ]
 
     def scan_parts(self):
         self.devices = []
@@ -379,6 +397,22 @@ class DiskManager:
 
         return None
 
+    def get_os_icon(self, os):
+        """ Return the display icon for a given OS """
+        if os.otype == "windows" or os.otype == "windows-boot":
+            return "distributor-logo-windows"
+        elif os.otype != "linux":
+            return "system-software-install"
+
+        # Explicit copy and then mangle
+        mangled = str(os.name).strip().lower()
+        mangled = mangled.replace(" ", "-")
+
+        for x in self.os_icons:
+            if mangled.startswith(x):
+                return "distributor-logo-{}".format(x)
+        return "system-software-install"
+
     def detect_operating_system(self, device, mpoints):
         """ Determine the operating system for a given device """
         mounted = False
@@ -414,6 +448,7 @@ class DiskManager:
             dname = vfunc(mount_point)
             if dname:
                 ret = OsType(os_type, dname, device)
+                ret.icon_name = self.get_os_icon(ret)
                 break
 
         # Unmount again

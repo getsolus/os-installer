@@ -86,8 +86,7 @@ class InstallerDiskLocationPage(BasePage):
     whoops = None
     chooser = None
 
-    os_icons = None
-
+    # Known drives
     drives = None
 
     def __init__(self):
@@ -106,14 +105,6 @@ class InstallerDiskLocationPage(BasePage):
 
         self.stack.set_visible_child_name("loading")
 
-        self.os_icons = [
-            "antergos", "archlinux", "crunchbang", "debian", "deepin",
-            "edubuntu", "elementary", "fedora", "frugalware", "gentoo",
-            "kubuntu", "linux-mint", "mageia", "mandriva", "manjaro",
-            "solus", "opensuse", "slackware", "steamos", "ubuntu-gnome",
-            "ubuntu-mate", "ubuntu"
-        ]
-
     def get_title(self):
         return "Where should we install?"
 
@@ -122,22 +113,6 @@ class InstallerDiskLocationPage(BasePage):
 
     def get_icon_name(self):
         return "drive-harddisk-system-symbolic"
-
-    def get_os_icon(self, os):
-        """ Return the display icon for a given OS """
-        if os.otype == "windows" or os.otype == "windows-boot":
-            return "distributor-logo-windows"
-        elif os.otype != "linux":
-            return "system-software-install"
-
-        # Explicit copy and then mangle
-        mangled = str(os.name).strip().lower()
-        mangled = mangled.replace(" ", "-")
-
-        for x in self.os_icons:
-            if mangled.startswith(x):
-                return "distributor-logo-{}".format(x)
-        return "system-software-install"
 
     def load_disks(self):
         """ Load the disks within a thread """
@@ -188,6 +163,11 @@ class InstallerDiskLocationPage(BasePage):
         """ Thread load finished, update UI from discovered info """
         self.chooser.combo.remove_all()
         for drive in self.drives:
+            print("Debug: Add device: {}".format(drive.path))
+            for os_path in drive.operating_systems:
+                os = drive.operating_systems[os_path]
+                print("\t{} OS: {} (icon: {})".format(os_path,
+                                                      os.name, os.icon_name))
             self.chooser.combo.append_text(drive.get_display_string())
         self.chooser.combo.set_active(0)
         return False
