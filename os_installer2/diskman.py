@@ -343,6 +343,10 @@ class DiskManager:
                 print("Error creating mount point: %s" % e)
                 return None
             if not self.do_mount(device, mount_point, "auto"):
+                try:
+                    os.rmdir(mount_point)
+                except Exception as e:
+                    print("Failed to remove stagnant directory: %s" % e)
                 return None
             mounted = True
         else:
