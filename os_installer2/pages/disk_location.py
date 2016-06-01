@@ -17,6 +17,28 @@ import parted
 import threading
 
 
+class WhoopsPage(Gtk.VBox):
+    """ No disks on this system """
+
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+
+        img = Gtk.Image.new_from_icon_name("face-crying-symbolic",
+                                           Gtk.IconSize.DIALOG)
+
+        self.pack_start(img, False, False, 10)
+
+        label = Gtk.Label("<big>%s</big>" %
+                          "Oh no! Your system has no disks available.\n"
+                          "There is nowhere to install Solus.")
+        label.set_property("xalign", 0.5)
+        label.set_use_markup(True)
+        self.pack_start(label, False, False, 10)
+
+        self.set_valign(Gtk.Align.CENTER)
+        self.set_halign(Gtk.Align.CENTER)
+
+
 class InstallerDiskLocationPage(BasePage):
     """ Disk location selection. """
 
@@ -28,9 +50,12 @@ class InstallerDiskLocationPage(BasePage):
 
         self.spinner = Gtk.Spinner()
 
-        self.pack_start(self.spinner, True, True, 0)
+        # self.pack_start(self.spinner, True, True, 0)
         self.spinner.set_halign(Gtk.Align.CENTER)
         self.spinner.set_valign(Gtk.Align.CENTER)
+
+        self.whoops = WhoopsPage()
+        self.pack_start(self.whoops, True, True, 0)
 
     def get_title(self):
         return "Where should we install?"
