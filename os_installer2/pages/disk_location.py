@@ -70,6 +70,8 @@ class InstallerDiskLocationPage(BasePage):
     stack = None
     whoops = None
 
+    os_icons = None
+
     def __init__(self):
         BasePage.__init__(self)
 
@@ -83,6 +85,14 @@ class InstallerDiskLocationPage(BasePage):
         self.stack.add_named(self.spinner, "loading")
 
         self.stack.set_visible_child_name("loading")
+
+        self.os_icons = [
+            "antergos", "archlinux", "crunchbang", "debian", "deepin",
+            "edubuntu", "elementary", "fedora", "frugalware", "gentoo",
+            "kubuntu", "linux-mint", "mageia", "mandriva", "manjaro",
+            "solus", "opensuse", "slackware", "steamos", "ubuntu-gnome",
+            "ubuntu-mate", "ubuntu"
+        ]
 
     def get_title(self):
         return "Where should we install?"
@@ -104,7 +114,24 @@ class InstallerDiskLocationPage(BasePage):
         os = dm.detect_operating_system(partition.path, mtab)
         if not os:
             return
-        print("OS: %s %s" % (partition.path, os.name))
+        icon = self.get_os_icon(os)
+        print("OS: %s %s %s" % (partition.path, os.name, icon))
+
+    def get_os_icon(self, os):
+        """ Return the display icon for a given OS """
+        if os.otype == "windows" or os.otype == "windows-boot":
+            return "distributor-logo-windows"
+        elif os.otype != "linux":
+            return "system-software-install"
+
+        # Explicit copy and then mangle
+        mangled = str(os.name).strip().lower()
+        mangled = mangled.replace(" ", "-")
+
+        for x in self.os_icons:
+            if mangled.startswith(x):
+                return "distributor-logo-{}".format(x)
+        return "system-software-install"
 
     def load_disks(self):
         """ Load the disks within a thread """
