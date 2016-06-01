@@ -10,9 +10,16 @@
 #  the Free Software Foundation, either version 2 of the License, or
 #  (at your option) any later version.
 #
+
 import sys
+import os
 from os_installer2.application import InstallerApplication
 
 if __name__ == "__main__":
+    if os.geteuid() != 0:
+        sys.stderr.write("You must be root to use OsInstaller\n")
+        sys.stderr.flush()
+        sys.exit(1)
+
     app = InstallerApplication()
     app.run(sys.argv)

@@ -12,6 +12,7 @@
 #
 from gi.repository import Gtk
 from .diskman import DiskManager
+from .permissions import PermissionsManager
 from .pages.welcome import InstallerWelcomePage
 from .pages.language import InstallerLanguagePage
 from .pages.location import InstallerLocationPage
@@ -52,6 +53,7 @@ class MainWindow(Gtk.ApplicationWindow):
     info = None
 
     disk_manager = None
+    perms = None
 
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
@@ -115,6 +117,10 @@ class MainWindow(Gtk.ApplicationWindow):
 
         self.update_current_page()
         self.show_all()
+
+        self.perms = PermissionsManager()
+        if not self.perms.down_permissions():
+            print("TODO: Add warning dialog")
 
     def phase_install(self):
         self.stack.set_visible_child_name("install")
