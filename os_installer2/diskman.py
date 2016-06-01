@@ -82,6 +82,7 @@ class DiskManager:
         if not os.path.exists(fpath):
             print("Debug: Non-existent node: %s" % fpath)
             return
+        fpath = os.path.realpath(fpath)
 
         if device not in self.devices:
             ssd = str(self.is_device_ssd(fpath))
