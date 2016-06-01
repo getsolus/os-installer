@@ -117,11 +117,8 @@ class MainWindow(Gtk.ApplicationWindow):
             print("Fatal error during startup: %s" % e)
             sys.exit(1)
 
+        # Shared helpers
         self.perms = PermissionsManager()
-        if not self.perms.down_permissions():
-            print("TODO: Add warning dialog")
-
-        # Test unprivileged disk_manager
         self.disk_manager = DiskManager()
 
         self.update_current_page()

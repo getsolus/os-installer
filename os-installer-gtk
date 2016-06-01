@@ -14,6 +14,7 @@
 import sys
 import os
 from os_installer2.application import InstallerApplication
+from os_installer2.permissions import PermissionsManager
 from gi.repository import Gdk, GObject
 
 if __name__ == "__main__":
@@ -21,6 +22,10 @@ if __name__ == "__main__":
         sys.stderr.write("You must be root to use OsInstaller\n")
         sys.stderr.flush()
         sys.exit(1)
+
+    # Immediately drop permissions before we init GTK
+    p = PermissionsManager()
+    p.down_permissions()
 
     GObject.threads_init()
     Gdk.threads_init()
