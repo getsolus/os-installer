@@ -45,17 +45,24 @@ class InstallerDiskLocationPage(BasePage):
     had_init = False
     spinner = None
 
+    stack = None
+    whoops = None
+
     def __init__(self):
         BasePage.__init__(self)
 
-        self.spinner = Gtk.Spinner()
+        self.stack = Gtk.Stack()
+        self.pack_start(self.stack, True, True, 0)
 
-        # self.pack_start(self.spinner, True, True, 0)
+        self.spinner = Gtk.Spinner()
         self.spinner.set_halign(Gtk.Align.CENTER)
         self.spinner.set_valign(Gtk.Align.CENTER)
 
         self.whoops = WhoopsPage()
-        self.pack_start(self.whoops, True, True, 0)
+        self.stack.add_named(self.whoops, "whoops")
+        self.stack.add_named(self.spinner, "loading")
+
+        self.stack.set_visible_child_name("loading")
 
     def get_title(self):
         return "Where should we install?"
@@ -95,13 +102,19 @@ class InstallerDiskLocationPage(BasePage):
         # Currently the only GTK call here
         Gdk.threads_enter()
         self.info.owner.set_can_previous(True)
-        # self.spinner.stop()
+        if len(dm.devices) == 1:
+            self.stack.set_visible_child_name("whoops")
+        else:
+            # TODO: Move to main successful view.
+            self.stack.set_visible_child_name("whoops")
+        self.spinner.stop()
         Gdk.threads_leave()
 
     def init_view(self):
         """ Prepare for viewing... """
         if self.had_init:
             return
+        self.stack.set_visible_child_name("loading")
         self.spinner.start()
         self.had_init = True
         self.info.owner.set_can_previous(False)
