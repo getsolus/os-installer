@@ -70,6 +70,7 @@ class InstallerLanguagePage(BasePage):
         self.moar_button = Gtk.Image.new_from_icon_name("view-more-symbolic",
                                                         Gtk.IconSize.MENU)
         self.moar_button.set_property("margin", 8)
+        self.moar_button.show_all()
         self.listbox.connect_after("row-selected", self.on_row_select)
 
     def on_row_select(self, lbox, newrb=None):
