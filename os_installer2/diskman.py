@@ -108,3 +108,10 @@ class DiskManager:
         except Exception:
             pass
         return False
+
+    def is_install_supported(self, path):
+        """ Currently we only support rootfs installs on certain types... """
+        nodename = os.path.basename(path)
+        if nodename.startswith("md"):
+            return False
+        return True
