@@ -35,6 +35,7 @@ class DiskManager:
         self.re_raid = re.compile(
             "^[\t ]+[0-9]+[\t ]+[0-9]+[\t ]+[0-9]+[\t ]+(md[0-9]+)$")
         self.scan_parts()
+        print(self.get_mount_points())
 
     def scan_parts(self):
         self.devices = []
@@ -115,3 +116,26 @@ class DiskManager:
         if nodename.startswith("md"):
             return False
         return True
+
+    def get_mount_points(self):
+        """ Return a mapping of device to mountpoint """
+        ret = dict()
+
+        with open("/proc/self/mounts", "r") as mpoints:
+            for line in mpoints.readlines():
+                line = line.replace("\n", "").replace("\r", "").strip()
+
+                if line == "":
+                    continue
+                splits = line.split()
+                if len(splits) < 4:
+                    continue
+                dev = splits[0]
+                mpoint = splits[1]
+
+                # Only interested in block devices
+                if dev[0] != '/':
+                    continue
+
+                ret[os.path.abspath(os.path.realpath(dev))] = mpoint
+        return ret
