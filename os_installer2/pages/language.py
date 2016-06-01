@@ -77,12 +77,14 @@ class InstallerLanguagePage(BasePage):
         """ Handle selections of locales """
         self.info.locale = None
         if not newrb:
+            self.info.owner.set_can_next(False)
             return
         child = newrb.get_child()
         if child == self.moar_button:
             self.init_remaining()
             return
         self.info.locale = child.lc_code
+        self.info.owner.set_can_next(True)
         # DEBUG
         print("Locale is now %s" % self.info.locale)
 
@@ -110,6 +112,10 @@ class InstallerLanguagePage(BasePage):
     def prepare(self, info):
         # Nothing to seed with.
         self.info = info
+        if self.info.locale:
+            self.info.owner.set_can_next(True)
+        else:
+            self.info.owner.set_can_next(False)
 
     def get_title(self):
         return "Choose a language"

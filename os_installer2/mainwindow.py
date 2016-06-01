@@ -29,6 +29,9 @@ class InstallInfo:
     # Chosen keyboard
     keyboard = None
 
+    # Main Window reference
+    owner = None
+
 
 class MainWindow(Gtk.ApplicationWindow):
 
@@ -88,6 +91,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.next_button.set_property("margin-start", 4)
 
         self.info = InstallInfo()
+        self.info.owner = self
 
         # Hook up actions
         self.prev_button.connect("clicked", lambda x: self.prev_page())

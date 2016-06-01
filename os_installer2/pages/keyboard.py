@@ -108,12 +108,15 @@ class InstallerKeyboardPage(BasePage):
         """ Handle selections of locales """
         self.info.keyboard = None
         if not newrb:
+            self.info.keyboard = None
+            self.info.owner.set_can_next(False)
             return
         child = newrb.get_child()
         if child == self.moar_button:
             self.init_remaining()
             return
         self.info.keyboard = child.kb
+        self.info.owner.set_can_next(True)
         # DEBUG
         print("Keyboard is now %s" % self.info.keyboard)
 
@@ -247,3 +250,7 @@ class InstallerKeyboardPage(BasePage):
         self.info = info
         print("Catering view based on %s" % self.info.locale)
         self.init_view()
+        if self.info.keyboard:
+            self.info.owner.set_can_next(True)
+        else:
+            self.info.owner.set_can_next(False)
