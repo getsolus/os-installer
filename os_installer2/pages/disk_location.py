@@ -55,7 +55,7 @@ class InstallerDiskLocationPage(BasePage):
             if not disk:
                 continue
             print("Got disk of type: {}".format(disk.type))
-            sz = self.get_disk_size_string(disk)
+            sz = dm.get_disk_size_string(disk)
             print("Disk: {} {}".format(dm.get_disk_model(item), sz))
         print("Debug: {}".format(" ".join(dm.devices)))
         perms.down_permissions()
@@ -63,12 +63,3 @@ class InstallerDiskLocationPage(BasePage):
     def prepare(self, info):
         self.info = info
         self.init_view()
-
-    def get_disk_size_bytes(self, disk):
-        """ Return byte length of disk """
-        return disk.device.getLength() * disk.device.sectorSize
-
-    def get_disk_size_string(self, disk):
-        """ Return formatted size of disk """
-        dm = self.info.owner.get_disk_manager()
-        return dm.format_size_local(self.get_disk_size_bytes(disk))

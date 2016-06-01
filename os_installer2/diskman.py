@@ -374,3 +374,11 @@ class DiskManager:
         fmt = "%.1f" if not double_precision else "%.2f"
         SZ = "%s %s" % (locale.format(fmt, numeric, grouping=True), code)
         return SZ
+
+    def get_disk_size_bytes(self, disk):
+        """ Return byte length of disk (parted.Disk) """
+        return disk.device.getLength() * disk.device.sectorSize
+
+    def get_disk_size_string(self, disk):
+        """ Return formatted size of disk (parted.Disk) """
+        return self.format_size_local(self.get_disk_size_bytes(disk))
