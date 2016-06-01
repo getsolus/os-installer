@@ -98,7 +98,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.prev_button.set_property("margin-start", 4)
         self.next_button.set_property("margin-start", 4)
 
-        self.disk_manager = DiskManager()
         self.info = InstallInfo()
         self.info.owner = self
 
@@ -115,12 +114,19 @@ class MainWindow(Gtk.ApplicationWindow):
             print("Fatal error during startup: %s" % e)
             sys.exit(1)
 
-        self.update_current_page()
-        self.show_all()
-
         self.perms = PermissionsManager()
         if not self.perms.down_permissions():
             print("TODO: Add warning dialog")
+
+        # Test unprivileged disk_manager
+        self.disk_manager = DiskManager()
+        '''mpoints = self.disk_manager.get_mount_points()
+        for part in ["/dev/sda1", "/dev/sda2"]:
+            ooper = self.disk_manager.detect_operating_system(part, mpoints)
+            print("Return: %s" % str(ooper))'''
+
+        self.update_current_page()
+        self.show_all()
 
     def phase_install(self):
         self.stack.set_visible_child_name("install")

@@ -13,6 +13,9 @@
 
 import re
 import os
+import subprocess
+import tempfile
+import time
 
 
 class DiskManager:
@@ -140,3 +143,74 @@ class DiskManager:
 
                 ret[os.path.abspath(os.path.realpath(dev))] = mpoint
         return ret
+
+    def do_mount(self, device, mpoint, fsystem, options=None):
+        """ Try to mount the device at mount_point """
+        mount_cmd = "mount -t {} {} \"{}\"".format(device, mpoint, fsystem)
+
+        if options:
+            mount_cmd += "-o {}".format(options)
+
+        try:
+            subprocess.check_call(mount_cmd, shell=True)
+        except Exception as e:
+            print("Failed to mount %s to %s: %s" % (device, mpoint, e))
+            return False
+        return True
+
+    def do_umount(self, thing):
+        """ umount the given mountpoint/device """
+        umount_cmd = "umount \"{}\"".format(thing)
+        try_count = 0
+
+        while (try_count < 3):
+            try_count += 1
+            try:
+                subprocess.check_call(umount_cmd)
+                return True
+            except Exception:
+                # wait 500ms, try again
+                time.sleep(500)
+                continue
+
+        umount_cmd = "umount -l \"{}\"".format(thing)
+        try:
+            subprocess.check_call(umount_cmd)
+            return True
+        except Exception as e:
+            print("Failed to unmount %s: %s" % (thing, e))
+            return False
+
+        # Finally umounted with lazy.
+        return True
+
+    def detect_operating_system(self, device, mpoints):
+        """ Determine the operating system for a given device """
+        mounted = False
+        mount_point = None
+
+        # Mount it if not already mounted
+        if device not in mpoints:
+            try:
+                mount_point = tempfile.mkdtemp(suffix='installer')
+            except Exception as e:
+                print("Error creating mount point: %s" % e)
+                return None
+            if not self.do_mount(device, mount_point, "auto"):
+                return None
+            mounted = True
+        else:
+            # Reuse existing mountpoint
+            mount_point = mpoints[device]
+
+        # Do something interesting here
+        print("Testing?!")
+
+        # Unmount again
+        if mounted:
+            if self.do_umount(mount_point):
+                try:
+                    os.rmdir(mount_point)
+                except Exception as e:
+                    print("Failed to remove stagnant directory: %s" % e)
+        return None
