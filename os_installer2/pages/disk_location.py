@@ -56,7 +56,9 @@ class InstallerDiskLocationPage(BasePage):
                 continue
             print("Got disk of type: {}".format(disk.type))
             sz = dm.get_disk_size_string(disk)
-            print("Disk: {} {}".format(dm.get_disk_model(item), sz))
+            dString = "{} {}".format(dm.get_disk_vendor(item),
+                                     dm.get_disk_model(item))
+            print("Disk: {} {}".format(dString, sz))
         print("Debug: {}".format(" ".join(dm.devices)))
         perms.down_permissions()
 
