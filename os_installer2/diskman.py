@@ -190,7 +190,7 @@ class DiskManager:
         mount_cmd = "mount -t {} {} \"{}\"".format(device, mpoint, fsystem)
 
         if options:
-            mount_cmd += "-o {}".format(options)
+            mount_cmd += " -o {}".format(options)
 
         try:
             subprocess.check_call(mount_cmd, shell=True)
