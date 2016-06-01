@@ -17,6 +17,7 @@ import subprocess
 import tempfile
 import time
 import locale
+import struct
 
 
 class DiskManager:
@@ -30,6 +31,10 @@ class DiskManager:
 
     win_prefixes = None
     win_bootloaders = None
+
+    is_uefi = False
+    uefi_fw_size = 64
+    host_size = 64
 
     def __init__(self):
         # Gratefully borrowed from gparted, Proc_Partitions_Info.cc
@@ -67,6 +72,27 @@ class DiskManager:
             "W.i.n.d.o.w.s. .S.e.r.v.e.r. .2.0.0.8":
                 "Windows Server 2008 bootloader"
         }
+
+        # Set up UEFI knowledge
+        if os.path.exists("/sys/firmware/efi"):
+            self.is_uefi = True
+            pl_f = "/sys/firmware/efi/fw_platform_size"
+            if os.path.exists(pl_f):
+                pl_s = self._read_line_complete(pl_f)
+                if pl_s == "64":
+                    self.uefi_fw_size = 64
+                elif pl_s == "32":
+                    self.uefi_fw_size = 32
+                else:
+                    print("System reported odd FW size: {}".format(pl_s))
+        else:
+            self.is_uefi = False
+
+        # host size setup (64/32)
+        if struct.calcsize("P") * 8 < 64:
+            self.host_size = 32
+        else:
+            self.host_size = 64
 
     def scan_parts(self):
         self.devices = []
@@ -382,3 +408,11 @@ class DiskManager:
     def get_disk_size_string(self, disk):
         """ Return formatted size of disk (parted.Disk) """
         return self.format_size_local(self.get_disk_size_bytes(disk))
+
+    def is_efi_booted(self):
+        """ Determine if we booted using UEFI """
+        return self.is_uefi
+
+    def get_platform_size(self):
+        """ 64-bit or 32-bit firmware """
+        return self.uefi_fw_size
