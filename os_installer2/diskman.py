@@ -32,7 +32,6 @@ class DriveProber:
 
     def __init__(self, dm):
         self.dm = dm
-        pass
 
     def probe(self):
         """ Probe all the drives for juicy information """
@@ -53,6 +52,7 @@ class DriveProber:
             if not disk:
                 continue
 
+            # Get a system drive
             drive = self.dm.parse_system_disk(disk, self.mtab)
             self.drives.append(drive)
 
@@ -77,6 +77,9 @@ class SystemDrive:
 
     # Make accessing the path easier..
     path = None
+
+    # List of EFI System Partitions
+    list_esp = None
 
     def __init__(self, disk, vendor, model, sizeString, operating_systems):
         self.disk = disk
@@ -128,6 +131,7 @@ class DiskManager:
     is_uefi = False
     uefi_fw_size = 64
     host_size = 64
+    efi_types = None
 
     os_icons = None
 
@@ -182,6 +186,8 @@ class DiskManager:
                     print("System reported odd FW size: {}".format(pl_s))
         else:
             self.is_uefi = False
+        # Valid EFI types
+        self.efi_types = ["fat", "fat32", "fat16", "vfat", "fat12"]
 
         # host size setup (64/32)
         if struct.calcsize("P") * 8 < 64:
@@ -197,6 +203,25 @@ class DiskManager:
             "solus", "opensuse", "slackware", "steamos", "ubuntu-gnome",
             "ubuntu-mate", "ubuntu"
         ]
+
+    def is_efi_system_partition(self, partition):
+        """ Is the given partition an EFI System Partition (ESP) ? """
+        disk = partition.disk
+        if not disk:
+            return False
+        # Must be on a gpt disk
+        if disk.type != "gpt":
+            return False
+        fs = partition.fileSystem
+        if not fs:
+            return False
+        # needs to be a valid EFI type
+        if fs.type not in self.efi_types:
+            return False
+        # Also needs to be bootable
+        if not partition.getFlag(parted.PARTITION_BOOT):
+            return False
+        return True
 
     def scan_parts(self):
         self.devices = []
@@ -556,9 +581,14 @@ class DiskManager:
     def parse_system_disk(self, disk, mpoints):
         """ Parse a given parted.Disk into a SystemDevice """
         operating_systems = dict()
+        list_esp = list()
         for partition in disk.partitions:
             if not partition.fileSystem:
                 continue
+
+            if self.is_efi_system_partition(partition):
+                print("Debug: Discovered ESP: %s" % partition.path)
+                list_esp.append(partition)
 
             os = self.detect_operating_system(partition.path, mpoints)
             if not os:
@@ -569,4 +599,7 @@ class DiskManager:
 
         vendor = self.get_disk_vendor(disk.device.path)
         model = self.get_disk_model(disk.device.path)
-        return SystemDrive(disk, vendor, model, sz, operating_systems)
+        r = SystemDrive(disk, vendor, model, sz, operating_systems)
+        # Cache ESP
+        r.list_esp = list_esp
+        return r
