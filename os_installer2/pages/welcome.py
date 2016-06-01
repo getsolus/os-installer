@@ -62,7 +62,7 @@ class InstallerWelcomePage(BasePage):
         # Continue label
         label = Gtk.Label.new("<big>%s</big>\n<small>%s</small>" %
                               ("Continue using live preview",
-                              "No changes will be made to your system"))
+                               "No changes will be made to your system"))
         label.get_style_context().add_class("dim-label")
         label.set_use_markup(True)
         self.grid.attach(label, 1, 2, 1, 1)

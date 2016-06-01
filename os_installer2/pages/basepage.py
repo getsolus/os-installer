@@ -19,11 +19,9 @@ class BasePage(Gtk.VBox):
 
     def __init__(self):
         Gtk.VBox.__init__(self)
-        # self.set_border_width(10)
 
         self.title = Gtk.Label("<span font-size='xx-large'>%s</span>" %
                                self.get_title())
-        # self.title.get_style_context().add_class("dim-label")
         self.title.set_use_markup(True)
 
         self.image = Gtk.Image()
@@ -40,9 +38,6 @@ class BasePage(Gtk.VBox):
         self.pack_start(header, False, True, 0)
         self.image.set_margin_start(20)
         self.title.set_margin_start(10)
-
-        #self.set_margin_start(20)
-        #self.set_margin_end(20)
 
     def get_title(self):
         return None
