@@ -11,6 +11,7 @@
 #  (at your option) any later version.
 #
 from gi.repository import Gtk
+from .diskman import DiskManager
 from .pages.welcome import InstallerWelcomePage
 from .pages.language import InstallerLanguagePage
 from .pages.location import InstallerLocationPage
@@ -49,6 +50,8 @@ class MainWindow(Gtk.ApplicationWindow):
     page_index = 0
 
     info = None
+
+    disk_manager = None
 
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
@@ -93,6 +96,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.prev_button.set_property("margin-start", 4)
         self.next_button.set_property("margin-start", 4)
 
+        self.disk_manager = DiskManager()
         self.info = InstallInfo()
         self.info.owner = self
 
@@ -162,3 +166,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def set_can_next(self, can_next):
         self.next_button.set_sensitive(can_next)
+
+    def get_disk_manager(self):
+        """ Return our disk manager object """
+        return self.disk_manager
