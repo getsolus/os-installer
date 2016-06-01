@@ -231,7 +231,7 @@ class DiskManager:
 
         vers = None
         if len(r) > 0:
-            r = sorted(r)
+            r = sorted(r, reverse=True)
         elif len(r) == 0:
             return "Corrupt Windows Installation"
         vers = r[0]
