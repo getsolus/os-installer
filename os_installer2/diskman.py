@@ -33,6 +33,16 @@ class DriveProber:
     def __init__(self, dm):
         self.dm = dm
 
+    def probe_lvm2(self):
+        cmds = ["/sbin/pvscan", "/sbin/vgscan", "/sbin/lvscan"]
+        for cmd in cmds:
+            try:
+                subprocess.check_call(cmd)
+            except Exception as e:
+                print("Failed to execute %s: %s" % (cmd, e))
+                return False
+        return True
+
     def probe(self):
         """ Probe all the drives for juicy information """
         self.drives = list()
@@ -40,6 +50,7 @@ class DriveProber:
         # Cache the current mount points, gonna need it.
         self.mtab = self.dm.get_mount_points()
         self.dm.scan_parts()
+        self.probe_lvm2()
 
         for item in self.dm.devices:
             disk = None
@@ -118,7 +129,7 @@ class SystemPartition:
             self.totalspace_string = dm.format_size_local(self.totalspace)
             self.usedspace_string = dm.format_size_local(self.usedspace)
         except Exception as e:
-            print("Failed to stat {}: {}".format( mount_point, e))
+            print("Failed to stat {}: {}".format(mount_point, e))
 
         print("{}: Used {} with {} left".format(self.path,
                                                 self.usedspace_string,
