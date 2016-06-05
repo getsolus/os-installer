@@ -111,7 +111,7 @@ def main():
 
         # Create /
         start = old_geom.end+1
-        geom = get_all_remaining_geom(device, start)
+        geom = get_partition_geometry(drive.device, old_geom.end+1, 30, 'GiB')
         fs = parted.FileSystem(type='ext4', geometry=geom)
         p = parted.Partition(disk=drive.disk, type=parted.PARTITION_NORMAL,
                              fs=fs, geometry=geom)
@@ -119,18 +119,30 @@ def main():
         drive.disk.addPartition(p, constraint=device.optimalAlignedConstraint)
         root = p.path
 
+        # Create home
+        old_geom = geom
+        geom = get_all_remaining_geom(device, old_geom.end+1)
+        fs = parted.FileSystem(type='ext4', geometry=geom)
+        p = parted.Partition(disk=drive.disk, type=parted.PARTITION_NORMAL,
+                             fs=fs, geometry=geom)
+
+        drive.disk.addPartition(p, constraint=device.optimalAlignedConstraint)
+        home = p.path
         print drive.disk.partitions
         drive.disk.commit()
 
-        # print("ESP: %s" % esp)
+        print("ESP: %s" % esp)
         print("SWAP: %s" % swap)
         print("ROOT: %s" % root)
+        print("HOME: %s" % home)
 
         format_partition(esp, "fat32")
         name_partition_vfat(esp, "EFI SP")
         format_partition(swap, "swap")
         format_partition(root, "ext4")
+        format_partition(home, "ext4")
         name_partition_ext(root, "SolusRoot")
+        name_partition_ext(home, "SolusHome")
         drive.disk.commit()
     else:
         for partition in drive.disk.partitions:
@@ -144,4 +156,7 @@ if __name__ == "__main__":
         sys.stderr.write("You must be root to use OsInstaller\n")
         sys.stderr.flush()
         sys.exit(1)
+    print("I EAT YOUR DISK. DO NOT RUN ME UNLESS YOU WANT TO LOOSE /dev/sdb!!!")
+    print("EXITING BECAUSE YOU ARE NOT IKEY.")
+    sys.exit(0)
     main()
