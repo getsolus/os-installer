@@ -22,6 +22,7 @@ from .pages.timezone import InstallerTimezonePage
 from .pages.disk_location import InstallerDiskLocationPage
 from .pages.partitioning import InstallerPartitioningPage
 from .pages.system import InstallerSystemPage
+from .pages.users import InstallerUsersPage
 from .pages.summary import InstallerSummaryPage
 from . import join_resource_path as jrp
 import sys
@@ -50,6 +51,9 @@ class InstallInfo:
     enable_geoip = False
     cached_location = None
     cached_timezone = None
+
+    # system hostname
+    hostname = None
 
     # Windows was detected
     windows_present = False
@@ -135,6 +139,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.add_installer_page(InstallerDiskLocationPage())
             self.add_installer_page(InstallerPartitioningPage())
             self.add_installer_page(InstallerSystemPage())
+            self.add_installer_page(InstallerUsersPage())
             self.add_installer_page(InstallerSummaryPage())
         except Exception as e:
             print("Fatal error during startup: %s" % e)

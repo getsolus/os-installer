@@ -92,6 +92,10 @@ class InstallerSystemPage(BasePage):
             can_fwd = True
         if not self.info:
             return
+        if can_fwd:
+            self.info.hostname = text
+        else:
+            self.info.hostname = None
         self.info.owner.set_can_next(can_fwd)
 
     def get_title(self):
@@ -106,9 +110,12 @@ class InstallerSystemPage(BasePage):
     def prepare(self, info):
         self.info = info
         # y u no hostname
-        self.info.owner.set_can_next(False)
         if self.info.windows_present:
             self.check_utc.show()
             self.check_utc.get_child().show()
         else:
             self.check_utc.hide()
+        if not self.info.hostname:
+            self.info.owner.set_can_next(False)
+        else:
+            self.info.owner.set_can_next(True)
