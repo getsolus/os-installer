@@ -72,7 +72,7 @@ class InstallerPartitioningPage(BasePage):
         self.mpage = ManualPage()
         self.stack.add_named(self.mpage, "manual")
 
-        self.stack.set_visible_child_name("manual")
+        self.stack.set_visible_child_name("automatic")
 
     def get_title(self):
         return "Configure disks"
