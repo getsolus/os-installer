@@ -61,8 +61,10 @@ class InstallerGeoipPage(BasePage):
         self.info = info
         if not self.info.enable_geoip:
             self.info.owner.skip_page()
+            return
         if self.info.cached_timezone:
             self.info.owner.skip_page()
+            return
         if self.tried_find:
             return
 
