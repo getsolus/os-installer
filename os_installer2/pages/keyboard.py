@@ -21,10 +21,6 @@ class KbLabel(Gtk.HBox):
     kb = None
     dname = None
 
-    def on_link_activate(self, lbl, udata=None):
-        # Consume link
-        return True
-
     def __init__(self, kb, info):
         Gtk.HBox.__init__(self)
         self.kb = kb
@@ -46,11 +42,6 @@ class KbLabel(Gtk.HBox):
 
         lab.set_text(self.dname)
         self.pack_start(lab, True, True, 0)
-
-        preview = Gtk.Label("<a href=\"preview\">%s</a>" % "Preview")
-        preview.connect("activate-link", self.on_link_activate)
-        preview.set_use_markup(True)
-        self.pack_end(preview, False, False, 0)
 
         self.show_all()
 
