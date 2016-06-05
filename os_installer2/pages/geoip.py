@@ -18,7 +18,7 @@ import threading
 import re
 import pygeoip
 
-IP_CHECK = "http://checkip.dyndns.com/"
+IP_CHECK = "https://solus-project.com/geoip.php"
 TIMEOUT = 10
 
 
