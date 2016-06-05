@@ -14,10 +14,10 @@ from gi.repository import Gtk, GLib, Gdk
 from .diskman import DiskManager
 from .permissions import PermissionsManager
 from .pages.welcome import InstallerWelcomePage
-from .pages.language import InstallerLanguagePage
+"""from .pages.language import InstallerLanguagePage
 from .pages.location import InstallerLocationPage
 from .pages.keyboard import InstallerKeyboardPage
-from .pages.timezone import InstallerTimezonePage
+from .pages.timezone import InstallerTimezonePage"""
 from .pages.disk_location import InstallerDiskLocationPage
 from . import join_resource_path as jrp
 import sys
@@ -111,10 +111,11 @@ class MainWindow(Gtk.ApplicationWindow):
         self.next_button.connect("clicked", lambda x: self.next_page())
         # Load other pages here into installer_stack
         try:
+            """
             self.add_installer_page(InstallerLanguagePage())
             self.add_installer_page(InstallerLocationPage())
             self.add_installer_page(InstallerKeyboardPage())
-            self.add_installer_page(InstallerTimezonePage())
+            self.add_installer_page(InstallerTimezonePage())"""
             self.add_installer_page(InstallerDiskLocationPage())
         except Exception as e:
             print("Fatal error during startup: %s" % e)
