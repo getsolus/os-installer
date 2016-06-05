@@ -48,3 +48,4 @@ class InstallerProgressPage(BasePage):
         self.info = info
         self.info.owner.set_can_next(False)
         self.info.owner.set_can_previous(False)
+        self.info.owner.set_can_quit(False)

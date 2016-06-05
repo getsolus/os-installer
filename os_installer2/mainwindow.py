@@ -83,6 +83,14 @@ class MainWindow(Gtk.ApplicationWindow):
     # Skip direction
     skip_forward = False
 
+    can_quit = True
+
+    def quit_handler(self, w, udata=None):
+        """ Ensure quit stuff is sane ... """
+        if not self.can_quit:
+            True
+        return False
+
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
@@ -92,6 +100,7 @@ class MainWindow(Gtk.ApplicationWindow):
             pass
 
         self.set_title("Installer")
+        self.connect("delete-event", self.quit_handler)
 
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_default_size(768, 500)
@@ -235,6 +244,18 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def set_can_next(self, can_next):
         self.next_button.set_sensitive(can_next)
+
+    def set_can_quit(self, can_quit):
+        """ Override quit handling """
+        self.can_quit = can_quit
+        if not self.can_quit:
+            self.prev_button.hide()
+            self.next_button.hide()
+            # self.set_deletable(False)
+        else:
+            self.prev_button.show_all()
+            self.next_button.show_all()
+            # self.set_deletable(True)
 
     def get_disk_manager(self):
         """ Return our disk manager object """
