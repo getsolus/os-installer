@@ -141,7 +141,7 @@ class SystemPartition:
             vfs = os.statvfs(mount_point)
             self.freespace = vfs.f_bavail * vfs.f_frsize
             self.totalspace = vfs.f_blocks * vfs.f_frsize
-            self.usedspace = (vfs.f_blocks - vfs.f_bfree) * vfs.f_frsize
+            self.usedspace = (vfs.f_blocks - vfs.f_bavail) * vfs.f_frsize
 
             self.freespace_string = dm.format_size_local(self.freespace)
             self.totalspace_string = dm.format_size_local(self.totalspace)
