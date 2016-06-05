@@ -618,7 +618,7 @@ class DiskManager:
             mount_point = mpoints[path]
 
         possibles = [
-            ("windows", self.get_windows_bootloader),
+            ("windows", self.get_windows_version),
             ("windows-boot", self.get_windows_bootloader),
             ("linux", self.get_linux_version),
         ]
