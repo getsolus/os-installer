@@ -61,6 +61,9 @@ class MainWindow(Gtk.ApplicationWindow):
     disk_manager = None
     perms = None
 
+    # Skip direction
+    skip_forward = False
+
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
@@ -167,6 +170,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def next_page(self):
         """ Move to next page """
+        self.skip_forward = True
         index = self.page_index + 1
         if index >= len(self.pages):
             return
@@ -178,6 +182,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.update_current_page()
 
     def prev_page(self):
+        self.skip_forward = False
         """ Move to previous page """
         index = self.page_index - 1
         if index < 0:
@@ -216,3 +221,10 @@ class MainWindow(Gtk.ApplicationWindow):
     def get_perms_manager(self):
         """ Return permission manager """
         return self.perms
+
+    def skip_page(self):
+        """ Allow pages to request skipping to next page """
+        if self.skip_forward:
+            self.next_page()
+        else:
+            self.prev_page()

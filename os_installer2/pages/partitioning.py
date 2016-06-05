@@ -51,5 +51,6 @@ class InstallerPartitioningPage(BasePage):
         for sk in skips:
             if isinstance(info.strategy, sk):
                 print("DEBUG: Skippable type")
+                self.info.owner.skip_page()
                 return
         print("non-skippable strategy: {}".format(info.strategy.get_name()))
