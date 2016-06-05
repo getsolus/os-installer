@@ -180,19 +180,11 @@ class DualBootStrategy(DiskStrategy):
                 max_prim -= 1
             if len(primaries) == max_prim:
                 if not ext:
-                    print("Debug: Max partitions hit on {} (no extended)".
-                          format(self.drive.path))
                     continue
                 log_parts = self.drive.disk.getLogicalPartitions()
                 max_logical = self.drive.disk.getMaxLogicalPartitions()
                 if len(log_parts) >= max_logical:
-                    print("Logical primary partition count exceeded on {}".
-                          format(self.drive.path))
                     continue
-                print("%s logicals now left" % (max_logical - len(log_parts)))
-            else:
-                print("Debug: {} remaining primaries on {}".
-                      format(max_prim - len(primaries), self.drive.path))
             # Can continue
             self.potential_spots.append(partition)
 

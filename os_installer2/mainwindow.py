@@ -178,7 +178,6 @@ class MainWindow(Gtk.ApplicationWindow):
         page = self.pages[index]
         if page.is_hidden():
             index += 1
-        print("Moving to page %s" % index)
         self.page_index = index
         self.update_current_page()
 

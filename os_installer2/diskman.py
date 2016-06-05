@@ -149,10 +149,6 @@ class SystemPartition:
         except Exception as e:
             print("Failed to stat {}: {}".format(mount_point, e))
 
-        print("{}: Used {} with {} left".format(self.path,
-                                                self.usedspace_string,
-                                                self.freespace_string))
-
 
 class SystemDrive:
     """ Handy helper for monitoring disks """
@@ -374,8 +370,6 @@ class DiskManager:
         fpath = os.path.realpath(fpath)
 
         if device not in self.devices:
-            ssd = str(self.is_device_ssd(fpath))
-            print("Debug: Discovered %s (SSD? %s)" % (fpath, ssd))
             self.devices.append(fpath)
 
     def is_device_ssd(self, path):
@@ -718,7 +712,6 @@ class DiskManager:
                     continue
 
                 if self.is_efi_system_partition(partition):
-                    print("Debug: Discovered ESP: %s" % partition.path)
                     list_esp.append(partition)
 
                 (part, os) = self.detect_operating_system_and_space(partition,
