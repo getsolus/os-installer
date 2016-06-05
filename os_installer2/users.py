@@ -12,6 +12,13 @@
 #
 
 
+""" Allowed regex for a username """
+USERNAME_REGEX = "^[a-z_][a-z0-9_-]*[$]?$"
+
+""" Minimum password length """
+PASSWORD_LENGTH = 6
+
+
 class User:
     """ Nothing fancifull here, just a user object creation thinger """
 
