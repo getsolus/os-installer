@@ -138,7 +138,7 @@ class DualBootPage(Gtk.VBox):
         max_avail = dm.format_size_local(avail - used, double_precision=True)
         total_size = dm.format_size_local(avail, double_precision=True)
 
-        l = "Resize the partitioning containing {} to make room for the " \
+        l = "Resize the partition containing {} to make room for the " \
             "new Solus installation.\n" \
             "Solus requires a minimum of {} disk space for the installation" \
             ", so free up <b>at least {}</b>\nfrom the maximum available " \
