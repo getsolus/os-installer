@@ -13,6 +13,9 @@
 
 import parted
 
+GiB = 1024 * 1024 * 1024
+MIN_REQUIRED_SIZE = 30 * GiB
+
 
 class DiskStrategy:
     """ Base DiskStrategy does nothing """
@@ -22,6 +25,9 @@ class DiskStrategy:
 
     def get_name(self):
         return "-fatal-"
+
+    def is_possible(self):
+        return False
 
 
 class WipeDiskStrategy(DiskStrategy):
@@ -39,23 +45,63 @@ class WipeDiskStrategy(DiskStrategy):
     def get_name(self):
         return "wipe-disk: {}".format(self.drive.path)
 
+    def is_possible(self):
+        if self.drive.size < MIN_REQUIRED_SIZE:
+            return False
+        return True
+
+
+class UseFreeSpaceStrategy(DiskStrategy):
+    """ Use free space on the device """
+    drive = None
+
+    potential_spots = []
+    candidate = None
+
+    def __init__(self, drive):
+        self.drive = drive
+
+    def get_display_string(self):
+        sz = "Use the remaining free space on this disk and install a fresh" \
+             "copy of Solus\nThis will not affect other systems."
+        return sz
+
+    def get_name(self):
+        return "use-free-space: {}".format(self.drive.path)
+
+    def is_possible(self):
+        # No disk, should be wipe-disk strategy
+        if not self.drive.disk:
+            return False
+        # Build up a selection of free space partitions to use
+        for part in self.drive.disk.getFreeSpacePartitions():
+            size = part.getLength() * self.drive.device.sectorSize
+            if size >= MIN_REQUIRED_SIZE:
+                self.potential_spots.append(part)
+        self.potential_spots.sort(key=parted.Partition.getLength, reverse=True)
+        # Got at least one space big enough to use
+        if len(self.potential_spots) > 0:
+            # Pick the biggest guy
+            self.candidate = self.potential_spots[0]
+            return True
+        return False
+
 
 class DiskStrategyManager:
     """ Strategy manager for installation solutions """
 
     prober = None
-    min_required_size = 0
 
     def __init__(self, prober):
         self.prober = prober
-        GiB = 1024 * 1024 * 1024
-        self.min_required_size = 30 * GiB
 
     def get_strategies(self, drive):
         ret = []
-        # Not big enough for any strategy
-        if drive.size < self.min_required_size:
-            return ret
 
-        ret.append(WipeDiskStrategy(drive))
+        wipe = WipeDiskStrategy(drive)
+        if wipe.is_possible():
+            ret.append(wipe)
+        space = UseFreeSpaceStrategy(drive)
+        if space.is_possible():
+            ret.append(space)
         return ret
