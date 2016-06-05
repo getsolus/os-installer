@@ -14,6 +14,7 @@
 import sys
 import os
 from os_installer2.diskman import DiskManager, DriveProber
+from os_installer2.strategy import DiskStrategyManager
 
 
 def main():
@@ -21,7 +22,12 @@ def main():
     dp = DriveProber(dm)
 
     dp.probe()
-    pass
+
+    strat = DiskStrategyManager(dp)
+    for drive in dp.drives:
+        ideas = strat.get_strategies(drive)
+        for idea in ideas:
+            print("Possible strategy: {}".format(idea.get_name()))
 
 if __name__ == "__main__":
     if os.geteuid() != 0:
