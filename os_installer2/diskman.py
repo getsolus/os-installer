@@ -205,7 +205,7 @@ class SystemDrive:
                 continue
             if part.fileSystem.type in ["linux-swap(v1)", "linux-swap(v0)"]:
                 parts.append(part)
-        parts.sort(key=parted.Partition.getLength(), reverse=True)
+        parts.sort(key=parted.Partition.getLength, reverse=True)
         return parts
 
     def get_display_string(self):

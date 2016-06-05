@@ -19,6 +19,16 @@ MIN_REQUIRED_SIZE = 10 * GB
 SWAP_USE_THRESHOLD = 15 * GB
 
 
+def find_best_swap_size(longsize):
+    gbs = longsize / GB
+    if gbs > 50:
+        return 4 * GB
+    elif gbs > 40:
+        return 2 * GB
+    else:
+        return 1 * GB
+
+
 class DiskStrategy:
     """ Base DiskStrategy does nothing """
 
@@ -36,9 +46,10 @@ class DiskStrategy:
     def get_priority(self):
         return self.priority
 
-    def explain(self):
+    def explain(self, dm):
         """ Step by step explanation of what we're doing to do. """
         return []
+
 
 class EmptyDiskStrategy(DiskStrategy):
     """ There is an empty disk, use this if it is big enough """
@@ -68,9 +79,9 @@ class EmptyDiskStrategy(DiskStrategy):
         # Probably wipe-disk
         return False
 
-    def explain(self):
+    def explain(self, dm):
         ret = []
-        ret.append("Wipe!")
+        ret.append("Use entire disk..")
         return ret
 
 
@@ -175,11 +186,40 @@ class DualBootStrategy(DiskStrategy):
     def get_name(self):
         return "dual-boot: {}".format(self.candidate_os)
 
-    def set_our_size(self):
-        self.our_size = our_size
+    def set_our_size(self, sz):
+        self.our_size = sz
 
     def set_their_size(self, sz):
-        self.their_size = their_size
+        self.their_size = sz
+
+    def explain(self, dm):
+        ret = []
+        their_new = dm.format_size_local(self.their_size, True)
+        their_old = dm.format_size_local(self.candidate_part.size, True)
+
+        ret.append("Resize {} ({}) from {} to {}".format(
+            self.candidate_os, self.candidate_part.path,
+            their_old, their_new))
+
+        tnew = self.our_size
+        # Find swap
+        swap = self.drive.get_swap_partitions()
+        swap_part = None
+        if swap:
+            swap_part = swap[0]
+        if swap_part:
+            ret.append("Use {} as swap partition".format(swap_part.path))
+        else:
+            if tnew >= SWAP_USE_THRESHOLD:
+                new_swap_size = find_best_swap_size(self.our_size)
+                tnew -= new_swap_size
+                new_sz = dm.format_size_local(new_swap_size, True)
+                ret.append("Create {} swap partition".format(new_sz))
+
+        our_new = dm.format_size_local(tnew, True)
+        ret.append("Install Solus in remaining {}".format(our_new))
+
+        return ret
 
     def is_possible(self):
         # Require table
@@ -217,6 +257,8 @@ class DualBootStrategy(DiskStrategy):
             self.sel_os = \
                 self.drive.operating_systems[self.candidate_part.path]
             self.candidate_os = self.sel_os.name
+            self.set_our_size(MIN_REQUIRED_SIZE)
+            self.set_their_size(self.candidate_part.size - MIN_REQUIRED_SIZE)
             return True
         return False
 

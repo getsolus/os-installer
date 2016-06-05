@@ -96,7 +96,7 @@ class InstallerSummaryPage(BasePage):
 
     def _clean_label(self, label):
         lab = Gtk.Label(label)
-        lab.set_halign(Gtk.Align.START)
+        lab.set_halign(Gtk.Align.END)
         return lab
 
     def prepare(self, info):
@@ -135,5 +135,5 @@ class InstallerSummaryPage(BasePage):
         # disk
         for kid in self.install_details.vbox.get_children():
             kid.destroy()
-        for line in info.strategy.explain():
+        for line in info.strategy.explain(info.owner.get_disk_manager()):
             self.install_details.add_label(self._clean_label(line))

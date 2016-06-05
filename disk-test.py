@@ -31,6 +31,8 @@ def main():
             continue
         for idea in ideas:
             print("Possible strategy: {}".format(idea.get_name()))
+            for line in idea.explain(dm):
+                print("Explain: {}".format(line))
 
 if __name__ == "__main__":
     if os.geteuid() != 0:
