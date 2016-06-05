@@ -108,6 +108,9 @@ class UseFreeSpaceStrategy(DiskStrategy):
         # No disk, should be empty-disk strategy
         if not self.drive.disk:
             return False
+        # No partitions at all, empty-disk
+        if len(self.drive.disk.partitions) == 0:
+            return False
         # Build up a selection of free space partitions to use
         for part in self.drive.disk.getFreeSpacePartitions():
             size = part.getLength() * self.drive.device.sectorSize
