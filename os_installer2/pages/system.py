@@ -58,6 +58,7 @@ class InstallerSystemPage(BasePage):
         self.check_utc.set_margin_top(20)
         mbox.pack_start(self.check_utc, False, False, 0)
         self.check_utc.set_no_show_all(True)
+        self.check_utc.connect("toggled", self.on_toggled)
 
         self.error_label = Gtk.Label.new("")
         self.pack_start(self.error_label, False, False, 0)
@@ -65,6 +66,12 @@ class InstallerSystemPage(BasePage):
         wid_group.add_widget(host)
         wid_group.add_widget(self.check_utc)
         wid_group.add_widget(self.error_label)
+
+    def on_toggled(self, w, d=None):
+        """ Handle UTC setting """
+        if not self.info:
+            return
+        self.info.system_utc = w.get_active()
 
     def host_validate(self, entry):
         """ Validate the hostname """
