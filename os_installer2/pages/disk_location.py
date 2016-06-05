@@ -121,6 +121,7 @@ class ChooserPage(Gtk.VBox):
         if not radio.get_active():
             return
         strat = radio.strategy
+        self.info.strategy = strat
         print("Radio chosen strategy: {}".format(strat.get_name()))
 
     def reset(self):
