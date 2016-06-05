@@ -16,6 +16,7 @@ from .diskman import SystemPartition
 
 GB = 1000 * 1000 * 1000
 MIN_REQUIRED_SIZE = 10 * GB
+SWAP_USE_THRESHOLD = 15 * GB
 
 
 class DiskStrategy:
