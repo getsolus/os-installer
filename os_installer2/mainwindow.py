@@ -51,6 +51,9 @@ class InstallInfo:
     cached_location = None
     cached_timezone = None
 
+    # Windows was detected
+    windows_present = False
+
 
 class MainWindow(Gtk.ApplicationWindow):
 

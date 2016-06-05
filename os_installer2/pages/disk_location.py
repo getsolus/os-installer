@@ -262,6 +262,13 @@ class InstallerDiskLocationPage(BasePage):
     def update_disks(self):
         """ Thread load finished, update UI from discovered info """
         self.chooser.set_drives(self.info, self.prober)
+        self.info.windows_present = False
+        for drive in self.prober.drives:
+            for os in drive.operating_systems:
+                os_ = drive.operating_systems[os]
+                if os_.otype == "windows":
+                    self.info.windows_present = True
+                    break
 
         # Allow forward navigation now
         self.info.owner.set_can_next(self.can_continue)

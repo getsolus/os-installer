@@ -57,6 +57,7 @@ class InstallerSystemPage(BasePage):
             "System clock uses UTC")
         self.check_utc.set_margin_top(20)
         mbox.pack_start(self.check_utc, False, False, 0)
+        self.check_utc.set_no_show_all(True)
 
         self.error_label = Gtk.Label.new("")
         self.pack_start(self.error_label, False, False, 0)
@@ -99,3 +100,8 @@ class InstallerSystemPage(BasePage):
         self.info = info
         # y u no hostname
         self.info.owner.set_can_next(False)
+        if self.info.windows_present:
+            self.check_utc.show()
+            self.check_utc.get_child().show()
+        else:
+            self.check_utc.hide()
