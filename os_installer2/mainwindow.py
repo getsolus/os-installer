@@ -21,6 +21,7 @@ from .pages.keyboard import InstallerKeyboardPage
 from .pages.timezone import InstallerTimezonePage
 from .pages.disk_location import InstallerDiskLocationPage
 from .pages.partitioning import InstallerPartitioningPage
+from .pages.system import InstallerSystemPage
 from .pages.summary import InstallerSummaryPage
 from . import join_resource_path as jrp
 import sys
@@ -129,6 +130,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.add_installer_page(InstallerTimezonePage())
             self.add_installer_page(InstallerDiskLocationPage())
             self.add_installer_page(InstallerPartitioningPage())
+            self.add_installer_page(InstallerSystemPage())
             self.add_installer_page(InstallerSummaryPage())
         except Exception as e:
             print("Fatal error during startup: %s" % e)
