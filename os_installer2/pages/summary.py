@@ -50,6 +50,11 @@ class FramedHeader(Gtk.Frame):
 class InstallerSummaryPage(BasePage):
     """ Installer summary page. """
 
+    locale_details = None
+    install_details = None
+    system_details = None
+    user_details = None
+
     def __init__(self):
         BasePage.__init__(self)
 
@@ -61,18 +66,21 @@ class InstallerSummaryPage(BasePage):
 
         items = Gtk.VBox(0)
         scroll.add(items)
-        f = FramedHeader("preferences-desktop-locale-symbolic",
-                         "Language &amp; Region")
-        items.pack_start(f, False, False, 2)
+        self.locale_details = FramedHeader(
+            "preferences-desktop-locale-symbolic",
+            "Language &amp; Region")
+        items.pack_start(self.locale_details, False, False, 2)
 
-        f = FramedHeader("drive-harddisk-system-symbolic", "Installation")
-        items.pack_start(f, False, False, 2)
+        self.install_details = FramedHeader("drive-harddisk-system-symbolic",
+                                            "Installation")
+        items.pack_start(self.install_details, False, False, 2)
 
-        f = FramedHeader("system-users-symbolic", "Users")
-        items.pack_start(f, False, False, 2)
+        self.user_details = FramedHeader("system-users-symbolic", "Users")
+        items.pack_start(self.user_details, False, False, 2)
 
-        f = FramedHeader("preferences-other-symbolic", "System Details")
-        items.pack_start(f, False, False, 2)
+        self.system_details = FramedHeader("preferences-other-symbolic",
+                                           "System Details")
+        items.pack_start(self.system_details, False, False, 2)
 
     def get_title(self):
         return "Summary"
@@ -81,7 +89,7 @@ class InstallerSummaryPage(BasePage):
         return "summary"
 
     def get_icon_name(self):
-        return "emblem-ok-symbolic"
+        return "dialog-information-symbolic"
 
     def prepare(self, info):
         info.owner.set_final_step(True)
