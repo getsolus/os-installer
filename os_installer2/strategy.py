@@ -79,6 +79,9 @@ class WipeDiskStrategy(DiskStrategy):
         # No table, use empty-disk strategy
         if not self.drive.disk:
             return False
+        # This is an empty-disk strategy
+        if len(self.drive.disk.partitions) == 0:
+            return False
         return True
 
 
