@@ -122,11 +122,21 @@ class SystemPartition:
     usedspace = None
     usedspace_string = None
 
+    # Actual size of this partition
+    size = None
+
+    def getLength(self):
+        """ Purely for sort compat """
+        return self.size
+
     def __init__(self, partition, mount_point, dm):
         self.partition = partition
         self.path = partition.path
 
-        # TODO: Something useful with the vfs_stat
+        sectorSize = self.partition.disk.device.sectorSize
+        self.size = self.partition.getLength() * sectorSize
+
+        # Get the free space available here
         try:
             vfs = os.statvfs(mount_point)
             self.freespace = vfs.f_bavail * vfs.f_frsize

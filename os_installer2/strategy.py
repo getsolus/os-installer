@@ -12,9 +12,10 @@
 #
 
 import parted
+from .diskman import SystemPartition
 
 GiB = 1024 * 1024 * 1024
-MIN_REQUIRED_SIZE = 30 * GiB
+MIN_REQUIRED_SIZE = 10 * GiB
 
 
 class DiskStrategy:
@@ -55,11 +56,12 @@ class UseFreeSpaceStrategy(DiskStrategy):
     """ Use free space on the device """
     drive = None
 
-    potential_spots = []
+    potential_spots = None
     candidate = None
 
     def __init__(self, drive):
         self.drive = drive
+        self.potential_spots = []
 
     def get_display_string(self):
         sz = "Use the remaining free space on this disk and install a fresh" \
@@ -90,17 +92,38 @@ class UseFreeSpaceStrategy(DiskStrategy):
 class DualBootStrategy(DiskStrategy):
     """ Dual-boot alongside the biggest install by resizing it """
     drive = None
+    potential_spots = None
+    candidate_part = None
+    candidate_os = None
 
     def __init__(self, drive):
         self.drive = drive
+        self.potential_spots = []
 
     def get_display_string(self):
         return "TODO: Add intelligent string"
 
     def get_name(self):
-        return "dual-boot: {}".format(self.drive.path)
+        return "dual-boot: {}".format(self.candidate_os)
 
     def is_possible(self):
+        for os_part in self.drive.operating_systems:
+            if os_part not in self.drive.partitions:
+                print("Warning: missing os_part: {}".format(os_part))
+                continue
+            partition = self.drive.partitions[os_part]
+            if partition.size < MIN_REQUIRED_SIZE:
+                continue
+            if partition.freespace >= MIN_REQUIRED_SIZE:
+                self.potential_spots.append(partition)
+
+        self.potential_spots.sort(key=SystemPartition.getLength,
+                                  reverse=True)
+        if len(self.potential_spots) > 0:
+            self.candidate_part = self.potential_spots[0]
+            self.candidate_os = \
+                self.drive.operating_systems[self.candidate_part.path].name
+            return True
         return False
 
 
@@ -140,7 +163,6 @@ class DiskStrategyManager:
             DualBootStrategy,
             UserPartitionStrategy
         ]
-
         for pot in strats:
             i = pot(drive)
             if not i.is_possible():
