@@ -276,6 +276,7 @@ class InstallerDiskLocationPage(BasePage):
         self.spinner.show_all()
         self.had_init = True
         self.info.owner.set_can_previous(False)
+        self.queue_draw()
 
         t = threading.Thread(target=self.load_disks)
         t.daemon = True
