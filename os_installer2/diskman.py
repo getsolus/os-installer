@@ -197,8 +197,9 @@ class SystemDrive:
 
     def get_display_string(self):
         """ Format usable in UIs """
-        return "{} {} {} ({})".format(self.vendor, self.model,
-                                      self.sizeString, self.device.path)
+        return "{} {} ({})".format(self.device.model,
+                                   self.sizeString,
+                                   self.device.path)
 
     def get_disk_type(self):
         """ Return the disk type, if any """
