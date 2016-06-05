@@ -92,6 +92,7 @@ class ChooserPage(Gtk.VBox):
     def set_drives(self, info, prober):
         """ Set the display drives """
         self.info = info
+        self.info.strategy = None
         self.reset()
 
         self.manager = DiskStrategyManager(prober)
