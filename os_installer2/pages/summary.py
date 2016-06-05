@@ -112,3 +112,12 @@ class InstallerSummaryPage(BasePage):
             "Use {} as default keyboard layout".format(info.keyboard_sz)))
         self.locale_details.add_label(self._clean_label(
             "Set timezone to {}".format(info.timezone)))
+
+        # Details
+        for kid in self.system_details.vbox.get_children():
+            kid.destroy()
+        self.system_details.add_label(self._clean_label(
+            "Set device host-name to \"{}\"".format(info.hostname)))
+        if info.windows_present:
+            s = "Enable UTC time" if info.system_utc else "Disable UTC time"
+            self.system_details.add_label(self._clean_label(s))
