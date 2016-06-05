@@ -21,6 +21,8 @@ MIN_REQUIRED_SIZE = 10 * GiB
 class DiskStrategy:
     """ Base DiskStrategy does nothing """
 
+    priority = 0
+
     def get_display_string(self):
         return "Fatal Error"
 
@@ -30,10 +32,15 @@ class DiskStrategy:
     def is_possible(self):
         return False
 
+    def get_priority(self):
+        return self.priority
+
 
 class EmptyDiskStrategy(DiskStrategy):
     """ There is an empty disk, use this if it is big enough """
     drive = None
+
+    priority = 50
 
     def __init__(self, drive):
         self.drive = drive
@@ -61,6 +68,8 @@ class EmptyDiskStrategy(DiskStrategy):
 class WipeDiskStrategy(DiskStrategy):
     """ We simply wipe and take over a complete disk """
     drive = None
+
+    priority = 20
 
     def __init__(self, drive):
         self.drive = drive
@@ -91,6 +100,8 @@ class UseFreeSpaceStrategy(DiskStrategy):
 
     potential_spots = None
     candidate = None
+
+    priority = 30
 
     def __init__(self, drive):
         self.drive = drive
@@ -132,6 +143,8 @@ class DualBootStrategy(DiskStrategy):
     candidate_part = None
     candidate_os = None
 
+    priority = 40
+
     def __init__(self, drive):
         self.drive = drive
         self.potential_spots = []
@@ -171,6 +184,8 @@ class UserPartitionStrategy(DiskStrategy):
         partitioning """
     drive = None
 
+    priority = 10
+
     def __init__(self, drive):
         self.drive = drive
 
@@ -208,4 +223,5 @@ class DiskStrategyManager:
             if not i.is_possible():
                 continue
             ret.append(i)
+        ret.sort(key=DiskStrategy.get_priority, reverse=True)
         return ret
