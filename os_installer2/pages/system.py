@@ -75,7 +75,7 @@ class InstallerSystemPage(BasePage):
                                           "action-unavailable-symbolic")
             self.error_label.set_markup(
                 "Hostname must be <b>lowercase</b>, and only contain "
-                "letters,\n<i>numbers, hyphens and underscores</i>."
+                "<i>letters,\nnumbers, hyphens and underscores</i>."
                 "Hostnames must\nalso start with a lowercase letter.")
         else:
             entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
