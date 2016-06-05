@@ -123,6 +123,9 @@ class InstallerKeyboardPage(BasePage):
             lang = "en"
             country = "US"
 
+        if self.info.cached_location:
+            country = self.info.cached_location.upper()
+
         l = self.info.locale
         success, type_, id_ = GnomeDesktop.get_input_source_from_locale(l)
 
