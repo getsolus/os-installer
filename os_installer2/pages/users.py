@@ -33,4 +33,4 @@ class InstallerUsersPage(BasePage):
 
     def prepare(self, info):
         self.info = info
-        self.info.owner.set_can_next(False)
+        self.info.owner.set_can_next(True)
