@@ -60,6 +60,8 @@ class InstallInfo:
     windows_present = False
     system_utc = False
 
+    users = None
+
 
 class MainWindow(Gtk.ApplicationWindow):
 

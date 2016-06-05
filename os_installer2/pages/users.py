@@ -78,6 +78,7 @@ class NewUserPage(Gtk.Grid):
     def __init__(self, owner):
         Gtk.Grid.__init__(self)
         self.owner = owner
+        self.set_margin_top(40)
 
         self.set_column_spacing(10)
         self.set_row_spacing(10)
@@ -185,6 +186,105 @@ class InstallerUsersPage(BasePage):
     def __init__(self):
         BasePage.__init__(self)
 
+        self.listbox = Gtk.ListBox()
+        self.listbox.connect("row-activated", self.activated)
+        scroller = Gtk.ScrolledWindow(None, None)
+        scroller.add(self.listbox)
+        scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        scroller.get_style_context().set_junction_sides(
+            Gtk.JunctionSides.BOTTOM)
+
+        # Placeholder stuff
+        placeholder = Gtk.Label("<big>{}</big>".format(
+            "You haven\'t added any users yet."))
+        placeholder.set_use_markup(True)
+        placeholder.show()
+        self.listbox.set_placeholder(placeholder)
+
+        toolbar = Gtk.Toolbar()
+        toolbar.set_icon_size(Gtk.IconSize.SMALL_TOOLBAR)
+        toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_INLINE_TOOLBAR)
+        junctions = Gtk.JunctionSides.TOP
+        toolbar.get_style_context().set_junction_sides(junctions)
+
+        add = Gtk.ToolButton()
+        add.connect("clicked", self.add_user)
+        add.set_icon_name("list-add-symbolic")
+        toolbar.add(add)
+
+        self.remove = Gtk.ToolButton()
+        self.remove.set_icon_name("list-remove-symbolic")
+        self.remove.set_sensitive(False)
+        self.remove.connect("clicked", self.delete_user)
+        toolbar.add(self.remove)
+
+        # We use a stack here too, because dialogs are horrible.
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
+        self.pack_start(self.stack, True, True, 0)
+
+        main_page = Gtk.VBox()
+        main_page.pack_start(scroller, True, True, 0)
+        main_page.pack_start(toolbar, False, False, 0)
+        main_page.set_border_width(40)
+
+        self.stack.add_named(main_page, "main")
+
+        self.add_user_page = NewUserPage(self)
+        self.stack.add_named(self.add_user_page, "add-user")
+
+    def activated(self, box, row):
+        if row is None:
+            self.remove.set_sensitive(False)
+            return
+        self.remove.set_sensitive(True)
+
+    def delete_user(self, w=None):
+        row = self.listbox.get_selected_row()
+        if row is None:
+            self.remove.set_sensitive(False)
+            return
+        user = row.get_children()[0].user
+        self.info.users.remove(user)
+        self.listbox.remove(row)
+        self.remove.set_sensitive(False)
+
+        if len(self.info.users) == 0:
+            self.info.owner.set_can_next(False)
+
+    def add_user(self, widget):
+        admins = [user for user in self.info.users if user.admin]
+        self.stack.set_visible_child_name("add-user")
+        if len(admins) == 0:
+            # Force this new user to be an administrator
+            self.add_user_page.adminuser.set_sensitive(False)
+            self.add_user_page.adminuser.set_active(True)
+        self.info.owner.set_can_previous(False)
+
+    def add_new_user(self, user):
+        self.info.users.append(user)
+        user_panel = UserPanel(user)
+        self.listbox.add(user_panel)
+        self.listbox.show_all()
+        self.info.owner.set_can_next(True)
+
+    def show_main(self):
+        self.stack.set_visible_child_name("main")
+        self.info.owner.set_can_previous(True)
+        self.add_user_page.clear_form()
+
+    def prepare(self, info):
+        self.info = info
+        if not self.info.users:
+            self.info.users = list()
+
+        self.info.owner.set_can_previous(True)
+        self.info.owner.set_can_next(len(self.info.users) > 0)
+        self.stack.set_visible_child_name("main")
+        self.show_all()
+        self.add_user_page.clear_form()
+
     def get_title(self):
         return "Who will use this device?"
 
@@ -193,7 +293,3 @@ class InstallerUsersPage(BasePage):
 
     def get_icon_name(self):
         return "system-users-symbolic"
-
-    def prepare(self, info):
-        self.info = info
-        self.info.owner.set_can_next(True)
