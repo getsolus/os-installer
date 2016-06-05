@@ -12,6 +12,9 @@
 #
 
 from .basepage import BasePage
+from os_installer2.strategy import EmptyDiskStrategy
+from os_installer2.strategy import WipeDiskStrategy
+from os_installer2.strategy import UseFreeSpaceStrategy
 import sys
 
 
@@ -39,3 +42,14 @@ class InstallerPartitioningPage(BasePage):
         if not info.strategy:
             print("FATAL: No strategy")
             sys.exit(0)
+
+        skips = [
+            EmptyDiskStrategy,
+            WipeDiskStrategy,
+            UseFreeSpaceStrategy,
+        ]
+        for sk in skips:
+            if isinstance(info.strategy, sk):
+                print("DEBUG: Skippable type")
+                return
+        print("non-skippable strategy: {}".format(info.strategy.get_name()))
