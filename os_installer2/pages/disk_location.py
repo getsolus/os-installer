@@ -14,6 +14,7 @@
 from .basepage import BasePage
 from gi.repository import Gdk, Gtk, GLib
 from os_installer2.diskman import DriveProber
+from os_installer2.strategy import DiskStrategyManager
 import threading
 
 
@@ -21,6 +22,10 @@ class ChooserPage(Gtk.VBox):
     """ Main chooser UI """
 
     combo = None
+    strategy_box = None
+    respond = False
+    manager = None
+    drives = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -31,39 +36,39 @@ class ChooserPage(Gtk.VBox):
 
         self.pack_start(self.combo, False, False, 0)
 
-        # Install side-by-side
-        self.side_by_side = Gtk.RadioButton.new_with_label_from_widget(
-            None,
-            "Install a fresh copy of Solus alongside your existing Operating "
-            "System.\nYou can choose how much space Solus should use in the "
-            "next screen.")
-        self.side_by_side.get_child().set_margin_start(10)
-        self.pack_start(self.side_by_side, False, False, 12)
-        self.side_by_side.set_margin_top(20)
+        self.strategy_box = Gtk.VBox(0)
+        self.pack_start(self.strategy_box, True, True, 0)
 
-        # Set up the nuke&pave option
-        self.nuke_and_pave = Gtk.RadioButton.new_with_label_from_widget(
-            self.side_by_side,
-            "Erase all content on this disk and install a fresh copy of Solus"
-            "\nThis will <b>destroy all existing data on the disk</b>.")
-        self.nuke_and_pave.get_child().set_use_markup(True)
-        self.nuke_and_pave.get_child().set_margin_start(10)
-        self.pack_start(self.nuke_and_pave, False, False, 12)
+        self.respond = True
+        self.combo.connect("changed", self.on_combo_changed)
 
-        # blank disk
-        self.blank_disk = Gtk.RadioButton.new_with_label_from_widget(
-            self.side_by_side,
-            "Automatically configure your device's disk and install a fresh "
-            "copy of Solus.")
-        # self.pack_start(self.blank_disk, False, False, 20)
+    def on_combo_changed(self, combo, w=None):
+        print("Selected: {}".format(combo.get_active_id()))
+        drive = self.drives[combo.get_active_id()]
+        strats = self.manager.get_strategies(drive)
 
-        # Manual
-        self.manual = Gtk.RadioButton.new_with_label_from_widget(
-            self.side_by_side,
-            "Create, resize and manually configure disk partitions yourself. "
-            "This method\nmay lead to data loss.")
-        self.manual.get_child().set_margin_start(10)
-        self.pack_start(self.manual, False, False, 12)
+        print("Got {} strategies for {}".format(len(strats), drive.path))
+
+    def reset(self):
+        self.respond = False
+        self.combo.remove_all()
+        self.drives = dict()
+        for widget in self.strategy_box.get_children():
+            self.strategy_box.remove(widget)
+        self.respond = True
+
+    def set_drives(self, prober):
+        """ Set the display drives """
+        self.reset()
+
+        self.manager = DiskStrategyManager(prober)
+        active_id = None
+        for drive in prober.drives:
+            self.combo.append(drive.path, drive.get_display_string())
+            self.drives[drive.path] = drive
+            if not active_id:
+                active_id = drive.path
+        self.combo.set_active_id(active_id)
 
 
 class WhoopsPage(Gtk.VBox):
@@ -173,15 +178,13 @@ class InstallerDiskLocationPage(BasePage):
 
     def update_disks(self):
         """ Thread load finished, update UI from discovered info """
-        self.chooser.combo.remove_all()
+        self.chooser.set_drives(self.prober)
         for drive in self.prober.drives:
             print("Debug: Add device: {}".format(drive.path))
             for os_path in drive.operating_systems:
                 os = drive.operating_systems[os_path]
                 print("\t{} OS: {} (icon: {})".format(os_path,
                                                       os.name, os.icon_name))
-            self.chooser.combo.append_text(drive.get_display_string())
-        self.chooser.combo.set_active(0)
         if self.prober.is_broken_windows_uefi():
             print("Broken UEFI system detected")
         else:
