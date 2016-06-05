@@ -195,6 +195,19 @@ class SystemDrive:
 
         self.size = self.device.getLength() * self.device.sectorSize
 
+    def get_swap_partitions(self):
+        """ Get all swap partititons """
+        parts = []
+        if not self.disk:
+            return parts
+        for part in self.disk.partitions:
+            if not part.fileSystem:
+                continue
+            if part.fileSystem.type in ["linux-swap(v1)", "linux-swap(v0)"]:
+                parts.append(part)
+        parts.sort(key=parted.Partition.getLength(), reverse=True)
+        return parts
+
     def get_display_string(self):
         """ Format usable in UIs """
         return "{} {} ({})".format(self.device.model,
