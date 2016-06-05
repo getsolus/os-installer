@@ -202,7 +202,7 @@ class InstallerKeyboardPage(BasePage):
         for item in self.extras:
             if item.kb in self.shown_layouts:
                 continue
-            self.shown_layouts.add(item.dname)
+            self.shown_layouts.add(item.kb)
             self.layouts.add(item)
 
         for layout in layouts:
@@ -218,6 +218,8 @@ class InstallerKeyboardPage(BasePage):
             appends.append(widget)
         appends.sort(key=lambda x: x.dname.lower())
         for app in appends:
+            if app.kb in self.shown_layouts:
+                continue
             self.layouts.add(app)
 
     def get_title(self):
