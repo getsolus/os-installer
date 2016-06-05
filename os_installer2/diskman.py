@@ -54,24 +54,26 @@ class DriveProber:
 
         for item in self.dm.devices:
             disk = None
+            device = None
             try:
-                p = parted.getDevice(item)
-                disk = parted.Disk(p)
+                device = parted.getDevice(item)
+            except Exception as e:
+                print("Cannot probe device: {}".format(e))
+                continue
+            try:
+                disk = parted.Disk(device)
             except Exception as e:
                 print("Cannot probe disk: {}".format(e))
-                continue
-            if not disk:
-                continue
 
             # Get a system drive
-            drive = self.dm.parse_system_disk(disk, self.mtab)
+            drive = self.dm.parse_system_disk(device, disk, self.mtab)
             self.drives.append(drive)
 
     def is_broken_windows_uefi(self):
         """ Determine if we booted with UEFI on a MBR Windows system """
         if not self.dm.is_efi_booted():
             return False
-        gpt_disks = [x for x in self.drives if x.disk.type == "gpt"]
+        gpt_disks = [x for x in self.drives if x.get_disk_type() == "gpt"]
         have_windows = False
         efi_sps = []
         for drive in self.drives:
@@ -139,6 +141,9 @@ class SystemPartition:
 class SystemDrive:
     """ Handy helper for monitoring disks """
 
+    # The parted.Device
+    device = None
+
     # The parted.Disk
     disk = None
 
@@ -163,20 +168,26 @@ class SystemDrive:
     # Encapsulated partitions
     partitions = None
 
-    def __init__(self, disk, vendor, model, sizeString, operating_systems):
+    def __init__(self, device, disk, vendor, model, sizeString, ops):
+        self.device = device
         self.disk = disk
         self.vendor = vendor
         self.model = model
         self.sizeString = sizeString
-        self.operating_systems = operating_systems
-        self.path = disk.device.path
+        self.operating_systems = ops
+        self.path = device.path
         self.partitions = dict()
 
     def get_display_string(self):
         """ Format usable in UIs """
         return "{} {} {} ({})".format(self.vendor, self.model,
-                                      self.sizeString, self.disk.device.path)
+                                      self.sizeString, self.device.path)
 
+    def get_disk_type(self):
+        """ Return the disk type, if any """
+        if self.disk:
+            return self.disk.type
+        return None
 
 class OsType:
     """ OS detection code ensuring we don't lose information """
@@ -648,13 +659,13 @@ class DiskManager:
         SZ = "%s %s" % (locale.format(fmt, numeric, grouping=True), code)
         return SZ
 
-    def get_disk_size_bytes(self, disk):
-        """ Return byte length of disk (parted.Disk) """
-        return disk.device.getLength() * disk.device.sectorSize
+    def get_disk_size_bytes(self, device):
+        """ Return byte length of disk (parted.Device) """
+        return device.getLength() * device.sectorSize
 
-    def get_disk_size_string(self, disk):
-        """ Return formatted size of disk (parted.Disk) """
-        return self.format_size_local(self.get_disk_size_bytes(disk))
+    def get_disk_size_string(self, device):
+        """ Return formatted size of disk (parted.Device) """
+        return self.format_size_local(self.get_disk_size_bytes(device))
 
     def is_efi_booted(self):
         """ Determine if we booted using UEFI """
@@ -664,31 +675,34 @@ class DiskManager:
         """ 64-bit or 32-bit firmware """
         return self.uefi_fw_size
 
-    def parse_system_disk(self, disk, mpoints):
+    def parse_system_disk(self, device, disk, mpoints):
         """ Parse a given parted.Disk into a SystemDevice """
         operating_systems = dict()
         list_esp = list()
         partitions = dict()
-        for partition in disk.partitions:
-            if not partition.fileSystem:
-                continue
 
-            if self.is_efi_system_partition(partition):
-                print("Debug: Discovered ESP: %s" % partition.path)
-                list_esp.append(partition)
+        # Could be a disk without a label
+        if disk:
+            for partition in disk.partitions:
+                if not partition.fileSystem:
+                    continue
 
-            (part, os) = self.detect_operating_system_and_space(partition,
-                                                                mpoints)
-            partitions[partition.path] = part
-            if not os:
-                continue
-            operating_systems[partition.path] = os
+                if self.is_efi_system_partition(partition):
+                    print("Debug: Discovered ESP: %s" % partition.path)
+                    list_esp.append(partition)
 
-        sz = self.get_disk_size_string(disk)
+                (part, os) = self.detect_operating_system_and_space(partition,
+                                                                    mpoints)
+                partitions[partition.path] = part
+                if not os:
+                    continue
+                operating_systems[partition.path] = os
 
-        vendor = self.get_disk_vendor(disk.device.path)
-        model = self.get_disk_model(disk.device.path)
-        r = SystemDrive(disk, vendor, model, sz, operating_systems)
+        sz = self.get_disk_size_string(device)
+
+        vendor = self.get_disk_vendor(device.path)
+        model = self.get_disk_model(device.path)
+        r = SystemDrive(device, disk, vendor, model, sz, operating_systems)
         # Cache ESP
         r.list_esp = list_esp
         r.partitions = partitions
