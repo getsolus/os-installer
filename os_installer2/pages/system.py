@@ -26,6 +26,7 @@ class InstallerSystemPage(BasePage):
     host_reg = None
     host_entry = None
     check_utc = None
+    error_label = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -34,9 +35,11 @@ class InstallerSystemPage(BasePage):
         wid_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
 
         mbox = Gtk.VBox(0)
+        mbox.set_border_width(40)
+        mbox.set_margin_top(40)
         self.pack_start(mbox, True, True, 0)
         mbox.set_halign(Gtk.Align.CENTER)
-        mbox.set_valign(Gtk.Align.CENTER)
+        mbox.set_hexpand(False)
 
         # hostname section
         host = Gtk.Frame()
@@ -46,6 +49,7 @@ class InstallerSystemPage(BasePage):
         mbox.pack_start(host, False, False, 10)
 
         self.host_entry = Gtk.Entry()
+        self.host_entry.connect("changed", self.host_validate)
         self.host_entry.set_placeholder_text("Type the hostname here")
         host.add(self.host_entry)
 
@@ -54,8 +58,33 @@ class InstallerSystemPage(BasePage):
         self.check_utc.set_margin_top(20)
         mbox.pack_start(self.check_utc, False, False, 0)
 
+        self.error_label = Gtk.Label.new("")
+        self.pack_start(self.error_label, False, False, 0)
+
         wid_group.add_widget(host)
         wid_group.add_widget(self.check_utc)
+        wid_group.add_widget(self.error_label)
+
+    def host_validate(self, entry):
+        """ Validate the hostname """
+        text = entry.get_text()
+        match = self.host_reg.match(text)
+        can_fwd = False
+        if match is None:
+            entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
+                                          "action-unavailable-symbolic")
+            self.error_label.set_markup(
+                "Hostname must be <b>lowercase</b>, and only contain "
+                "letters,\n<i>numbers, hyphens and underscores</i>."
+                "Hostnames must\nalso start with a lowercase letter.")
+        else:
+            entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY,
+                                          "emblem-ok-symbolic")
+            self.error_label.set_markup("")
+            can_fwd = True
+        if not self.info:
+            return
+        self.info.owner.set_can_next(can_fwd)
 
     def get_title(self):
         return "System Settings"
