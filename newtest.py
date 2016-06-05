@@ -78,7 +78,7 @@ def main():
 
     if not drive.disk:
         print("Drive misses partition table!")
-        drive.disk = parted.freshDisk(drive.device, "gpt")
+        drive.disk = parted.freshDisk(drive.device, "msdos")
 
         # Start at 34 for GPT, moar for MBR
         start_offset = drive.disk.getFirstPartition().geometry.end + 1
