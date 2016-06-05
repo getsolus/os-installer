@@ -16,6 +16,7 @@ from .permissions import PermissionsManager
 from .pages.welcome import InstallerWelcomePage
 from .pages.language import InstallerLanguagePage
 from .pages.location import InstallerLocationPage
+from .pages.geoip import InstallerGeoipPage
 from .pages.keyboard import InstallerKeyboardPage
 from .pages.timezone import InstallerTimezonePage
 from .pages.disk_location import InstallerDiskLocationPage
@@ -43,6 +44,9 @@ class InstallInfo:
 
     # The chosen disk strategy
     strategy = None
+
+    # Whether to enable geoip lookups
+    enable_geoip = False
 
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -118,6 +122,7 @@ class MainWindow(Gtk.ApplicationWindow):
         try:
             self.add_installer_page(InstallerLanguagePage())
             self.add_installer_page(InstallerLocationPage())
+            self.add_installer_page(InstallerGeoipPage())
             self.add_installer_page(InstallerKeyboardPage())
             self.add_installer_page(InstallerTimezonePage())
             self.add_installer_page(InstallerDiskLocationPage())
