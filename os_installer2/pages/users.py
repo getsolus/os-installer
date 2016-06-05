@@ -131,8 +131,8 @@ class NewUserPage(Gtk.Grid):
 
         self.set_column_spacing(10)
         self.set_row_spacing(10)
-        self.set_margin_left(50)
-        self.set_margin_right(50)
+        self.set_margin_left(100)
+        self.set_margin_right(100)
 
         self.scores = dict()
         self.needed_score = 4
