@@ -94,8 +94,13 @@ class InstallerTimezonePage(BasePage):
 
     def prepare(self, info):
         self.info = info
-        # TODO: Seed based on geoip
         if self.info.timezone:
             self.info.owner.set_can_next(True)
         else:
-            self.info.owner.set_can_next(False)
+            # Use geoip
+            if self.info.cached_timezone:
+                self.tmap.set_timezone(self.info.cached_timezone)
+                self.timezone = self.info.cached_timezone
+                self.info.owner.set_can_next(True)
+            else:
+                self.info.owner.set_can_next(False)
