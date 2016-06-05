@@ -47,6 +47,8 @@ class InstallInfo:
 
     # Whether to enable geoip lookups
     enable_geoip = False
+    cached_location = None
+    cached_timezone = None
 
 
 class MainWindow(Gtk.ApplicationWindow):

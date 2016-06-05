@@ -18,6 +18,9 @@ from gi.repository import Gtk
 class InstallerLocationPage(BasePage):
     """ Basic location detection page. """
 
+    info = None
+    checkbox = None
+
     def __init__(self):
         BasePage.__init__(self)
 
@@ -33,10 +36,17 @@ are in the world and proceed automatically.")
         self.pack_start(lab, False, False, 0)
 
         check_str = "Find my location automatically."
-        checkbox = Gtk.CheckButton.new_with_label(check_str)
-        self.pack_start(checkbox, False, False, 0)
-        checkbox.set_margin_top(40)
-        checkbox.set_margin_start(32)
+        self.checkbox = Gtk.CheckButton.new_with_label(check_str)
+        self.pack_start(self.checkbox, False, False, 0)
+        self.checkbox.set_margin_top(40)
+        self.checkbox.set_margin_start(32)
+
+        self.checkbox.connect("toggled", self.on_toggled)
+
+    def on_toggled(self, w, d=None):
+        if not self.info:
+            return
+        self.info.enable_geoip = w.get_active()
 
     def get_title(self):
         return "Where are you?"
@@ -46,3 +56,9 @@ are in the world and proceed automatically.")
 
     def get_icon_name(self):
         return "find-location-symbolic"
+
+    def prepare(self, info):
+        self.info = info
+        if self.info.cached_timezone:
+            self.checkbox.set_sensitive(False)
+            self.checkbox.set_tooltip_text("Location already found")
