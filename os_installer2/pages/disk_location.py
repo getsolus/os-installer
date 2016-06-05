@@ -271,16 +271,21 @@ class InstallerDiskLocationPage(BasePage):
         """ Prepare for viewing... """
         if self.had_init:
             return
+        self.had_init = True
         self.stack.set_visible_child_name("loading")
         self.spinner.start()
         self.spinner.show_all()
-        self.had_init = True
+        GLib.idle_add(self.prepare_view)
+
+    def prepare_view(self):
+        """ Do the real job after GTK has done things.. """
         self.info.owner.set_can_previous(False)
         self.queue_draw()
 
         t = threading.Thread(target=self.load_disks)
         t.daemon = True
         t.start()
+        return False
 
     def prepare(self, info):
         self.info = info
