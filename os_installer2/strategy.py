@@ -232,20 +232,26 @@ class DiskStrategyManager:
     """ Strategy manager for installation solutions """
 
     prober = None
+    broken_uefi = False
 
     def __init__(self, prober):
         self.prober = prober
+        self.broken_uefi = prober.is_broken_windows_uefi()
 
     def get_strategies(self, drive):
         ret = []
         # Possible strategies
         strats = [
             WipeDiskStrategy,
-            UseFreeSpaceStrategy,
-            DualBootStrategy,
             UserPartitionStrategy,
-            EmptyDiskStrategy
+            EmptyDiskStrategy,
         ]
+        # In short, you're in the wrong mode.
+        if not self.broken_uefi:
+            strats.extend([
+                UseFreeSpaceStrategy,
+                DualBootStrategy,
+            ])
         for pot in strats:
             i = pot(drive)
             if not i.is_possible():

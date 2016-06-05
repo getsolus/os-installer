@@ -18,6 +18,47 @@ from os_installer2.strategy import DiskStrategyManager
 import threading
 
 
+class BrokenWindowsPage(Gtk.VBox):
+    """ Indicate to the user that they booted in the wrong mode """
+
+    owner = None
+
+    def __init__(self, owner):
+        Gtk.VBox.__init__(self)
+        self.owner = owner
+
+        img = Gtk.Image.new_from_icon_name("face-crying-symbolic",
+                                           Gtk.IconSize.DIALOG)
+
+        self.pack_start(img, False, False, 10)
+
+        label = Gtk.Label("<big>%s</big>" %
+                          "You have booted Solus in UEFI mode, however your\n"
+                          "system is configured by Windows to use BIOS mode.\n"
+                          "If you wish to dual-boot, please reboot using the"
+                          " legacy mode.\n"
+                          "Otherwise, you may wipe disks in the next screen")
+        label.set_property("xalign", 0.5)
+        label.set_use_markup(True)
+        self.pack_start(label, False, False, 10)
+
+        button = Gtk.Button.new_with_label("Continue")
+        button.get_style_context().add_class("destructive-action")
+        button.set_halign(Gtk.Align.CENTER)
+        self.pack_start(button, False, False, 10)
+
+        button.connect("clicked", self.on_clicked)
+
+        self.set_valign(Gtk.Align.CENTER)
+        self.set_halign(Gtk.Align.CENTER)
+
+    def on_clicked(self, btn, w=None):
+        """ Update owner page """
+        self.owner.can_continue = True
+        self.owner.info.owner.set_can_next(True)
+        self.owner.stack.set_visible_child_name("chooser")
+
+
 class ChooserPage(Gtk.VBox):
     """ Main chooser UI """
 
@@ -159,6 +200,7 @@ class InstallerDiskLocationPage(BasePage):
     whoops = None
     chooser = None
     prober = None
+    can_continue = False
 
     def __init__(self):
         BasePage.__init__(self)
@@ -170,6 +212,8 @@ class InstallerDiskLocationPage(BasePage):
 
         self.whoops = WhoopsPage()
         self.stack.add_named(self.whoops, "whoops")
+        broken = BrokenWindowsPage(self)
+        self.stack.add_named(broken, "broken-windows")
         self.stack.add_named(self.spinner, "loading")
         self.chooser = ChooserPage()
         self.stack.add_named(self.chooser, "chooser")
@@ -199,16 +243,24 @@ class InstallerDiskLocationPage(BasePage):
         # Currently the only GTK call here
         Gdk.threads_enter()
         self.info.owner.set_can_previous(True)
+        can_continue = True
+
         if len(self.prober.drives) == 0:
             # No drives
             self.stack.set_visible_child_name("whoops")
+            can_continue = False
+        elif self.prober.is_broken_windows_uefi():
+            self.stack.set_visible_child_name("broken-windows")
+            self.can_continue = False
         else:
             # Let them choose
             self.stack.set_visible_child_name("chooser")
+            self.can_continue = True
         self.spinner.stop()
         Gdk.threads_leave()
 
-        GLib.idle_add(self.update_disks)
+        if can_continue:
+            GLib.idle_add(self.update_disks)
 
     def update_disks(self):
         """ Thread load finished, update UI from discovered info """
@@ -225,7 +277,7 @@ class InstallerDiskLocationPage(BasePage):
             print("UEFI in good order")
 
         # Allow forward navigation now
-        self.info.owner.set_can_next(True)
+        self.info.owner.set_can_next(self.can_continue)
         return False
 
     def init_view(self):
@@ -245,3 +297,4 @@ class InstallerDiskLocationPage(BasePage):
     def prepare(self, info):
         self.info = info
         self.init_view()
+        self.info.owner.set_can_next(self.can_continue)
