@@ -22,11 +22,6 @@ class InstallerUsersPage(BasePage):
     def __init__(self):
         BasePage.__init__(self)
 
-    def on_toggled(self, w, d=None):
-        if not self.info:
-            return
-        self.info.enable_geoip = w.get_active()
-
     def get_title(self):
         return "Who will use this device?"
 
