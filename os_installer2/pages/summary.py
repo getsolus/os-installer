@@ -121,3 +121,13 @@ class InstallerSummaryPage(BasePage):
         if info.windows_present:
             s = "Enable UTC time" if info.system_utc else "Disable UTC time"
             self.system_details.add_label(self._clean_label(s))
+
+        # Users
+        for kid in self.user_details.vbox.get_children():
+            kid.destroy()
+        for user in info.users:
+            sz = "Create administrative user {} ({})"
+            if not user.admin:
+                sz = "Create regular user {} ({})"
+            self.user_details.add_label(self._clean_label(
+                sz.format(user.realname, user.username)))
