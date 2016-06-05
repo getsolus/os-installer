@@ -27,6 +27,9 @@ class ChooserPage(Gtk.VBox):
     manager = None
     drives = None
 
+    # To record the strategy.
+    info = None
+
     def __init__(self):
         Gtk.VBox.__init__(self)
         self.set_border_width(40)
@@ -57,15 +60,27 @@ class ChooserPage(Gtk.VBox):
         for strat in strats:
             button = Gtk.RadioButton.new_with_label_from_widget(
                 leader, strat.get_display_string())
+            button.strategy = strat
             if not leader:
                 leader = button
             button.get_child().set_use_markup(True)
+            button.connect("toggled", self.on_radio_toggle)
             self.strategy_box.pack_start(button, False, False, 8)
             button.show_all()
+        # Force selection
+        self.on_radio_toggle(leader)
 
     def reset_options(self):
+        """ Reset available strategies """
         for widget in self.strategy_box.get_children():
             widget.destroy()
+
+    def on_radio_toggle(self, radio, w=None):
+        """ Handle setting of a strategy """
+        if not radio.get_active():
+            return
+        strat = radio.strategy
+        print("Radio chosen strategy: {}".format(strat.get_name()))
 
     def reset(self):
         self.respond = False
@@ -74,8 +89,9 @@ class ChooserPage(Gtk.VBox):
         self.reset_options()
         self.respond = True
 
-    def set_drives(self, prober):
+    def set_drives(self, info, prober):
         """ Set the display drives """
+        self.info = info
         self.reset()
 
         self.manager = DiskStrategyManager(prober)
@@ -195,7 +211,7 @@ class InstallerDiskLocationPage(BasePage):
 
     def update_disks(self):
         """ Thread load finished, update UI from discovered info """
-        self.chooser.set_drives(self.prober)
+        self.chooser.set_drives(self.info, self.prober)
         for drive in self.prober.drives:
             print("Debug: Add device: {}".format(drive.path))
             for os_path in drive.operating_systems:
@@ -206,6 +222,9 @@ class InstallerDiskLocationPage(BasePage):
             print("Broken UEFI system detected")
         else:
             print("UEFI in good order")
+
+        # Allow forward navigation now
+        self.info.owner.set_can_next(True)
         return False
 
     def init_view(self):

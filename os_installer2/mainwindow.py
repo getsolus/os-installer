@@ -39,6 +39,9 @@ class InstallInfo:
     # Timezone for the system
     timezone = None
 
+    # The chosen disk strategy
+    strategy = None
+
 
 class MainWindow(Gtk.ApplicationWindow):
 
