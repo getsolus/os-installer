@@ -31,6 +31,33 @@ class DiskStrategy:
         return False
 
 
+class EmptyDiskStrategy(DiskStrategy):
+    """ There is an empty disk, use this if it is big enough """
+    drive = None
+
+    def __init__(self, drive):
+        self.drive = drive
+
+    def get_display_string(self):
+        sz = "Automatically partition this empty disk and install a fresh " \
+             "copy of Solus."
+        return sz
+
+    def get_name(self):
+        return "empty-disk: {}".format(self.drive.path)
+
+    def is_possible(self):
+        if self.drive.size < MIN_REQUIRED_SIZE:
+            return False
+        # No MBR/header
+        if not self.drive.disk:
+            return True
+        if len(self.drive.disk.partitions) == 0:
+            return True
+        # Probably wipe-disk
+        return False
+
+
 class WipeDiskStrategy(DiskStrategy):
     """ We simply wipe and take over a complete disk """
     drive = None
@@ -48,6 +75,9 @@ class WipeDiskStrategy(DiskStrategy):
 
     def is_possible(self):
         if self.drive.size < MIN_REQUIRED_SIZE:
+            return False
+        # No table, use empty-disk strategy
+        if not self.drive.disk:
             return False
         return True
 
@@ -72,7 +102,7 @@ class UseFreeSpaceStrategy(DiskStrategy):
         return "use-free-space: {}".format(self.drive.path)
 
     def is_possible(self):
-        # No disk, should be wipe-disk strategy
+        # No disk, should be empty-disk strategy
         if not self.drive.disk:
             return False
         # Build up a selection of free space partitions to use
@@ -107,6 +137,9 @@ class DualBootStrategy(DiskStrategy):
         return "dual-boot: {}".format(self.candidate_os)
 
     def is_possible(self):
+        # Require table
+        if not self.drive.disk:
+            return False
         for os_part in self.drive.operating_systems:
             if os_part not in self.drive.partitions:
                 print("Warning: missing os_part: {}".format(os_part))
@@ -161,7 +194,8 @@ class DiskStrategyManager:
             WipeDiskStrategy,
             UseFreeSpaceStrategy,
             DualBootStrategy,
-            UserPartitionStrategy
+            UserPartitionStrategy,
+            EmptyDiskStrategy
         ]
         for pot in strats:
             i = pot(drive)
