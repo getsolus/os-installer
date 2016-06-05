@@ -87,6 +87,42 @@ class UseFreeSpaceStrategy(DiskStrategy):
         return False
 
 
+class DualBootStrategy(DiskStrategy):
+    """ Dual-boot alongside the biggest install by resizing it """
+    drive = None
+
+    def __init__(self, drive):
+        self.drive = drive
+
+    def get_display_string(self):
+        return "TODO: Add intelligent string"
+
+    def get_name(self):
+        return "dual-boot: {}".format(self.drive.path)
+
+    def is_possible(self):
+        return False
+
+
+class UserPartitionStrategy(DiskStrategy):
+    """ Just for consistency and ease in integration, let the user do the
+        partitioning """
+    drive = None
+
+    def __init__(self, drive):
+        self.drive = drive
+
+    def get_display_string(self):
+        # TODO: Make better
+        return "Partition this drive yourself"
+
+    def get_name(self):
+        return "custom-partition: {}".format(self.drive.path)
+
+    def is_possible(self):
+        return self.drive.size >= MIN_REQUIRED_SIZE
+
+
 class DiskStrategyManager:
     """ Strategy manager for installation solutions """
 
@@ -97,11 +133,17 @@ class DiskStrategyManager:
 
     def get_strategies(self, drive):
         ret = []
+        # Possible strategies
+        strats = [
+            WipeDiskStrategy,
+            UseFreeSpaceStrategy,
+            DualBootStrategy,
+            UserPartitionStrategy
+        ]
 
-        wipe = WipeDiskStrategy(drive)
-        if wipe.is_possible():
-            ret.append(wipe)
-        space = UseFreeSpaceStrategy(drive)
-        if space.is_possible():
-            ret.append(space)
+        for pot in strats:
+            i = pot(drive)
+            if not i.is_possible():
+                continue
+            ret.append(i)
         return ret
