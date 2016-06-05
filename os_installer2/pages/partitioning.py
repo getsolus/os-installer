@@ -26,11 +26,32 @@ class DualBootPage(Gtk.VBox):
         essentially we're just here to resize the users partititon
         and make room for Solus. """
 
+    image = None
+    label = None
+
     def __init__(self):
         Gtk.VBox.__init__(self)
 
+        self.set_border_width(40)
+        # Construct dual-boot row
+        hbox = Gtk.HBox(0)
+        hbox.set_margin_top(20)
+        self.pack_start(hbox, False, False, 0)
+
+        self.image = Gtk.Image.new()
+        self.image.set_margin_end(12)
+        hbox.pack_start(self.image, False, False, 0)
+
+        self.label = Gtk.Label.new("")
+        self.label.set_halign(Gtk.Align.START)
+        hbox.pack_start(self.label, False, False, 0)
+
     def update_strategy(self, info):
         info.owner.set_can_next(True)
+        os = info.strategy.sel_os
+        self.image.set_from_icon_name(os.icon_name, Gtk.IconSize.DIALOG)
+        self.image.set_pixel_size(64)
+        self.label.set_markup("<big>%s</big>" % os.name)
 
 
 class ManualPage(Gtk.VBox):

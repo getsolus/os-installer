@@ -141,8 +141,12 @@ class DualBootStrategy(DiskStrategy):
     drive = None
     potential_spots = None
     candidate_part = None
+
+    # Selected OS name
     candidate_os = None
 
+    # Selected OS
+    sel_os = None
     priority = 40
 
     def __init__(self, drive):
@@ -192,8 +196,9 @@ class DualBootStrategy(DiskStrategy):
                                   reverse=True)
         if len(self.potential_spots) > 0:
             self.candidate_part = self.potential_spots[0]
-            self.candidate_os = \
-                self.drive.operating_systems[self.candidate_part.path].name
+            self.sel_os = \
+                self.drive.operating_systems[self.candidate_part.path]
+            self.candidate_os = self.sel_os.name
             return True
         return False
 
