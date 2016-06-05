@@ -28,3 +28,6 @@ class InstallerSummaryPage(BasePage):
 
     def get_icon_name(self):
         return "emblem-ok-symbolic"
+
+    def prepare(self, info):
+        info.owner.set_final_step(True)

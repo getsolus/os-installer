@@ -84,6 +84,7 @@ class MainWindow(Gtk.ApplicationWindow):
     skip_forward = False
 
     can_quit = True
+    is_final_step = False
 
     def quit_handler(self, w, udata=None):
         """ Ensure quit stuff is sane ... """
@@ -202,6 +203,19 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def next_page(self):
         """ Move to next page """
+        if self.is_final_step:
+            msg = "Installation will make changes to your disks, and could " \
+                  "result in data loss.\nDo you wish to install?"
+            d = Gtk.MessageDialog(parent=self, flags=Gtk.DialogFlags.MODAL,
+                                  type=Gtk.MessageType.WARNING,
+                                  buttons=Gtk.ButtonsType.OK_CANCEL,
+                                  message_format=msg)
+
+            r = d.run()
+            d.destroy()
+            if r != Gtk.ResponseType.OK:
+                return
+
         self.skip_forward = True
         index = self.page_index + 1
         if index >= len(self.pages):
@@ -226,6 +240,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def update_current_page(self):
         page = self.pages[self.page_index]
+        self.set_final_step(False)
 
         if self.page_index == len(self.pages) - 1:
             self.set_can_next(False)
@@ -244,6 +259,15 @@ class MainWindow(Gtk.ApplicationWindow):
 
     def set_can_next(self, can_next):
         self.next_button.set_sensitive(can_next)
+
+    def set_final_step(self, final):
+        """ Mark this as the final step, should also
+            add a prompt on selection """
+        if final:
+            self.next_button.set_label("Install")
+        else:
+            self.next_button.set_label("Next")
+        self.is_final_step = final
 
     def set_can_quit(self, can_quit):
         """ Override quit handling """
