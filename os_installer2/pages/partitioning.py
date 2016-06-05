@@ -30,11 +30,18 @@ class DualBootPage(Gtk.VBox):
     image = None
     label = None
     spin = None
+    info_label = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
 
         self.set_border_width(40)
+
+        self.info_label = Gtk.Label.new("")
+        self.pack_start(self.info_label, False, False, 0)
+        self.info_label.set_margin_bottom(10)
+        self.info_label.set_halign(Gtk.Align.START)
+
         # Construct dual-boot row
         hbox = Gtk.HBox(0)
         hbox.set_margin_top(20)
@@ -45,11 +52,20 @@ class DualBootPage(Gtk.VBox):
         hbox.pack_start(self.image, False, False, 0)
 
         self.label = Gtk.Label.new("")
+        self.label.set_margin_end(20)
         self.label.set_halign(Gtk.Align.START)
         hbox.pack_start(self.label, False, False, 0)
 
         self.spin = Gtk.SpinButton.new_with_range(0, 1000, 10)
         hbox.pack_start(self.spin, False, False, 5)
+        lab = Gtk.Label.new("GiB")
+        hbox.pack_start(lab, False, False, 1)
+        lab.set_halign(Gtk.Align.START)
+
+        lab2 = Gtk.Label.new("New size for your existing installation")
+        lab2.set_margin_start(20)
+        hbox.pack_start(lab2, False, False, 4)
+        lab2.get_style_context().add_class("dim-label")
 
     def update_strategy(self, info):
         info.owner.set_can_next(True)
@@ -58,12 +74,39 @@ class DualBootPage(Gtk.VBox):
         self.image.set_pixel_size(64)
         self.label.set_markup("<big>%s</big>" % os.name)
 
-        GiB = 1024.0 * 1024.0 * 1024.0
-        dmin = float(info.strategy.candidate_part.usedspace / GiB)
-        dmax = float(info.strategy.candidate_part.size / GiB)
-        self.spin.set_range(dmin, dmax)
+        dm = info.owner.get_disk_manager()
+
+        used = info.strategy.candidate_part.usedspace
+        avail = info.strategy.candidate_part.size
+
+        GB = 1000.0 * 1000.0 * 1000.0
+        min_gb = MIN_REQUIRED_SIZE
+        dmin = float(used / GB)
+        dmax = float((avail - min_gb) / GB)
+        # Set upper minimum size for the new Solus
+
+        adju = Gtk.Adjustment.new(dmin, dmin, dmax, 1, 10, 0)
+        self.spin.set_adjustment(adju)
         self.spin.set_digits(2)
-        self.spin.set_value(dmax - MIN_REQUIRED_SIZE)
+
+        os_name = os.name
+        # We need this much
+        min_we_needs = dm.format_size_local(min_gb, double_precision=True)
+        # They need this much
+        min_they_needs = dm.format_size_local(used, double_precision=True)
+        # Total of this much
+        max_avail = dm.format_size_local(avail - used, double_precision=True)
+        total_size = dm.format_size_local(avail, double_precision=True)
+
+        l = "Resize the partitioning containining {} to make room for the " \
+            "new Solus installation.\n" \
+            "Solus requires a minimum of {} disk space for the installation" \
+            ", so free up <b>at least {}</b>\nfrom the maximum available " \
+            "{}\n{} will require a minimum of {} from the total {}".format(
+                os_name, min_we_needs, min_we_needs, max_avail,
+                "Your currently installed operating system", min_they_needs,
+                total_size)
+        self.info_label.set_markup(l)
 
 
 class ManualPage(Gtk.VBox):

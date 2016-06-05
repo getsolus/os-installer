@@ -14,8 +14,8 @@
 import parted
 from .diskman import SystemPartition
 
-GiB = 1024 * 1024 * 1024
-MIN_REQUIRED_SIZE = 10 * GiB
+GB = 1000 * 1000 * 1000
+MIN_REQUIRED_SIZE = 10 * GB
 
 
 class DiskStrategy:
