@@ -29,8 +29,8 @@ class DualBootPage(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
 
-    def update_strategy(self, strat):
-        pass
+    def update_strategy(self, info):
+        info.owner.set_can_next(True)
 
 
 class ManualPage(Gtk.VBox):
@@ -39,8 +39,8 @@ class ManualPage(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
 
-    def update_strategy(self, strat):
-        pass
+    def update_strategy(self, info):
+        info.owner.set_can_next(False)
 
 
 class InstallerPartitioningPage(BasePage):
@@ -104,9 +104,9 @@ class InstallerPartitioningPage(BasePage):
                 return
         if isinstance(info.strategy, DualBootStrategy):
             self.stack.set_visible_child_name("dual-boot")
-            self.dbpage.update_strategy(info.strategy)
+            self.dbpage.update_strategy(info)
         elif isinstance(info.strategy, UserPartitionStrategy):
-            self.mpage.update_strategy(info.strategy)
+            self.mpage.update_strategy(info)
             self.stack.set_visible_child_name("manual")
         else:
             print("FATAL: Unknown strategy type!")
