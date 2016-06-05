@@ -33,6 +33,12 @@ class DriveProber:
     def __init__(self, dm):
         self.dm = dm
 
+    def get_drive(self, nom):
+        """ Return a named drive """
+        for item in self.drives:
+            if item.path == nom:
+                return item
+
     def probe_lvm2(self):
         cmds = ["/sbin/pvscan", "/sbin/vgscan", "/sbin/lvscan"]
         for cmd in cmds:
@@ -411,7 +417,7 @@ class DiskManager:
 
     def do_mount(self, device, mpoint, fsystem, options=None):
         """ Try to mount the device at mount_point """
-        mount_cmd = "mount -t {} {} \"{}\"".format(device, mpoint, fsystem)
+        mount_cmd = "mount -t {} {} \"{}\"".format(fsystem, device, mpoint)
 
         if options:
             mount_cmd += " -o {}".format(options)
@@ -431,7 +437,7 @@ class DiskManager:
         while (try_count < 3):
             try_count += 1
             try:
-                subprocess.check_call(umount_cmd)
+                subprocess.check_call(umount_cmd, shell=True)
                 return True
             except Exception:
                 # wait 500ms, try again
@@ -584,6 +590,7 @@ class DiskManager:
             except Exception as e:
                 print("Error creating mount point: %s" % e)
                 return (None, None)
+
             if not self.do_mount(path, mount_point, "auto", "ro"):
                 try:
                     os.rmdir(mount_point)
@@ -618,6 +625,8 @@ class DiskManager:
                     os.rmdir(mount_point)
                 except Exception as e:
                     print("Failed to remove stagnant directory: %s" % e)
+            else:
+                print("Warning: %s %s still mount" % (path, mount_point))
         return (part, ret)
 
     def _read_line_complete(self, path):
