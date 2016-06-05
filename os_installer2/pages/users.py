@@ -13,7 +13,7 @@
 
 from .basepage import BasePage
 from gi.repository import Gtk
-from os_installer2.users import User, USERNAME_REGEX
+from os_installer2.users import User, USERNAME_REGEX, PASSWORD_LENGTH
 import re
 
 LABEL_COLUMN = 0
@@ -63,7 +63,56 @@ class NewUserPage(Gtk.Grid):
     pword_field2 = None
 
     def validator(self, entry):
-        pass
+        if entry == self.uname_field:
+            # Perform username validation
+            if self.username_regex.match(entry.get_text()):
+                self.uname_field.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_score(self.uname_field, True)
+            else:
+                # Username = bad
+                self.uname_field.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY,
+                    "action-unavailable-symbolic")
+                self.update_score(self.uname_field, False)
+        elif entry == self.rname_field:
+            # Only care that it's .. what?
+            if len(self.rname_field.get_text()) > 1:
+                self.rname_field.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_score(self.rname_field, True)
+            else:
+                # Bad realname
+                self.rname_field.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY,
+                    "action-unavailable-symbolic")
+                self.update_score(self.rname_field, False)
+        else:
+            # Handle the two password fields together
+            pass1 = self.pword_field.get_text()
+            pass2 = self.pword_field2.get_text()
+
+            if len(pass1) >= PASSWORD_LENGTH:
+                self.pword_field.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_score(self.pword_field, True)
+            else:
+                # Bad password
+                self.pword_field.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY,
+                    "action-unavailable-symbolic")
+                self.update_score(self.pword_field, False)
+
+            if len(pass1) >= PASSWORD_LENGTH and pass1 == pass2:
+                self.pword_field2.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_score(self.pword_field2, True)
+            else:
+                # Bad password2
+                self.pword_field2.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY,
+                    "action-unavailable-symbolic")
+                self.update_score(self.pword_field2, False)
 
     def update_score(self, widget, score):
         """ Update the score for validation """
@@ -156,6 +205,7 @@ class NewUserPage(Gtk.Grid):
             label.set_halign(Gtk.Align.START)
 
     def clear_form(self):
+        """ Clear the form state """
         items = [
             self.uname_field,
             self.rname_field,
@@ -164,6 +214,8 @@ class NewUserPage(Gtk.Grid):
         ]
         for entry in items:
             entry.set_text("")
+            entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, None)
         for check in [self.adminuser]:
             check.set_active(False)
         self.adminuser.set_sensitive(True)
