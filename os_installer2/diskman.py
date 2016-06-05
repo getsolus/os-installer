@@ -670,7 +670,7 @@ class DiskManager:
 
     def format_size(self, size):
         """ Get the *abyte size (not mebibyte) format """
-        labels = ["B", "KB", "MB", "GB", "PB", "EB", "ZB", "YB"]
+        labels = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
 
         for i, label in enumerate(labels):
             if size < 1000 or i == len(labels) - 1:
