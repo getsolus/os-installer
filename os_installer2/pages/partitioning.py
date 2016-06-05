@@ -17,6 +17,7 @@ from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
 from os_installer2.strategy import UseFreeSpaceStrategy
 from os_installer2.strategy import UserPartitionStrategy
+from os_installer2.strategy import MIN_REQUIRED_SIZE
 from gi.repository import Gtk
 import sys
 
@@ -28,6 +29,7 @@ class DualBootPage(Gtk.VBox):
 
     image = None
     label = None
+    spin = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -46,12 +48,22 @@ class DualBootPage(Gtk.VBox):
         self.label.set_halign(Gtk.Align.START)
         hbox.pack_start(self.label, False, False, 0)
 
+        self.spin = Gtk.SpinButton.new_with_range(0, 1000, 10)
+        hbox.pack_start(self.spin, False, False, 5)
+
     def update_strategy(self, info):
         info.owner.set_can_next(True)
         os = info.strategy.sel_os
         self.image.set_from_icon_name(os.icon_name, Gtk.IconSize.DIALOG)
         self.image.set_pixel_size(64)
         self.label.set_markup("<big>%s</big>" % os.name)
+
+        GiB = 1024.0 * 1024.0 * 1024.0
+        dmin = float(info.strategy.candidate_part.usedspace / GiB)
+        dmax = float(info.strategy.candidate_part.size / GiB)
+        self.spin.set_range(dmin, dmax)
+        self.spin.set_digits(2)
+        self.spin.set_value(dmax - MIN_REQUIRED_SIZE)
 
 
 class ManualPage(Gtk.VBox):
