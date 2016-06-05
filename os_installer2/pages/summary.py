@@ -89,7 +89,7 @@ class InstallerSummaryPage(BasePage):
         return "summary"
 
     def get_icon_name(self):
-        return "dialog-information-symbolic"
+        return "mail-mark-important-symbolic"
 
     def prepare(self, info):
         info.owner.set_final_step(True)
