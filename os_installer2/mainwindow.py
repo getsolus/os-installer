@@ -20,6 +20,7 @@ from .pages.keyboard import InstallerKeyboardPage
 from .pages.timezone import InstallerTimezonePage"""
 from .pages.disk_location import InstallerDiskLocationPage
 from .pages.partitioning import InstallerPartitioningPage
+from .pages.summary import InstallerSummaryPage
 from . import join_resource_path as jrp
 import sys
 import threading
@@ -122,6 +123,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.add_installer_page(InstallerTimezonePage())"""
             self.add_installer_page(InstallerDiskLocationPage())
             self.add_installer_page(InstallerPartitioningPage())
+            self.add_installer_page(InstallerSummaryPage())
         except Exception as e:
             print("Fatal error during startup: %s" % e)
             sys.exit(1)
@@ -223,8 +225,12 @@ class MainWindow(Gtk.ApplicationWindow):
         return self.perms
 
     def skip_page(self):
+        GLib.idle_add(self._skip_page)
+
+    def _skip_page(self):
         """ Allow pages to request skipping to next page """
         if self.skip_forward:
             self.next_page()
         else:
             self.prev_page()
+        return False

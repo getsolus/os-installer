@@ -19,7 +19,7 @@ import sys
 
 
 class InstallerPartitioningPage(BasePage):
-    """ Basic location detection page. """
+    """ Dual boot + partitioning page """
 
     info = None
 
