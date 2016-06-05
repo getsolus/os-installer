@@ -91,6 +91,7 @@ class InstallerTimezonePage(BasePage):
         # Ok to go forward
         self.info.owner.set_can_next(True)
         self.info.timezone = zone
+        self.info.timezone_c = location.get_property("country")
 
     def prepare(self, info):
         self.info = info

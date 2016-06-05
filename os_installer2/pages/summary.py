@@ -29,6 +29,7 @@ class FramedHeader(Gtk.Frame):
         box.pack_start(image, False, False, 0)
 
         image.set_property("margin", 10)
+        image.set_valign(Gtk.Align.START)
 
         label = Gtk.Label("<big>{}</big>".format(title))
         label.set_use_markup(True)
@@ -45,6 +46,7 @@ class FramedHeader(Gtk.Frame):
 
     def add_label(self, label):
         self.vbox.pack_start(label, False, False, 2)
+        label.show_all()
 
 
 class InstallerSummaryPage(BasePage):
@@ -66,6 +68,7 @@ class InstallerSummaryPage(BasePage):
 
         items = Gtk.VBox(0)
         scroll.add(items)
+        scroll.set_overlay_scrolling(False)
         self.locale_details = FramedHeader(
             "preferences-desktop-locale-symbolic",
             "Language &amp; Region")
@@ -91,5 +94,21 @@ class InstallerSummaryPage(BasePage):
     def get_icon_name(self):
         return "mail-mark-important-symbolic"
 
+    def _clean_label(self, label):
+        lab = Gtk.Label(label)
+        lab.set_halign(Gtk.Align.START)
+        return lab
+
     def prepare(self, info):
         info.owner.set_final_step(True)
+
+        # First up, region stuff
+        for kid in self.locale_details.vbox.get_children():
+            kid.destroy()
+
+        self.locale_details.add_label(self._clean_label(
+            "Use {} as system language".format(info.locale_sz)))
+        self.locale_details.add_label(self._clean_label(
+            "Use {} as default keyboard layout".format(info.keyboard_sz)))
+        self.locale_details.add_label(self._clean_label(
+            "Set timezone to {}".format(info.timezone)))

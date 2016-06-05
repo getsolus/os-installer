@@ -96,8 +96,10 @@ class InstallerKeyboardPage(BasePage):
     def on_row_select(self, lbox, newrb=None):
         """ Handle selections of locales """
         self.info.keyboard = None
+        self.info.keyboard_sz = None
         if not newrb:
             self.info.keyboard = None
+            self.info.keyboard_sz = None
             self.info.owner.set_can_next(False)
             return
         child = newrb.get_child()
@@ -105,6 +107,7 @@ class InstallerKeyboardPage(BasePage):
             self.init_remaining()
             return
         self.info.keyboard = child.kb
+        self.info.keyboard_sz = child.dname
         self.info.owner.set_can_next(True)
 
     def init_view(self):

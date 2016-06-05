@@ -76,6 +76,7 @@ class InstallerLanguagePage(BasePage):
     def on_row_select(self, lbox, newrb=None):
         """ Handle selections of locales """
         self.info.locale = None
+        self.info.locale_sz = None
         if not newrb:
             self.info.owner.set_can_next(False)
             return
@@ -84,6 +85,7 @@ class InstallerLanguagePage(BasePage):
             self.init_remaining()
             return
         self.info.locale = child.lc_code
+        self.info.locale_sz = child.dname
         self.info.owner.set_can_next(True)
 
     def do_expensive_init(self):

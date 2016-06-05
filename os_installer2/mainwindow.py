@@ -35,15 +35,18 @@ class InstallInfo:
 
     # Chosen locale
     locale = None
+    locale_sz = None
 
     # Chosen keyboard
     keyboard = None
+    keyboard_sz = None
 
     # Main Window reference
     owner = None
 
     # Timezone for the system
     timezone = None
+    timezone_c = None
 
     # The chosen disk strategy
     strategy = None
