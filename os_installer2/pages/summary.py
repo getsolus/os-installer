@@ -131,3 +131,9 @@ class InstallerSummaryPage(BasePage):
                 sz = "Create regular user {} ({})"
             self.user_details.add_label(self._clean_label(
                 sz.format(user.realname, user.username)))
+
+        # disk
+        for kid in self.install_details.vbox.get_children():
+            kid.destroy()
+        for line in info.strategy.explain():
+            self.install_details.add_label(self._clean_label(line))

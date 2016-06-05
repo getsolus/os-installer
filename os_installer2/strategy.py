@@ -36,6 +36,9 @@ class DiskStrategy:
     def get_priority(self):
         return self.priority
 
+    def explain(self):
+        """ Step by step explanation of what we're doing to do. """
+        return []
 
 class EmptyDiskStrategy(DiskStrategy):
     """ There is an empty disk, use this if it is big enough """
@@ -64,6 +67,11 @@ class EmptyDiskStrategy(DiskStrategy):
             return True
         # Probably wipe-disk
         return False
+
+    def explain(self):
+        ret = []
+        ret.append("Wipe!")
+        return ret
 
 
 class WipeDiskStrategy(DiskStrategy):
@@ -150,6 +158,9 @@ class DualBootStrategy(DiskStrategy):
     sel_os = None
     priority = 40
 
+    our_size = 0
+    their_size = 0
+
     def __init__(self, drive):
         self.drive = drive
         self.potential_spots = []
@@ -163,6 +174,12 @@ class DualBootStrategy(DiskStrategy):
 
     def get_name(self):
         return "dual-boot: {}".format(self.candidate_os)
+
+    def set_our_size(self):
+        self.our_size = our_size
+
+    def set_their_size(self, sz):
+        self.their_size = their_size
 
     def is_possible(self):
         # Require table

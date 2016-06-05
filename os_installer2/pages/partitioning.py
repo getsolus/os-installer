@@ -106,6 +106,9 @@ class DualBootPage(Gtk.VBox):
         ssize = dm.format_size_local(nval * GB, double_precision=True)
         self.size_label.set_markup(ssize)
 
+        self.strategy.set_our_size(nval * GB)
+        self.strategy.set_their_size(avail - (nval * GB))
+
     def update_strategy(self, info):
         self.info = info
         info.owner.set_can_next(True)
