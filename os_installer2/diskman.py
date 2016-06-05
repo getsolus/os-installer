@@ -598,6 +598,11 @@ class DiskManager:
 
         path = device.path
 
+        fs = device.fileSystem
+        # unmountables
+        if fs and fs.type in [None, "linux-swap(v1)", "linux-swap(v0)"]:
+            return (None, None)
+
         # Mount it if not already mounted
         if path not in mpoints:
             try:
