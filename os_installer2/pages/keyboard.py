@@ -193,6 +193,11 @@ class InstallerKeyboardPage(BasePage):
             append_inner(item.kb, item)
 
         self.moar_button.show_all()
+        kids = self.layouts.get_children()
+        if kids:
+            s = self.layouts.get_children()[0]
+            self.layouts.select_row(s)
+
         self.layouts.add(self.moar_button)
 
     def init_remaining(self):
