@@ -166,8 +166,31 @@ class DualBootStrategy(DiskStrategy):
             partition = self.drive.partitions[os_part]
             if partition.size < MIN_REQUIRED_SIZE:
                 continue
-            if partition.freespace >= MIN_REQUIRED_SIZE:
-                self.potential_spots.append(partition)
+            if partition.freespace < MIN_REQUIRED_SIZE:
+                continue
+            # Now figure out if there is somewhere to put ourselves..
+            primaries = self.drive.disk.getPrimaryPartitions()
+            ext = self.drive.disk.getExtendedPartition()
+            max_prim = self.drive.disk.maxPrimaryPartitionCount
+            if ext:
+                max_prim -= 1
+            if len(primaries) == max_prim:
+                if not ext:
+                    print("Debug: Max partitions hit on {} (no extended)".
+                          format(self.drive.path))
+                    continue
+                log = self.drive.disk.getLogicalPartitions()
+                max_logical = self.drive.disk.getMaxLogicalPartitions()
+                if len(log) >= max_logical:
+                    print("Logical primary partition count exceeded on {}".
+                          format(self.drive.path))
+                    continue
+                print("%s logicals now left" % (max_logical - len(log)))
+            else:
+                print("Debug: {} remaining primaries on {}".
+                      format(max_prim - len(primaries), self.drive.path))
+            # Can continue
+            self.potential_spots.append(partition)
 
         self.potential_spots.sort(key=SystemPartition.getLength,
                                   reverse=True)
