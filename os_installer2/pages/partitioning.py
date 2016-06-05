@@ -31,6 +31,8 @@ class DualBootPage(Gtk.VBox):
     label = None
     spin = None
     info_label = None
+    size_label = None
+    info = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -57,8 +59,9 @@ class DualBootPage(Gtk.VBox):
         hbox.pack_start(self.label, False, False, 0)
 
         self.spin = Gtk.SpinButton.new_with_range(0, 1000, 10)
+        self.spin.connect("value-changed", self.on_value_changed)
         hbox.pack_start(self.spin, False, False, 5)
-        lab = Gtk.Label.new("GiB")
+        lab = Gtk.Label.new("GB")
         hbox.pack_start(lab, False, False, 1)
         lab.set_halign(Gtk.Align.START)
 
@@ -67,7 +70,44 @@ class DualBootPage(Gtk.VBox):
         hbox.pack_start(lab2, False, False, 4)
         lab2.get_style_context().add_class("dim-label")
 
+        # Now start our row
+        hbox = Gtk.HBox(0)
+        hbox.set_margin_top(20)
+        self.pack_start(hbox, False, False, 0)
+
+        # our icon
+        sz = Gtk.IconSize.DIALOG
+        image = Gtk.Image.new_from_icon_name("distributor-logo-solus", sz)
+        image.set_pixel_size(64)
+        image.set_margin_end(12)
+        hbox.pack_start(image, False, False, 0)
+
+        # our label
+        label = Gtk.Label.new("<big>New Solus Installation</big>")
+        label.set_use_markup(True)
+        label.set_margin_end(20)
+        label.set_halign(Gtk.Align.START)
+        hbox.pack_start(label, False, False, 0)
+
+        self.size_label = Gtk.Label.new("0GB")
+        self.size_label.set_margin_start(20)
+        hbox.pack_start(self.size_label, False, False, 4)
+
+    def on_value_changed(self, spin, w=None):
+        if not self.info:
+            return
+
+        val = self.spin.get_value()
+        avail = self.info.strategy.candidate_part.size
+        GB = 1000.0 * 1000.0 * 1000.0
+
+        nval = (avail / GB) - val
+        dm = self.info.owner.get_disk_manager()
+        ssize = dm.format_size_local(nval * GB, double_precision=True)
+        self.size_label.set_markup(ssize)
+
     def update_strategy(self, info):
+        self.info = info
         info.owner.set_can_next(True)
         os = info.strategy.sel_os
         self.image.set_from_icon_name(os.icon_name, Gtk.IconSize.DIALOG)
@@ -98,7 +138,7 @@ class DualBootPage(Gtk.VBox):
         max_avail = dm.format_size_local(avail - used, double_precision=True)
         total_size = dm.format_size_local(avail, double_precision=True)
 
-        l = "Resize the partitioning containining {} to make room for the " \
+        l = "Resize the partitioning containing {} to make room for the " \
             "new Solus installation.\n" \
             "Solus requires a minimum of {} disk space for the installation" \
             ", so free up <b>at least {}</b>\nfrom the maximum available " \
