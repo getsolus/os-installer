@@ -162,6 +162,9 @@ class SystemDrive:
     # Localised size representation with units
     sizeString = None
 
+    # Actual size in bytes
+    size = None
+
     # Mapping of partition -> OsType
     operating_systems = None
 
@@ -183,6 +186,8 @@ class SystemDrive:
         self.operating_systems = ops
         self.path = device.path
         self.partitions = dict()
+
+        self.size = self.device.getLength() * self.device.sectorSize
 
     def get_display_string(self):
         """ Format usable in UIs """

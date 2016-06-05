@@ -26,6 +26,9 @@ def main():
     strat = DiskStrategyManager(dp)
     for drive in dp.drives:
         ideas = strat.get_strategies(drive)
+        if not ideas:
+            print("Unsuitable drive: {}".format(drive.path))
+            continue
         for idea in ideas:
             print("Possible strategy: {}".format(idea.get_name()))
 

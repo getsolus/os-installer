@@ -44,12 +44,18 @@ class DiskStrategyManager:
     """ Strategy manager for installation solutions """
 
     prober = None
+    min_required_size = 0
 
     def __init__(self, prober):
         self.prober = prober
+        GiB = 1024 * 1024 * 1024
+        self.min_required_size = 30 * GiB
 
     def get_strategies(self, drive):
         ret = []
-        # TODO: Check is actually big enough!!
+        # Not big enough for any strategy
+        if drive.size < self.min_required_size:
+            return ret
+
         ret.append(WipeDiskStrategy(drive))
         return ret
