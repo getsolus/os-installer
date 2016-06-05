@@ -99,7 +99,6 @@ class InstallerPartitioningPage(BasePage):
         for sk in skips:
             if isinstance(info.strategy, sk):
                 self.stack.set_visible_child_name("automatic")
-                print("DEBUG: Skippable type")
                 self.info.owner.skip_page()
                 return
         if isinstance(info.strategy, DualBootStrategy):

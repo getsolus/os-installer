@@ -85,8 +85,6 @@ class InstallerLanguagePage(BasePage):
             return
         self.info.locale = child.lc_code
         self.info.owner.set_can_next(True)
-        # DEBUG
-        print("Locale is now %s" % self.info.locale)
 
     def do_expensive_init(self):
         """ Do the hard work of actually setting up the view """

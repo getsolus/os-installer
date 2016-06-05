@@ -42,8 +42,6 @@ class KbLabel(Gtk.HBox):
 
         self.extras = info[4]
 
-        print("Made a %s %s %s %s" % (info[1], info[2], info[3], info[4]))
-
         self.set_property("margin", 10)
 
         lab.set_text(self.dname)
@@ -117,8 +115,6 @@ class InstallerKeyboardPage(BasePage):
             return
         self.info.keyboard = child.kb
         self.info.owner.set_can_next(True)
-        # DEBUG
-        print("Keyboard is now %s" % self.info.keyboard)
 
     def init_view(self):
         """ Initialise ourself from GNOME XKB """
@@ -131,13 +127,10 @@ class InstallerKeyboardPage(BasePage):
         if items[0]:
             lang = items[1]
             country = items[2]
-            print(items[3])
-            print(items[4])
         else:
             # Shouldn't ever happen, but ya never know.
             lang = "en"
             country = "US"
-        print("Grabbing for %s %s %s" % (lang, country, self.info.locale))
 
         l = self.info.locale
         success, type_, id_ = GnomeDesktop.get_input_source_from_locale(l)
@@ -171,18 +164,12 @@ class InstallerKeyboardPage(BasePage):
             native = layouts
             for item in native:
                 if item.layout[:2].lower() == lang.lower() and not item.extras:
-                    print("Primary set" + item.sname)
                     primary = item
         else:
             for item in native:
                 if not item.extras:
                     primary = item
                     break
-
-        if not primary:
-            print("Options: %s" % self.xkb.get_layouts_for_language(lang))
-        else:
-            print("Primary keyboard should be %s" % primary.dname)
 
         self.added = 0
         self.extras = list()
@@ -248,7 +235,6 @@ class InstallerKeyboardPage(BasePage):
 
     def prepare(self, info):
         self.info = info
-        print("Catering view based on %s" % self.info.locale)
         self.init_view()
         if self.info.keyboard:
             self.info.owner.set_can_next(True)

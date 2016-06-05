@@ -90,11 +90,8 @@ class ChooserPage(Gtk.VBox):
     def on_combo_changed(self, combo, w=None):
         if not self.respond:
             return
-        print("Selected: {}".format(combo.get_active_id()))
         drive = self.drives[combo.get_active_id()]
         strats = self.manager.get_strategies(drive)
-
-        print("Got {} strategies for {}".format(len(strats), drive.path))
 
         self.reset_options()
         leader = None
@@ -122,7 +119,6 @@ class ChooserPage(Gtk.VBox):
             return
         strat = radio.strategy
         self.info.strategy = strat
-        print("Radio chosen strategy: {}".format(strat.get_name()))
 
     def reset(self):
         self.respond = False
@@ -266,16 +262,6 @@ class InstallerDiskLocationPage(BasePage):
     def update_disks(self):
         """ Thread load finished, update UI from discovered info """
         self.chooser.set_drives(self.info, self.prober)
-        for drive in self.prober.drives:
-            print("Debug: Add device: {}".format(drive.path))
-            for os_path in drive.operating_systems:
-                os = drive.operating_systems[os_path]
-                print("\t{} OS: {} (icon: {})".format(os_path,
-                                                      os.name, os.icon_name))
-        if self.prober.is_broken_windows_uefi():
-            print("Broken UEFI system detected")
-        else:
-            print("UEFI in good order")
 
         # Allow forward navigation now
         self.info.owner.set_can_next(self.can_continue)
