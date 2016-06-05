@@ -37,24 +37,41 @@ class ChooserPage(Gtk.VBox):
         self.pack_start(self.combo, False, False, 0)
 
         self.strategy_box = Gtk.VBox(0)
+        self.strategy_box.set_margin_top(20)
         self.pack_start(self.strategy_box, True, True, 0)
 
         self.respond = True
         self.combo.connect("changed", self.on_combo_changed)
 
     def on_combo_changed(self, combo, w=None):
+        if not self.respond:
+            return
         print("Selected: {}".format(combo.get_active_id()))
         drive = self.drives[combo.get_active_id()]
         strats = self.manager.get_strategies(drive)
 
         print("Got {} strategies for {}".format(len(strats), drive.path))
 
+        self.reset_options()
+        leader = None
+        for strat in strats:
+            button = Gtk.RadioButton.new_with_label_from_widget(
+                leader, strat.get_display_string())
+            if not leader:
+                leader = button
+            button.get_child().set_use_markup(True)
+            self.strategy_box.pack_start(button, False, False, 8)
+            button.show_all()
+
+    def reset_options(self):
+        for widget in self.strategy_box.get_children():
+            widget.destroy()
+
     def reset(self):
         self.respond = False
-        self.combo.remove_all()
         self.drives = dict()
-        for widget in self.strategy_box.get_children():
-            self.strategy_box.remove(widget)
+        self.combo.remove_all()
+        self.reset_options()
         self.respond = True
 
     def set_drives(self, prober):

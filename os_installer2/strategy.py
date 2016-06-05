@@ -109,7 +109,7 @@ class UseFreeSpaceStrategy(DiskStrategy):
 
     def get_display_string(self):
         sz = "Use the remaining free space on this disk and install a fresh" \
-             "copy of Solus\nThis will not affect other systems."
+             "copy of Solus\nThis will <b>not affect</b> other systems."
         return sz
 
     def get_name(self):
@@ -150,7 +150,10 @@ class DualBootStrategy(DiskStrategy):
         self.potential_spots = []
 
     def get_display_string(self):
-        return "TODO: Add intelligent string"
+        sz = "Install a fresh copy of Solus alongside your existing " \
+             "Operating System.\nYou can choose how much space Solus should " \
+             "use in the next screen."
+        return sz
 
     def get_name(self):
         return "dual-boot: {}".format(self.candidate_os)
@@ -213,8 +216,9 @@ class UserPartitionStrategy(DiskStrategy):
         self.drive = drive
 
     def get_display_string(self):
-        # TODO: Make better
-        return "Partition this drive yourself"
+        sz = "Create, resize and manually configure disk partitions yourself" \
+             ". This method\nmay lead to <b>data loss.</b>"
+        return sz
 
     def get_name(self):
         return "custom-partition: {}".format(self.drive.path)
