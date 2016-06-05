@@ -50,7 +50,7 @@ class DriveProber:
         # Cache the current mount points, gonna need it.
         self.mtab = self.dm.get_mount_points()
         self.dm.scan_parts()
-        self.probe_lvm2()
+        # self.probe_lvm2()
 
         for item in self.dm.devices:
             disk = None
@@ -188,6 +188,7 @@ class SystemDrive:
         if self.disk:
             return self.disk.type
         return None
+
 
 class OsType:
     """ OS detection code ensuring we don't lose information """
