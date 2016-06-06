@@ -62,7 +62,7 @@ class DiskStrategy:
     def get_priority(self):
         return self.priority
 
-    def explain(self, dm):
+    def explain(self, dm, info):
         """ Step by step explanation of what we're doing to do. """
         return []
 
@@ -167,7 +167,7 @@ class EmptyDiskStrategy(DiskStrategy):
             return []
         return [(self.dsc(cand), cand.path)]
 
-    def explain(self, dm):
+    def explain(self, dm, info):
         ret = []
         # TODO: Make more useful
         ret.append("Use entire disk..")
@@ -203,9 +203,9 @@ class WipeDiskStrategy(EmptyDiskStrategy):
             return False
         return True
 
-    def explain(self, dm):
+    def explain(self, dm, info):
         ret = ["Wipe Disk: {}".format(self.drive.path)]
-        ret.extend(EmptyDiskStrategy.explain(self, dm))
+        ret.extend(EmptyDiskStrategy.explain(self, dm, info))
         return ret
 
 
@@ -289,7 +289,7 @@ class DualBootStrategy(DiskStrategy):
     def set_their_size(self, sz):
         self.their_size = sz
 
-    def explain(self, dm):
+    def explain(self, dm, info):
         ret = []
         their_new = dm.format_size_local(self.their_size, True)
         their_old = dm.format_size_local(self.candidate_part.size, True)

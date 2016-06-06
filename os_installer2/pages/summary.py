@@ -141,5 +141,5 @@ class InstallerSummaryPage(BasePage):
         # disk
         for kid in self.install_details.vbox.get_children():
             kid.destroy()
-        for line in info.strategy.explain(info.owner.get_disk_manager()):
+        for line in info.strategy.explain(info.owner.get_disk_manager(), info):
             self.install_details.add_label(self._clean_label(line))

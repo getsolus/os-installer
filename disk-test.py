@@ -15,6 +15,7 @@ import sys
 import os
 from os_installer2.diskman import DiskManager, DriveProber
 from os_installer2.strategy import DiskStrategyManager
+from os_installer2.mainwindow import InstallInfo
 
 
 def main():
@@ -23,6 +24,7 @@ def main():
 
     dp.probe()
 
+    info = InstallInfo()
     strat = DiskStrategyManager(dp)
     for drive in dp.drives:
         ideas = strat.get_strategies(drive)
@@ -31,7 +33,7 @@ def main():
             continue
         for idea in ideas:
             print("Possible strategy: {}".format(idea.get_name()))
-            for line in idea.explain(dm):
+            for line in idea.explain(dm, info):
                 print("Explain: {}".format(line))
 
 if __name__ == "__main__":
