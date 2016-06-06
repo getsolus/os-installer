@@ -144,7 +144,7 @@ class InstallerSystemPage(BasePage):
 
         self.combo_boot.remove_all()
         options = info.strategy.get_boot_loader_options()
-        for id, loader in options:
+        for loader, id in options:
             self.combo_boot.append(id, loader)
         if len(options) > 0:
             self.combo_boot.set_active(0)

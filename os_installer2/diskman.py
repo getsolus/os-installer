@@ -127,6 +127,7 @@ class SystemPartition:
     # How much total space this
     totalspace = None
     totalspace_string = None
+    sizeString = None
 
     # How much used space in bytes, with string rep
     usedspace = None
@@ -145,6 +146,7 @@ class SystemPartition:
 
         sectorSize = self.partition.disk.device.sectorSize
         self.size = self.partition.getLength() * sectorSize
+        self.sizeString = dm.format_size_local(self.size, True)
 
         # Get the free space available here
         try:
