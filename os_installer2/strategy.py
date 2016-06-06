@@ -143,20 +143,45 @@ class EmptyDiskStrategy(DiskStrategy):
         # Probably wipe-disk
         return False
 
+    def get_boot_loader_options(self):
+        if not self.is_uefi():
+            # MBR you can go anywhere you want.
+            paths = [
+                (self.dsc(x), x.path) for x in self.dp.drives
+                if x.path != self.drive.path
+            ]
+            paths.append((self.dsc(self.drive), self.drive.path))
+            paths.reverse()
+            return paths
+        esps = self.dp.collect_esp()
+        if len(esps) == 0:
+            return [("Create new ESP on {}".format(self.drive.path), "c")]
+        cand = self.get_suitable_esp()
+        # Are we overwriting this ESP?
+        if self.drive.disk and esps[0].partition.disk == self.drive.disk:
+            return [("Create new ESP on {}".format(self.drive.path), "c")]
+        if not cand:
+            self.set_errors(
+                "ESP is too small: {} free space remaining".format(
+                    cand.freespace_string))
+            return []
+        return [(self.dsc(cand), cand.path)]
+
     def explain(self, dm):
         ret = []
+        # TODO: Make more useful
         ret.append("Use entire disk..")
         return ret
 
 
-class WipeDiskStrategy(DiskStrategy):
+class WipeDiskStrategy(EmptyDiskStrategy):
     """ We simply wipe and take over a complete disk """
     drive = None
 
     priority = 20
 
     def __init__(self, dp, drive):
-        DiskStrategy.__init__(self, dp, drive)
+        EmptyDiskStrategy.__init__(self, dp, drive)
         self.drive = drive
 
     def get_display_string(self):
@@ -178,29 +203,10 @@ class WipeDiskStrategy(DiskStrategy):
             return False
         return True
 
-    def get_boot_loader_options(self):
-        if not self.is_uefi():
-            # MBR you can go anywhere you want.
-            paths = [
-                (self.dsc(x), x.path) for x in self.dp.drives
-                if x.path != self.drive.path
-            ]
-            paths.append((self.dsc(self.drive), self.drive.path))
-            paths.reverse()
-            return paths
-        esps = self.dp.collect_esp()
-        if len(esps) == 0:
-            return [("Create new ESP on {}".format(self.drive.path), "c")]
-        cand = self.get_suitable_esp()
-        # Are we overwriting this ESP?
-        if esps[0].partition.disk == self.drive.disk:
-            return [("Create new ESP on {}".format(self.drive.path), "c")]
-        if not cand:
-            self.set_errors(
-                "ESP is too small: {} free space remaining".format(
-                    cand.freespace_string))
-            return []
-        return [(self.dsc(cand), cand.path)]
+    def explain(self, dm):
+        ret = ["Wipe Disk: {}".format(self.drive.path)]
+        ret.extend(EmptyDiskStrategy.explain(self, dm))
+        return ret
 
 
 class UseFreeSpaceStrategy(DiskStrategy):
