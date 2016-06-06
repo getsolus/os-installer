@@ -131,10 +131,6 @@ class InstallerSystemPage(BasePage):
             self.check_boot.set_sensitive(False)
             self.check_boot.set_label(
                 "Bootloader installation mandatory with UEFI")
-            esps = info.prober.collect_esp()
-            self.combo_boot.remove_all()
-            for i in esps:
-                self.combo_boot.append_text(i.path)
         # y u no hostname
         if self.info.windows_present:
             self.check_utc.show()
@@ -145,3 +141,10 @@ class InstallerSystemPage(BasePage):
             self.info.owner.set_can_next(False)
         else:
             self.info.owner.set_can_next(True)
+
+        self.combo_boot.remove_all()
+        options = info.strategy.get_boot_loader_options()
+        for loader in options:
+            self.combo_boot.append_text(loader)
+        if len(options) > 0:
+            self.combo_boot.set_active(0)

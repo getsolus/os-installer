@@ -73,6 +73,10 @@ class DiskStrategy:
             return None
         return l
 
+    def get_boot_loader_options(self):
+        """ No boot loader options available. """
+        return []
+
 
 class EmptyDiskStrategy(DiskStrategy):
     """ There is an empty disk, use this if it is big enough """
@@ -137,6 +141,16 @@ class WipeDiskStrategy(DiskStrategy):
         if len(self.drive.disk.partitions) == 0:
             return False
         return True
+
+    def get_boot_loader_options(self):
+        if not self.is_uefi():
+            paths = [
+                x.path for x in self.dp.drives if x.path != self.drive.path
+            ]
+            paths.append(self.drive.path)
+            paths.reverse()
+            return paths
+        return []
 
 
 class UseFreeSpaceStrategy(DiskStrategy):
