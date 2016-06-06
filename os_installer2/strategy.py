@@ -14,9 +14,11 @@
 import parted
 from .diskman import SystemPartition
 
-GB = 1000 * 1000 * 1000
+MB = 1000 * 1000
+GB = 1000 * MB
 MIN_REQUIRED_SIZE = 10 * GB
 SWAP_USE_THRESHOLD = 15 * GB
+ESP_FREE_REQUIRED = 60 * MB
 
 
 def find_best_swap_size(longsize):
@@ -267,7 +269,9 @@ class DualBootStrategy(DiskStrategy):
             self.sel_os = \
                 self.drive.operating_systems[self.candidate_part.path]
             self.candidate_os = self.sel_os.name
-            self.set_our_size(MIN_REQUIRED_SIZE)
+            # Default to using the whole thing =P
+            self.set_our_size(
+                self.candidate_part.size - self.candidate_part.usedspace)
             self.set_their_size(self.candidate_part.size - MIN_REQUIRED_SIZE)
             return True
         return False
