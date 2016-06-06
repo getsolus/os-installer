@@ -351,6 +351,15 @@ class DualBootStrategy(DiskStrategy):
         self.push_operation(op)
 
         tnew = self.our_size
+
+        size_eat = 0
+        if info.bootloader_install:
+            if info.bootloader_sz == 'c':
+                size_eat += find_best_esp_size(self.drive.size)
+                op = DiskOpCreateESP(self.drive.device, None, size_eat)
+                self.push_operation(op)
+        tnew -= size_eat
+
         # Find swap
         swap = self.drive.get_swap_partitions()
         swap_part = None

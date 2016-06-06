@@ -77,7 +77,7 @@ class DiskOpCreateSwap(DiskOpCreatePartition):
 
     def describe(self):
         return "Create {} swap partition on {}".format(
-            format_size_local(self.size), self.device.path)
+            format_size_local(self.size, True), self.device.path)
 
 
 class DiskOpCreateESP(DiskOpCreatePartition):
@@ -93,7 +93,7 @@ class DiskOpCreateESP(DiskOpCreatePartition):
 
     def describe(self):
         return "Create {} EFI System Partition on {}".format(
-            format_size_local(self.size), self.device.path)
+            format_size_local(self.size, True), self.device.path)
 
 
 class DiskOpCreateRoot(DiskOpCreatePartition):
@@ -109,7 +109,7 @@ class DiskOpCreateRoot(DiskOpCreatePartition):
 
     def describe(self):
         return "Create {} root partition on {}".format(
-            format_size_local(self.size), self.device.path)
+            format_size_local(self.size, True), self.device.path)
 
 
 class DiskOpUseSwap(BaseDiskOp):
