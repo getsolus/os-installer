@@ -31,6 +31,7 @@ class InstallerSystemPage(BasePage):
     combo_boot = None
     # Bootloader issues
     error_label2 = None
+    respond = True
 
     def __init__(self):
         BasePage.__init__(self)
@@ -76,6 +77,7 @@ class InstallerSystemPage(BasePage):
         self.check_boot.set_margin_top(5)
         boot.set_label_widget(self.check_boot)
         self.combo_boot = Gtk.ComboBoxText()
+        self.combo_boot.connect("changed", self.on_combo_changed)
         boot.add(self.combo_boot)
         self.pack_start(boot, False, False, 0)
         wid_group.add_widget(self.combo_boot)
@@ -95,6 +97,28 @@ class InstallerSystemPage(BasePage):
         if not self.info:
             return
         self.info.system_utc = w.get_active()
+
+    def on_combo_changed(self, combo, w=None):
+        """ Combo updated """
+        if not self.respond:
+            return
+        if not self.info:
+            return
+        self.info.bootloader = combo.get_active_id()
+
+        self.check_forward()
+
+    def check_forward(self):
+        """ Determine if we can forward/back """
+        dm = self.info.owner.get_disk_manager()
+        bs = [self.info.hostname]
+        if dm.is_efi_booted():
+            bs.append(self.info.bootloader)
+        misfires = [x for x in bs if not x]
+        if len(misfires) == 0:
+            self.info.owner.set_can_next(True)
+        else:
+            self.info.owner.set_can_next(False)
 
     def host_validate(self, entry):
         """ Validate the hostname """
@@ -144,20 +168,22 @@ class InstallerSystemPage(BasePage):
             self.check_utc.get_child().show()
         else:
             self.check_utc.hide()
-        if not self.info.hostname:
-            self.info.owner.set_can_next(False)
-        else:
-            self.info.owner.set_can_next(True)
 
+        self.check_forward()
+
+        self.respond = False
         self.combo_boot.remove_all()
         options = info.strategy.get_boot_loader_options()
         for loader, id in options:
             self.combo_boot.append(id, loader)
+        self.respond = True
         if len(options) > 0:
             self.combo_boot.set_active(0)
             self.error_label2.set_label("")
             return
-        self.set_can_next(False)
+        info.bootloader = None
+        self.info.owner.set_can_next(False)
         err = info.strategy.get_errors()
+        # UEFI specific
         self.error_label2.set_label(
             "Failed to find location for bootloader: {}".format(err))

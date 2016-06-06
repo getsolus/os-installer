@@ -47,7 +47,7 @@ class DiskStrategy:
     def set_errors(self, errors):
         self.errors = errors
 
-    def get_errors(self, errors):
+    def get_errors(self):
         return self.errors
 
     def get_display_string(self):

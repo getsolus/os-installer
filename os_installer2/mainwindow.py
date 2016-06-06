@@ -68,6 +68,9 @@ class InstallInfo:
     # Disk prober
     prober = None
 
+    # Bootloader target
+    bootloader = None
+
 
 class MainWindow(Gtk.ApplicationWindow):
 
