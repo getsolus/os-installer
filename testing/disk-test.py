@@ -13,6 +13,7 @@
 
 import sys
 import os
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from os_installer2.diskman import DiskManager, DriveProber
 from os_installer2.strategy import DiskStrategyManager
 from os_installer2.mainwindow import InstallInfo

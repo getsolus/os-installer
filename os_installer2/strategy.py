@@ -54,11 +54,41 @@ class DiskStrategy:
     errors = None
     operations = None
 
+    supports_extended_partition = False
+
     def __init__(self, dp, drive):
         self.drive = drive
         self.dp = dp
         self.get_suitable_esp()
         self.reset_operations()
+
+        if not self.drive.disk:
+            return
+        # Set up some common knowledge
+        if drive.disk.supportsFeature(parted.DISK_TYPE_EXTENDED):
+            self.supports_extended_partition = True
+
+    def primary_exceeded(self):
+        """ Determine if the count for primaries has been exceeded """
+        if not self.drive.disk:
+            return False
+        maxp = self.drive.disk.maxPrimaryPartitionCount
+        prim = self.drive.disk.getPrimaryPartitions()
+
+        if len(prim) >= maxp:
+            return True
+        return False
+
+    def logical_exceeded(self):
+        """ Determine if the count for logicals has been exceeded """
+        if not self.supports_extended_partition:
+            return False
+        maxl = self.drive.disk.maxLogicalPartitionCount
+        logic = self.drive.getLogicalPartitions()
+
+        if len(logic) >= maxl:
+            return True
+        return False
 
     def set_errors(self, errors):
         self.errors = errors
@@ -383,6 +413,7 @@ class DualBootStrategy(DiskStrategy):
         # Require table
         if not self.drive.disk:
             return False
+
         for os_part in self.drive.operating_systems:
             if os_part not in self.drive.partitions:
                 print("Warning: missing os_part: {}".format(os_part))
@@ -392,24 +423,21 @@ class DualBootStrategy(DiskStrategy):
                 continue
             if partition.freespace < MIN_REQUIRED_SIZE:
                 continue
-            # Now figure out if there is somewhere to put ourselves..
-            primaries = self.drive.disk.getPrimaryPartitions()
-            ext = self.drive.disk.getExtendedPartition()
-            max_prim = self.drive.disk.maxPrimaryPartitionCount
-            if ext:
-                max_prim -= 1
-            if len(primaries) == max_prim:
-                if not ext:
+            if partition.partition.type == parted.PARTITION_NORMAL:
+                if self.primary_exceeded():
+                    print("Skipping OS due to excess")
                     continue
-                log_parts = self.drive.disk.getLogicalPartitions()
-                max_logical = self.drive.disk.getMaxLogicalPartitions()
-                if len(log_parts) >= max_logical:
-                    continue
+            else:
+                if self.supports_extended_partition:
+                    if self.logical_exceeded():
+                        print("Skipping OS due to excess log")
+
             # Can continue
             self.potential_spots.append(partition)
 
         self.potential_spots.sort(key=SystemPartition.getLength,
                                   reverse=True)
+
         if len(self.potential_spots) > 0:
             self.candidate_part = self.potential_spots[0]
             self.sel_os = \
