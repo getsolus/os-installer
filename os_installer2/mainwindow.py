@@ -65,6 +65,9 @@ class InstallInfo:
 
     users = None
 
+    # Disk prober
+    prober = None
+
 
 class MainWindow(Gtk.ApplicationWindow):
 

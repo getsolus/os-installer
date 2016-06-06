@@ -125,6 +125,16 @@ class InstallerSystemPage(BasePage):
 
     def prepare(self, info):
         self.info = info
+        dm = self.info.owner.get_disk_manager()
+        if dm.is_efi_booted():
+            self.check_boot.set_active(True)
+            self.check_boot.set_sensitive(False)
+            self.check_boot.set_label(
+                "Bootloader installation mandatory with UEFI")
+            esps = info.prober.collect_esp()
+            self.combo_boot.remove_all()
+            for i in esps:
+                self.combo_boot.append_text(i.path)
         # y u no hostname
         if self.info.windows_present:
             self.check_utc.show()

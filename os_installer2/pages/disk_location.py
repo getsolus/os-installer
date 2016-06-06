@@ -234,6 +234,7 @@ class InstallerDiskLocationPage(BasePage):
 
         perms.up_permissions()
         self.prober = DriveProber(dm)
+        self.info.prober = self.prober
         self.prober.probe()
         perms.down_permissions()
 
