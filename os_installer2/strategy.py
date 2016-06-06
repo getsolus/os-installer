@@ -33,6 +33,10 @@ class DiskStrategy:
     """ Base DiskStrategy does nothing """
 
     priority = 0
+    drive = None
+
+    def __init__(self, drive):
+        self.drive = drive
 
     def get_display_string(self):
         return "Fatal Error"
@@ -58,6 +62,7 @@ class EmptyDiskStrategy(DiskStrategy):
     priority = 50
 
     def __init__(self, drive):
+        DiskStrategy.__init__(self, drive)
         self.drive = drive
 
     def get_display_string(self):
@@ -92,6 +97,7 @@ class WipeDiskStrategy(DiskStrategy):
     priority = 20
 
     def __init__(self, drive):
+        DiskStrategy.__init__(self, drive)
         self.drive = drive
 
     def get_display_string(self):
@@ -124,6 +130,7 @@ class UseFreeSpaceStrategy(DiskStrategy):
     priority = 30
 
     def __init__(self, drive):
+        DiskStrategy.__init__(self, drive)
         self.drive = drive
         self.potential_spots = []
 
@@ -173,6 +180,7 @@ class DualBootStrategy(DiskStrategy):
     their_size = 0
 
     def __init__(self, drive):
+        DiskStrategy.__init__(self, drive)
         self.drive = drive
         self.potential_spots = []
 
@@ -271,6 +279,7 @@ class UserPartitionStrategy(DiskStrategy):
     priority = 10
 
     def __init__(self, drive):
+        DiskStrategy.__init__(self, drive)
         self.drive = drive
 
     def get_display_string(self):
