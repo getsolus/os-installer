@@ -71,7 +71,7 @@ class DiskStrategy:
         e = l[0]
         if e.freespace < ESP_FREE_REQUIRED:
             return None
-        return l
+        return e
 
     def get_boot_loader_options(self):
         """ No boot loader options available. """
@@ -150,7 +150,17 @@ class WipeDiskStrategy(DiskStrategy):
             paths.append(self.drive.path)
             paths.reverse()
             return paths
-        return []
+        esps = self.dp.collect_esp()
+        if len(esps) == 0:
+            return ["Create new ESP on {}".format(self.drive.path)]
+        cand = self.get_suitable_esp()
+        # Are we overwriting this ESP?
+        if esps[0].partition.disk == self.drive.disk:
+            return ["Create new ESP on {}".format(self.drive.path)]
+        if not cand:
+            return ["ESP is too small: {} free space remaining".format(
+                cand.freespace_string)]
+        return [cand.path]
 
 
 class UseFreeSpaceStrategy(DiskStrategy):
