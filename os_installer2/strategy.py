@@ -17,7 +17,8 @@ from .diskops import DiskOpCreateDisk
 from .diskops import DiskOpCreateRoot
 from .diskops import DiskOpCreateSwap
 from .diskops import DiskOpCreateESP
-from . import format_size_local
+from .diskops import DiskOpResizeOS
+from .diskops import DiskOpUseSwap
 
 MB = 1000 * 1000
 GB = 1000 * MB
@@ -79,7 +80,10 @@ class DiskStrategy:
 
     def explain(self, dm, info):
         """ Step by step explanation of what we're doing to do. """
-        return []
+        ret = []
+        for step in self.operations:
+            ret.append(step.describe())
+        return ret
 
     def is_uefi(self):
         """ proxy """
@@ -197,12 +201,6 @@ class EmptyDiskStrategy(DiskStrategy):
             return []
         return [(self.dsc(cand), cand.path)]
 
-    def explain(self, dm, info):
-        ret = []
-        for op in self.get_operations():
-            ret.append(op.describe())
-        return ret
-
     def update_operations(self, dm, info):
         """ Handle all the magicks """
         size_eat = 0
@@ -254,13 +252,6 @@ class WipeDiskStrategy(EmptyDiskStrategy):
         if len(self.drive.disk.partitions) == 0:
             return False
         return True
-
-    def explain(self, dm, info):
-        """ Temporary testing! """
-        ret = []
-        for op in self.get_operations():
-            ret.append(op.describe())
-        return ret
 
     def update_operations(self, dm, info):
         if self.is_uefi():
@@ -352,14 +343,12 @@ class DualBootStrategy(DiskStrategy):
     def set_their_size(self, sz):
         self.their_size = sz
 
-    def explain(self, dm, info):
-        ret = []
-        their_new = format_size_local(self.their_size, True)
-        their_old = format_size_local(self.candidate_part.size, True)
-
-        ret.append("Resize {} ({}) from {} to {}".format(
-            self.candidate_os, self.candidate_part.path,
-            their_old, their_new))
+    def update_operations(self, dm, info):
+        """ First up, resize them """
+        op = DiskOpResizeOS(
+            self.drive.device, self.candidate_part,
+            self.candidate_os, self.their_size, self.our_size)
+        self.push_operation(op)
 
         tnew = self.our_size
         # Find swap
@@ -368,18 +357,18 @@ class DualBootStrategy(DiskStrategy):
         if swap:
             swap_part = swap[0]
         if swap_part:
-            ret.append("Use {} as swap partition".format(swap_part.path))
+            op = DiskOpUseSwap(self.drive.device, swap_part)
+            self.push_operation(op)
         else:
             if tnew >= SWAP_USE_THRESHOLD:
                 new_swap_size = find_best_swap_size(self.our_size)
                 tnew -= new_swap_size
-                new_sz = format_size_local(new_swap_size, True)
-                ret.append("Create {} swap partition".format(new_sz))
+                op = DiskOpCreateSwap(self.drive.device, None, new_swap_size)
+                self.push_operation(op)
 
-        our_new = format_size_local(tnew, True)
-        ret.append("Install Solus in remaining {}".format(our_new))
-
-        return ret
+        # Create root
+        op = DiskOpCreateRoot(self.drive.device, None, tnew)
+        self.push_operation(op)
 
     def is_possible(self):
         # Require table

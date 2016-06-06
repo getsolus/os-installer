@@ -123,3 +123,26 @@ class DiskOpUseSwap(BaseDiskOp):
 
     def describe(self):
         return "Use {} as swap partition".format(self.swap_part.path)
+
+
+class DiskOpResizeOS(BaseDiskOp):
+    """ Resize an operating system """
+
+    their_size = None
+    our_size = None
+    desc = None
+
+    def __init__(self, device, part, os, their_size, our_size):
+        BaseDiskOp.__init__(self, device)
+
+        self.their_size = their_size
+        self.our_size = our_size
+
+        their_new_sz = format_size_local(their_size, True)
+        their_old_sz = format_size_local(part.size, True)
+
+        self.desc = "Resize {} ({}) from {} to {}".format(
+            os, part.path, their_old_sz, their_new_sz)
+
+    def describe(self):
+        return self.desc
