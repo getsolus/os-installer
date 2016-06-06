@@ -394,28 +394,43 @@ class DualBootStrategy(DiskStrategy):
 
         tnew = self.our_size
 
+        # Root only
+        part_count = 1
+
         size_eat = 0
         if info.bootloader_install:
             if info.bootloader_sz == 'c':
                 size_eat += find_best_esp_size(self.drive.size)
                 op = DiskOpCreateESP(self.drive.device, None, size_eat)
                 self.push_operation(op)
+                part_count += 1
         tnew -= size_eat
 
-        # Find swap
-        swap = self.drive.get_swap_partitions()
-        swap_part = None
-        if swap:
-            swap_part = swap[0]
-        if swap_part:
-            op = DiskOpUseSwap(self.drive.device, swap_part)
-            self.push_operation(op)
+        # Determine if swap is possible given our partition count
+        can_swap = True
+        if self.candidate_part.partition.type == parted.PARTITION_LOGICAL:
+            if self.logical_exceeded(part_count):
+                can_swap = False
         else:
-            if tnew >= SWAP_USE_THRESHOLD:
-                new_swap_size = find_best_swap_size(self.our_size)
-                tnew -= new_swap_size
-                op = DiskOpCreateSwap(self.drive.device, None, new_swap_size)
+            if self.primary_exceeded(part_count):
+                can_swap = False
+
+        # Find swap
+        if can_swap:
+            swap = self.drive.get_swap_partitions()
+            swap_part = None
+            if swap:
+                swap_part = swap[0]
+            if swap_part:
+                op = DiskOpUseSwap(self.drive.device, swap_part)
                 self.push_operation(op)
+            else:
+                if tnew >= SWAP_USE_THRESHOLD:
+                    new_swap_size = find_best_swap_size(self.our_size)
+                    tnew -= new_swap_size
+                    op = DiskOpCreateSwap(self.drive.device,
+                                          None, new_swap_size)
+                    self.push_operation(op)
 
         # Create root
         op = DiskOpCreateRoot(self.drive.device, None, tnew)
@@ -445,7 +460,6 @@ class DualBootStrategy(DiskStrategy):
                     # "Skipping OS due to excess"
                     continue
             else:
-                print("Found someone in a logical!")
                 if self.supports_extended_partition:
                     if self.logical_exceeded(min_partitions):
                         # "Skipping OS due to excess log"
