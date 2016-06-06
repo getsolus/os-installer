@@ -14,6 +14,7 @@
 from .basepage import BasePage
 from os_installer2 import format_size_local
 from os_installer2.strategy import DualBootStrategy
+from os_installer2.strategy import ReplaceOSStrategy
 from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
 from os_installer2.strategy import UserPartitionStrategy
@@ -210,6 +211,7 @@ class InstallerPartitioningPage(BasePage):
         skips = [
             EmptyDiskStrategy,
             WipeDiskStrategy,
+            ReplaceOSStrategy,
         ]
         for sk in skips:
             if isinstance(info.strategy, sk):

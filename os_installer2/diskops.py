@@ -146,3 +146,29 @@ class DiskOpResizeOS(BaseDiskOp):
 
     def describe(self):
         return self.desc
+
+
+class DiskOpFormatPartition(BaseDiskOp):
+    """ Format one thing as another """
+
+    format_type = None
+    part = None
+
+    def __init__(self, device, part, format_type):
+        BaseDiskOp.__init__(self, device)
+        self.part = part
+        self.format_type = format_type
+
+    def describe(self):
+        return "Format {} as {}".format(self.part, self.format_type)
+
+
+class DiskOpFormatRoot(DiskOpFormatPartition):
+    """ Format the root partition """
+
+    def __init__(self, device, part):
+        DiskOpFormatPartition.__init__(self, device, part, "ext4")
+
+    def describe(self):
+        return "Use {} as {} root partition".format(
+            self.part, self.format_type)

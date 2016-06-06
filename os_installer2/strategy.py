@@ -17,6 +17,7 @@ from .diskops import DiskOpCreateDisk
 from .diskops import DiskOpCreateRoot
 from .diskops import DiskOpCreateSwap
 from .diskops import DiskOpCreateESP
+from .diskops import DiskOpFormatRoot
 from .diskops import DiskOpResizeOS
 from .diskops import DiskOpUseSwap
 
@@ -394,6 +395,7 @@ class DualBootStrategy(DiskStrategy):
         if not self.drive.disk:
             return False
 
+        self.potential_spots = []
         # The absolute minimum number of partitions we need (swap = bonus.)
         min_partitions = 1
         if self.would_create_esp():
@@ -434,6 +436,85 @@ class DualBootStrategy(DiskStrategy):
             self.set_their_size(self.candidate_part.size - MIN_REQUIRED_SIZE)
             return True
         return False
+
+
+class ReplaceOSStrategy(DiskStrategy):
+    """ Replace the biggest OS with us """
+
+    priority = 30
+
+    potential_spots = None
+    candidate_part = None
+
+    # Selected OS name
+    candidate_os = None
+
+    # Selected OS
+    sel_os = None
+
+    def __init__(self, dp, drive):
+        DiskStrategy.__init__(self, dp, drive)
+
+    def get_display_string(self):
+        os = self.candidate_os
+        sz = "Replace your existing <b>{}</b> installation with Solus.\n" \
+             "All data on this partition will be destroyed before installing" \
+             " a fresh copy of Solus.".format(os)
+        return sz
+
+    def get_name(self):
+        return "replace-os: {}".format(self.candidate_os)
+
+    def is_possible(self):
+        # Require table
+        if not self.drive.disk:
+            return False
+
+        self.potential_spots = []
+
+        for os_part in self.drive.operating_systems:
+            os = self.drive.operating_systems[os_part]
+            # Don't try to nuke Windows. People seem attached to it.
+            if os.otype in ["windows", "windows-boot"]:
+                continue
+            if os_part not in self.drive.partitions:
+                print("Warning: missing os_part: {}".format(os_part))
+                continue
+            partition = self.drive.partitions[os_part]
+            if partition.size < MIN_REQUIRED_SIZE:
+                continue
+            self.potential_spots.append(partition)
+
+        self.potential_spots.sort(key=SystemPartition.getLength,
+                                  reverse=True)
+
+        if len(self.potential_spots) > 0:
+            self.candidate_part = self.potential_spots[0]
+            self.sel_os = \
+                self.drive.operating_systems[self.candidate_part.path]
+            self.candidate_os = self.sel_os.name
+            return True
+        return False
+
+    def update_operations(self, dm, info):
+        """ First up, resize them """
+        if info.bootloader_install:
+            if info.bootloader_sz == 'c':
+                size = find_best_esp_size(self.drive.size)
+                op = DiskOpCreateESP(self.drive.device, None, size)
+                self.push_operation(op)
+
+        swap = self.drive.get_swap_partitions()
+        # Bonus, free swap
+        if swap:
+            swap_part = swap[0]
+            op = DiskOpUseSwap(self.drive.device, swap_part)
+            self.push_operation(op)
+
+        # Create root
+        op = DiskOpFormatRoot(self.drive.device,
+                              self.candidate_part.partition.path)
+        self.push_operation(op)
 
 
 class UserPartitionStrategy(DiskStrategy):
@@ -481,6 +562,7 @@ class DiskStrategyManager:
         if not self.broken_uefi:
             strats.extend([
                 DualBootStrategy,
+                ReplaceOSStrategy,
             ])
         for pot in strats:
             i = pot(self.prober, drive)
