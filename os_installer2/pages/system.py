@@ -29,6 +29,8 @@ class InstallerSystemPage(BasePage):
     error_label = None
     check_boot = None
     combo_boot = None
+    # Bootloader issues
+    error_label2 = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -82,6 +84,11 @@ class InstallerSystemPage(BasePage):
         self.error_label.set_valign(Gtk.Align.START)
         self.pack_end(self.error_label, False, False, 0)
         wid_group.add_widget(self.error_label)
+
+        self.error_label2 = Gtk.Label.new("")
+        self.error_label2.set_valign(Gtk.Align.START)
+        self.pack_end(self.error_label2, False, False, 0)
+        wid_group.add_widget(self.error_label2)
 
     def on_toggled(self, w, d=None):
         """ Handle UTC setting """
@@ -148,6 +155,9 @@ class InstallerSystemPage(BasePage):
             self.combo_boot.append(id, loader)
         if len(options) > 0:
             self.combo_boot.set_active(0)
-        else:
-            print("Error finding boot-targets: {}".format(
-                info.strategy.get_errors()))
+            self.error_label2.set_label("")
+            return
+        self.set_can_next(False)
+        err = info.strategy.get_errors()
+        self.error_label2.set_label(
+            "Failed to find location for bootloader: {}".format(err))
