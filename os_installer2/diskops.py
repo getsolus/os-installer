@@ -32,7 +32,7 @@ class BaseDiskOp:
         return False
 
 
-class DiskOpCreateDisk:
+class DiskOpCreateDisk(BaseDiskOp):
     """ Create a new parted.Disk """
 
     disk = None
@@ -47,7 +47,7 @@ class DiskOpCreateDisk:
             self.label, self.device.path)
 
 
-class DiskOpCreatePartition:
+class DiskOpCreatePartition(BaseDiskOp):
     """ Create a new partition on the disk """
 
     fstype = None
@@ -69,6 +69,7 @@ class DiskOpCreateSwap(DiskOpCreatePartition):
 
     def __init__(self, device, ptype, size):
         DiskOpCreatePartition.__init__(
+            self,
             device,
             ptype,
             "linux-swap(v1)",
@@ -79,7 +80,39 @@ class DiskOpCreateSwap(DiskOpCreatePartition):
             format_size_local(self.size), self.device.path)
 
 
-class DiskOpUseSwap:
+class DiskOpCreateESP(DiskOpCreatePartition):
+    """ Create a new ESP """
+
+    def __init__(self, device, ptype, size):
+        DiskOpCreatePartition.__init__(
+            self,
+            device,
+            ptype,
+            "fat32",
+            size)
+
+    def describe(self):
+        return "Create {} EFI System Partition on {}".format(
+            format_size_local(self.size), self.device.path)
+
+
+class DiskOpCreateRoot(DiskOpCreatePartition):
+    """ Create a new root partition """
+
+    def __init__(self, device, ptype, size):
+        DiskOpCreatePartition.__init__(
+            self,
+            device,
+            ptype,
+            "ext4",
+            size)
+
+    def describe(self):
+        return "Create {} root partition on {}".format(
+            format_size_local(self.size), self.device.path)
+
+
+class DiskOpUseSwap(BaseDiskOp):
     """ Use an existing swap paritition """
 
     swap_part = None

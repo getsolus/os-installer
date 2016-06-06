@@ -32,6 +32,8 @@ def main():
             print("Unsuitable drive: {}".format(drive.path))
             continue
         for idea in ideas:
+            idea.reset_operations()
+            idea.update_operations(dm, info)
             print("Possible strategy: {}".format(idea.get_name()))
             for line in idea.explain(dm, info):
                 print("Explain: {}".format(line))

@@ -13,6 +13,10 @@
 
 import parted
 from .diskman import SystemPartition
+from .diskops import DiskOpCreateDisk
+from .diskops import DiskOpCreateRoot
+from .diskops import DiskOpCreateSwap
+from .diskops import DiskOpCreateESP
 from . import format_size_local
 
 MB = 1000 * 1000
@@ -135,7 +139,7 @@ class DiskStrategy:
         """ Get the operations associated with this strategy """
         return self.operations
 
-    def update_operations(self):
+    def update_operations(self, dm, info):
         """ Implementations should push_operation here """
         pass
 
@@ -195,30 +199,31 @@ class EmptyDiskStrategy(DiskStrategy):
 
     def explain(self, dm, info):
         ret = []
+        for op in self.get_operations():
+            ret.append(op.describe())
+        return ret
+
+    def update_operations(self, dm, info):
+        """ Handle all the magicks """
         size_eat = 0
         if info.bootloader_install:
             if info.bootloader_sz == 'c':
                 size_eat += find_best_esp_size(self.drive.size)
-                ret.append("Create {} EFI System Partition".format(
-                    format_size_local(size_eat)))
-            else:
-                ret.append("Install bootloader to {}".format(
-                    info.bootloader_sz))
+                op = DiskOpCreateESP(self.drive.device, None, size_eat)
+                self.push_operation(op)
 
         # Attempt to create a local swap
         tnew = self.drive.size - size_eat
         if tnew >= SWAP_USE_THRESHOLD:
             new_swap_size = find_best_swap_size(self.drive.size)
             tnew -= new_swap_size
-            new_sz = format_size_local(new_swap_size, True)
-            ret.append("Create {} swap partition in {}".format(
-                new_sz, self.drive.path))
+            op = DiskOpCreateSwap(self.drive.device, None, new_swap_size)
+            self.push_operation(op)
             size_eat += new_swap_size
 
         root_size = self.drive.size - size_eat
-        ret.append("Install Solus to remaining {} of {}".format(
-            format_size_local(root_size), self.drive.path))
-        return ret
+        op = DiskOpCreateRoot(self.drive.device, None, root_size)
+        self.push_operation(op)
 
 
 class WipeDiskStrategy(EmptyDiskStrategy):
@@ -251,9 +256,20 @@ class WipeDiskStrategy(EmptyDiskStrategy):
         return True
 
     def explain(self, dm, info):
-        ret = ["Wipe Disk: {}".format(self.drive.path)]
-        ret.extend(EmptyDiskStrategy.explain(self, dm, info))
+        """ Temporary testing! """
+        ret = []
+        for op in self.get_operations():
+            ret.append(op.describe())
         return ret
+
+    def update_operations(self, dm, info):
+        if self.is_uefi():
+            t = "gpt"
+        else:
+            t = "msdos"
+        self.push_operation(DiskOpCreateDisk(self.drive.device, t))
+        # Let empty-disk handle the rest =)
+        EmptyDiskStrategy.update_operations(self, dm, info)
 
 
 class UseFreeSpaceStrategy(DiskStrategy):
@@ -461,7 +477,6 @@ class DiskStrategyManager:
             if not i.is_possible():
                 continue
             # Immediately update initial state
-            i.update_operations()
             ret.append(i)
         ret.sort(key=DiskStrategy.get_priority, reverse=True)
         return ret

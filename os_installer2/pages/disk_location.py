@@ -96,6 +96,9 @@ class ChooserPage(Gtk.VBox):
         self.reset_options()
         leader = None
         for strat in strats:
+            # update it
+            strat.update_operations(self.info.owner.get_disk_manager(),
+                                    self.info)
             button = Gtk.RadioButton.new_with_label_from_widget(
                 leader, strat.get_display_string())
             button.strategy = strat
