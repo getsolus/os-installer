@@ -27,6 +27,8 @@ class InstallerSystemPage(BasePage):
     host_entry = None
     check_utc = None
     error_label = None
+    check_boot = None
+    combo_boot = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -35,11 +37,11 @@ class InstallerSystemPage(BasePage):
         wid_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
 
         mbox = Gtk.VBox(0)
-        mbox.set_border_width(40)
         mbox.set_margin_top(40)
-        self.pack_start(mbox, True, True, 0)
+        self.pack_start(mbox, False, False, 0)
         mbox.set_halign(Gtk.Align.CENTER)
         mbox.set_hexpand(False)
+        mbox.set_vexpand(False)
 
         # hostname section
         host = Gtk.Frame()
@@ -60,11 +62,25 @@ class InstallerSystemPage(BasePage):
         self.check_utc.set_no_show_all(True)
         self.check_utc.connect("toggled", self.on_toggled)
 
-        self.error_label = Gtk.Label.new("")
-        self.pack_start(self.error_label, False, False, 0)
-
         wid_group.add_widget(host)
         wid_group.add_widget(self.check_utc)
+
+        boot = Gtk.Frame()
+        boot.set_halign(Gtk.Align.CENTER)
+        boot.set_shadow_type(Gtk.ShadowType.NONE)
+        self.check_boot = Gtk.CheckButton.new_with_label(
+            "Installer a bootloader")
+        self.check_boot.set_margin_bottom(5)
+        self.check_boot.set_margin_top(5)
+        boot.set_label_widget(self.check_boot)
+        self.combo_boot = Gtk.ComboBoxText()
+        boot.add(self.combo_boot)
+        self.pack_start(boot, False, False, 0)
+        wid_group.add_widget(self.combo_boot)
+
+        self.error_label = Gtk.Label.new("")
+        self.error_label.set_valign(Gtk.Align.START)
+        self.pack_end(self.error_label, False, False, 0)
         wid_group.add_widget(self.error_label)
 
     def on_toggled(self, w, d=None):
