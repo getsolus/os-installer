@@ -69,10 +69,13 @@ class InstallerSystemPage(BasePage):
         wid_group.add_widget(self.check_utc)
 
         boot = Gtk.Frame()
+        self.boot_frame = boot
         boot.set_halign(Gtk.Align.CENTER)
         boot.set_shadow_type(Gtk.ShadowType.NONE)
         self.check_boot = Gtk.CheckButton.new_with_label(
             "Install a bootloader")
+        self.check_boot.set_active(True)
+        self.check_boot.connect("toggled", self.on_boot_toggled)
         self.check_boot.set_margin_bottom(5)
         self.check_boot.set_margin_top(5)
         boot.set_label_widget(self.check_boot)
@@ -92,6 +95,11 @@ class InstallerSystemPage(BasePage):
         self.pack_end(self.error_label2, False, False, 0)
         wid_group.add_widget(self.error_label2)
 
+    def on_boot_toggled(self, w, d=None):
+        """ Handle bootloader install """
+        self.combo_boot.set_sensitive(w.get_active())
+        self.info.bootloader_install = w.get_active()
+
     def on_toggled(self, w, d=None):
         """ Handle UTC setting """
         if not self.info:
@@ -110,10 +118,7 @@ class InstallerSystemPage(BasePage):
 
     def check_forward(self):
         """ Determine if we can forward/back """
-        dm = self.info.owner.get_disk_manager()
-        bs = [self.info.hostname]
-        if dm.is_efi_booted():
-            bs.append(self.info.bootloader)
+        bs = [self.info.hostname, self.check_boot.get_active()]
         misfires = [x for x in bs if not x]
         if len(misfires) == 0:
             self.info.owner.set_can_next(True)
@@ -158,6 +163,7 @@ class InstallerSystemPage(BasePage):
         self.info = info
         dm = self.info.owner.get_disk_manager()
         if dm.is_efi_booted():
+            self.info.bootloader_install = True
             self.check_boot.set_active(True)
             self.check_boot.set_sensitive(False)
             self.check_boot.set_label(

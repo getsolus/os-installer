@@ -70,6 +70,7 @@ class InstallInfo:
 
     # Bootloader target
     bootloader = None
+    bootloader_install = False
 
 
 class MainWindow(Gtk.ApplicationWindow):

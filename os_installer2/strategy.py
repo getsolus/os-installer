@@ -182,7 +182,7 @@ class WipeDiskStrategy(DiskStrategy):
         if not self.is_uefi():
             # MBR you can go anywhere you want.
             paths = [
-                (self.dsc(x.path), x.path) for x in self.dp.drives
+                (self.dsc(x), x.path) for x in self.dp.drives
                 if x.path != self.drive.path
             ]
             paths.append((self.dsc(self.drive), self.drive.path))
