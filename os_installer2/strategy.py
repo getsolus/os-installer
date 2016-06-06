@@ -47,11 +47,13 @@ class DiskStrategy:
     drive = None
     dp = None
     errors = None
+    operations = None
 
     def __init__(self, dp, drive):
         self.drive = drive
         self.dp = dp
         self.get_suitable_esp()
+        self.reset_operations()
 
     def set_errors(self, errors):
         self.errors = errors
@@ -122,9 +124,20 @@ class DiskStrategy:
             return []
         return [(self.dsc(cand), cand.path)]
 
+    def reset_operations(self):
+        """ Reset the current operations """
+        self.operations = []
+
+    def push_operation(self, op):
+        self.operations.append(op)
+
     def get_operations(self):
         """ Get the operations associated with this strategy """
-        return []
+        return self.operations
+
+    def update_operations(self):
+        """ Implementations should push_operation here """
+        pass
 
 
 class EmptyDiskStrategy(DiskStrategy):
@@ -447,6 +460,8 @@ class DiskStrategyManager:
             i = pot(self.prober, drive)
             if not i.is_possible():
                 continue
+            # Immediately update initial state
+            i.update_operations()
             ret.append(i)
         ret.sort(key=DiskStrategy.get_priority, reverse=True)
         return ret

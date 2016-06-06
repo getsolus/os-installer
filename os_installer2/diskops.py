@@ -11,6 +11,8 @@
 #  (at your option) any later version.
 #
 
+from os_installer2 import format_size_local
+
 
 class BaseDiskOp:
     """ Basis of all disk operations """
@@ -60,6 +62,21 @@ class DiskOpCreatePartition:
 
     def describe(self):
         return "I should be described by my children. ._."
+
+
+class DiskOpCreateSwap(DiskOpCreatePartition):
+    """ Create a new swap partition """
+
+    def __init__(self, device, ptype, size):
+        DiskOpCreatePartition.__init__(
+            device,
+            ptype,
+            "linux-swap(v1)",
+            size)
+
+    def describe(self):
+        return "Create {} swap partition on {}".format(
+            format_size_local(self.size), self.device.path)
 
 
 class DiskOpUseSwap:
