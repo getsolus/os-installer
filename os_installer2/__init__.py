@@ -13,6 +13,7 @@
 
 import gi.repository
 import os
+import locale
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gio', '2.0')
 gi.require_version('GnomeDesktop', '3.0')
@@ -26,3 +27,21 @@ def get_resource_path():
 
 def join_resource_path(path):
     return os.path.join(get_resource_path(), path)
+
+
+def format_size(size):
+    """ Get the *abyte size (not mebibyte) format """
+    labels = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
+
+    for i, label in enumerate(labels):
+        if size < 1000 or i == len(labels) - 1:
+            return size, label
+        size = float(size / 1000)
+
+
+def format_size_local(size, double_precision=False):
+    """ Get the locale appropriate representation of the size """
+    numeric, code = format_size(size)
+    fmt = "%.1f" if not double_precision else "%.2f"
+    SZ = "%s %s" % (locale.format(fmt, numeric, grouping=True), code)
+    return SZ

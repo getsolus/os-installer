@@ -11,12 +11,12 @@
 #  (at your option) any later version.
 #
 
+from . import format_size_local
 import re
 import os
 import subprocess
 import tempfile
 import time
-import locale
 import parted
 import struct
 
@@ -146,7 +146,7 @@ class SystemPartition:
 
         sectorSize = self.partition.disk.device.sectorSize
         self.size = self.partition.getLength() * sectorSize
-        self.sizeString = dm.format_size_local(self.size, True)
+        self.sizeString = format_size_local(self.size, True)
 
         # Get the free space available here
         try:
@@ -155,9 +155,9 @@ class SystemPartition:
             self.totalspace = vfs.f_blocks * vfs.f_frsize
             self.usedspace = (vfs.f_blocks - vfs.f_bavail) * vfs.f_frsize
 
-            self.freespace_string = dm.format_size_local(self.freespace)
-            self.totalspace_string = dm.format_size_local(self.totalspace)
-            self.usedspace_string = dm.format_size_local(self.usedspace)
+            self.freespace_string = format_size_local(self.freespace)
+            self.totalspace_string = format_size_local(self.totalspace)
+            self.usedspace_string = format_size_local(self.usedspace)
         except Exception as e:
             print("Failed to stat {}: {}".format(mount_point, e))
 
@@ -693,29 +693,13 @@ class DiskManager:
             return None
         return self._read_line_complete(fpath)
 
-    def format_size(self, size):
-        """ Get the *abyte size (not mebibyte) format """
-        labels = ["B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]
-
-        for i, label in enumerate(labels):
-            if size < 1000 or i == len(labels) - 1:
-                return size, label
-            size = float(size / 1000)
-
-    def format_size_local(self, size, double_precision=False):
-        """ Get the locale appropriate representation of the size """
-        numeric, code = self.format_size(size)
-        fmt = "%.1f" if not double_precision else "%.2f"
-        SZ = "%s %s" % (locale.format(fmt, numeric, grouping=True), code)
-        return SZ
-
     def get_disk_size_bytes(self, device):
         """ Return byte length of disk (parted.Device) """
         return device.getLength() * device.sectorSize
 
     def get_disk_size_string(self, device):
         """ Return formatted size of disk (parted.Device) """
-        return self.format_size_local(self.get_disk_size_bytes(device))
+        return format_size_local(self.get_disk_size_bytes(device))
 
     def is_efi_booted(self):
         """ Determine if we booted using UEFI """

@@ -12,6 +12,7 @@
 #
 
 from .basepage import BasePage
+from os_installer2 import format_size_local
 from os_installer2.strategy import DualBootStrategy
 from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
@@ -102,8 +103,7 @@ class DualBootPage(Gtk.VBox):
         GB = 1000.0 * 1000.0 * 1000.0
 
         nval = (avail / GB) - val
-        dm = self.info.owner.get_disk_manager()
-        ssize = dm.format_size_local(nval * GB, double_precision=True)
+        ssize = format_size_local(nval * GB, double_precision=True)
         self.size_label.set_markup(ssize)
 
         self.info.strategy.set_our_size(nval * GB)
@@ -116,8 +116,6 @@ class DualBootPage(Gtk.VBox):
         self.image.set_from_icon_name(os.icon_name, Gtk.IconSize.DIALOG)
         self.image.set_pixel_size(64)
         self.label.set_markup("<big>%s</big>" % os.name)
-
-        dm = info.owner.get_disk_manager()
 
         used = info.strategy.candidate_part.usedspace
         avail = info.strategy.candidate_part.size
@@ -134,12 +132,12 @@ class DualBootPage(Gtk.VBox):
 
         os_name = os.name
         # We need this much
-        min_we_needs = dm.format_size_local(min_gb, double_precision=True)
+        min_we_needs = format_size_local(min_gb, double_precision=True)
         # They need this much
-        min_they_needs = dm.format_size_local(used, double_precision=True)
+        min_they_needs = format_size_local(used, double_precision=True)
         # Total of this much
-        max_avail = dm.format_size_local(avail - used, double_precision=True)
-        total_size = dm.format_size_local(avail, double_precision=True)
+        max_avail = format_size_local(avail - used, double_precision=True)
+        total_size = format_size_local(avail, double_precision=True)
 
         l = "Resize the partition containing {} to make room for the " \
             "new Solus installation.\n" \

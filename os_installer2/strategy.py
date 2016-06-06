@@ -13,6 +13,7 @@
 
 import parted
 from .diskman import SystemPartition
+from . import format_size_local
 
 MB = 1000 * 1000
 GB = 1000 * MB
@@ -249,7 +250,7 @@ class EmptyDiskStrategy(DiskStrategy):
             if info.bootloader_sz == 'c':
                 size_eat += find_best_esp_size(self.drive.size)
                 ret.append("Create {} EFI System Partition".format(
-                    dm.format_size_local(size_eat)))
+                    format_size_local(size_eat)))
             else:
                 ret.append("Install bootloader to {}".format(
                     info.bootloader_sz))
@@ -259,14 +260,14 @@ class EmptyDiskStrategy(DiskStrategy):
         if tnew >= SWAP_USE_THRESHOLD:
             new_swap_size = find_best_swap_size(self.drive.size)
             tnew -= new_swap_size
-            new_sz = dm.format_size_local(new_swap_size, True)
+            new_sz = format_size_local(new_swap_size, True)
             ret.append("Create {} swap partition in {}".format(
                 new_sz, self.drive.path))
             size_eat += new_swap_size
 
         root_size = self.drive.size - size_eat
         ret.append("Install Solus to remaining {} of {}".format(
-            dm.format_size_local(root_size), self.drive.path))
+            format_size_local(root_size), self.drive.path))
         return ret
 
 
@@ -387,8 +388,8 @@ class DualBootStrategy(DiskStrategy):
 
     def explain(self, dm, info):
         ret = []
-        their_new = dm.format_size_local(self.their_size, True)
-        their_old = dm.format_size_local(self.candidate_part.size, True)
+        their_new = format_size_local(self.their_size, True)
+        their_old = format_size_local(self.candidate_part.size, True)
 
         ret.append("Resize {} ({}) from {} to {}".format(
             self.candidate_os, self.candidate_part.path,
@@ -406,10 +407,10 @@ class DualBootStrategy(DiskStrategy):
             if tnew >= SWAP_USE_THRESHOLD:
                 new_swap_size = find_best_swap_size(self.our_size)
                 tnew -= new_swap_size
-                new_sz = dm.format_size_local(new_swap_size, True)
+                new_sz = format_size_local(new_swap_size, True)
                 ret.append("Create {} swap partition".format(new_sz))
 
-        our_new = dm.format_size_local(tnew, True)
+        our_new = format_size_local(tnew, True)
         ret.append("Install Solus in remaining {}".format(our_new))
 
         return ret
