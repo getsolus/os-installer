@@ -49,6 +49,16 @@ class DriveProber:
                 return False
         return True
 
+    def collect_esp(self):
+        """ util """
+        ret = set()
+        for i in self.drives:
+            for x in i.list_esp:
+                ret.add(x)
+        r = list(ret)
+        r.sort(key=SystemPartition.getLength, reverse=True)
+        return r
+
     def probe(self):
         """ Probe all the drives for juicy information """
         self.drives = list()
@@ -725,11 +735,10 @@ class DiskManager:
                 if not partition.fileSystem:
                     continue
 
-                if self.is_efi_system_partition(partition):
-                    list_esp.append(partition)
-
                 (part, os) = self.detect_operating_system_and_space(partition,
                                                                     mpoints)
+                if self.is_efi_system_partition(partition):
+                    list_esp.append(part)
                 partitions[partition.path] = part
                 if not os:
                     continue
@@ -742,5 +751,6 @@ class DiskManager:
         r = SystemDrive(device, disk, vendor, model, sz, operating_systems)
         # Cache ESP
         r.list_esp = list_esp
+        r.list_esp.sort(key=SystemPartition.getLength, reverse=True)
         r.partitions = partitions
         return r

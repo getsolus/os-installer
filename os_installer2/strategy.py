@@ -41,6 +41,7 @@ class DiskStrategy:
     def __init__(self, dp, drive):
         self.drive = drive
         self.dp = dp
+        self.get_suitable_esp()
 
     def get_display_string(self):
         return "Fatal Error"
@@ -57,6 +58,20 @@ class DiskStrategy:
     def explain(self, dm):
         """ Step by step explanation of what we're doing to do. """
         return []
+
+    def is_uefi(self):
+        """ proxy """
+        return self.dp.dm.is_efi_booted()
+
+    def get_suitable_esp(self):
+        """ Attempt to find the suitable ESP.... """
+        l = self.dp.collect_esp()
+        if not l:
+            return None
+        e = l[0]
+        if e.freespace < ESP_FREE_REQUIRED:
+            return None
+        return l
 
 
 class EmptyDiskStrategy(DiskStrategy):
