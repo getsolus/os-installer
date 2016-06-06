@@ -68,25 +68,25 @@ class DiskStrategy:
         if drive.disk.supportsFeature(parted.DISK_TYPE_EXTENDED):
             self.supports_extended_partition = True
 
-    def primary_exceeded(self):
+    def primary_exceeded(self, addPrimaries=0):
         """ Determine if the count for primaries has been exceeded """
         if not self.drive.disk:
             return False
         maxp = self.drive.disk.maxPrimaryPartitionCount
         prim = self.drive.disk.getPrimaryPartitions()
 
-        if len(prim) >= maxp:
+        if len(prim) + addPrimaries >= maxp:
             return True
         return False
 
-    def logical_exceeded(self):
+    def logical_exceeded(self, addLogicals=0):
         """ Determine if the count for logicals has been exceeded """
         if not self.supports_extended_partition:
             return False
-        maxl = self.drive.disk.maxLogicalPartitionCount
-        logic = self.drive.getLogicalPartitions()
+        maxl = self.drive.disk.getMaxLogicalPartitions()
+        logic = self.drive.disk.getLogicalPartitions()
 
-        if len(logic) >= maxl:
+        if len(logic) + addLogicals >= maxl:
             return True
         return False
 
@@ -137,6 +137,14 @@ class DiskStrategy:
             device = thing.device
         return "{} {} ({})".format(
             device.model, thing.sizeString, thing.path)
+
+    def would_create_esp(self):
+        """ Determine if we're required to create an ESP """
+        if not self.is_uefi():
+            return False
+
+        if len(self.dp.collect_esp()) == 0:
+            return True
 
     def get_boot_loader_options(self):
         """ Normal options, i.e only wipe-disk is special """
@@ -418,6 +426,11 @@ class DualBootStrategy(DiskStrategy):
         if not self.drive.disk:
             return False
 
+        # The absolute minimum number of partitions we need (swap = bonus.)
+        min_partitions = 1
+        if self.would_create_esp():
+            min_partitions += 1
+
         for os_part in self.drive.operating_systems:
             if os_part not in self.drive.partitions:
                 print("Warning: missing os_part: {}".format(os_part))
@@ -428,14 +441,15 @@ class DualBootStrategy(DiskStrategy):
             if partition.freespace < MIN_REQUIRED_SIZE:
                 continue
             if partition.partition.type == parted.PARTITION_NORMAL:
-                if self.primary_exceeded():
-                    print("Skipping OS due to excess")
+                if self.primary_exceeded(min_partitions):
+                    # "Skipping OS due to excess"
                     continue
             else:
+                print("Found someone in a logical!")
                 if self.supports_extended_partition:
-                    if self.logical_exceeded():
-                        print("Skipping OS due to excess log")
-
+                    if self.logical_exceeded(min_partitions):
+                        # "Skipping OS due to excess log"
+                        continue
             # Can continue
             self.potential_spots.append(partition)
 
