@@ -32,12 +32,12 @@ class BrokenWindowsPage(Gtk.VBox):
 
         self.pack_start(img, False, False, 10)
 
-        label = Gtk.Label("<big>%s</big>" %
+        label = Gtk.Label("<big>{}</big>".format(
                           "You have booted Solus in UEFI mode, however your\n"
                           "system is configured by Windows to use BIOS mode.\n"
                           "If you wish to dual-boot, please reboot using the"
                           " legacy mode.\n"
-                          "Otherwise, you may wipe disks in the next screen")
+                          "Otherwise, you may wipe disks in the next screen"))
         label.set_property("xalign", 0.5)
         label.set_use_markup(True)
         self.pack_start(label, False, False, 10)
@@ -157,9 +157,9 @@ class WhoopsPage(Gtk.VBox):
 
         self.pack_start(img, False, False, 10)
 
-        label = Gtk.Label("<big>%s</big>" %
+        label = Gtk.Label("<big>{}</big>".format(
                           "Oh no! Your system has no disks available.\n"
-                          "There is nowhere to install Solus.")
+                          "There is nowhere to install Solus."))
         label.set_property("xalign", 0.5)
         label.set_use_markup(True)
         self.pack_start(label, False, False, 10)

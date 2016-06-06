@@ -23,9 +23,9 @@ class InstallerProgressPage(BasePage):
     def __init__(self):
         BasePage.__init__(self)
 
-        lab = Gtk.Label("<big>%s</big>" %
+        lab = Gtk.Label("<big>{}</big>".format(
                         "LUCKY FOR YOU THIS ISN'T WORKING YET, RIGHT? "
-                        "COULDA LOST AN EYE. OR WORSE, A USB STICK.")
+                        "COULDA LOST AN EYE. OR WORSE, A USB STICK."))
         lab.set_property("xalign", 0.0)
         lab.set_margin_top(40)
         lab.set_use_markup(True)

@@ -331,7 +331,7 @@ class DualBootStrategy(DiskStrategy):
         os = self.candidate_os
         sz = "Install a fresh copy of Solus alongside your existing " \
              "Operating System.\nYou can choose how much space Solus should " \
-             "use in the next screen.\nThis will resize <b>%s</b>." % os
+             "use in the next screen.\nThis will resize <b>{}</b>.".format(os)
         return sz
 
     def get_name(self):

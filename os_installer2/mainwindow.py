@@ -28,6 +28,7 @@ from .pages.progress import InstallerProgressPage
 from . import join_resource_path as jrp
 import sys
 import threading
+import traceback
 
 
 class InstallInfo:
@@ -170,7 +171,8 @@ class MainWindow(Gtk.ApplicationWindow):
             self.add_installer_page(InstallerSummaryPage())
             self.add_installer_page(InstallerProgressPage())
         except Exception as e:
-            print("Fatal error during startup: %s" % e)
+            print("Fatal error during startup: {}".format(e))
+            traceback.print_exc(file=sys.stderr)
             sys.exit(1)
 
         # Shared helpers
@@ -195,7 +197,7 @@ class MainWindow(Gtk.ApplicationWindow):
             try:
                 page.do_expensive_init()
             except Exception as e:
-                print("Fatal exception initialising: %s" % e)
+                print("Fatal exception initialising: {}".format(e))
 
         # Allow next again
         Gdk.threads_enter()

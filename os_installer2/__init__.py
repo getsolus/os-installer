@@ -43,5 +43,5 @@ def format_size_local(size, double_precision=False):
     """ Get the locale appropriate representation of the size """
     numeric, code = format_size(size)
     fmt = "%.1f" if not double_precision else "%.2f"
-    SZ = "%s %s" % (locale.format(fmt, numeric, grouping=True), code)
+    SZ = "{} {}".format(locale.format(fmt, numeric, grouping=True), code)
     return SZ

@@ -115,7 +115,7 @@ class DualBootPage(Gtk.VBox):
         os = info.strategy.sel_os
         self.image.set_from_icon_name(os.icon_name, Gtk.IconSize.DIALOG)
         self.image.set_pixel_size(64)
-        self.label.set_markup("<big>%s</big>" % os.name)
+        self.label.set_markup("<big>{}</big>".format(os.name))
 
         used = info.strategy.candidate_part.usedspace
         avail = info.strategy.candidate_part.size

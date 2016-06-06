@@ -27,7 +27,7 @@ class PermissionsManager:
                 self.down_uid = uid
                 self.down_gid = uid
             except Exception as e:
-                print("Defaulting on fallback UID: %s" % e)
+                print("Defaulting on fallback UID: {}".format(e))
             return
         if "SUDO_UID" in os.environ:
             id_ = os.environ["SUDO_UID"]
@@ -36,7 +36,7 @@ class PermissionsManager:
                 self.down_uid = uid
                 self.down_gid = uid
             except Exception as e:
-                print("Defaulting on fallback UID: %s" % e)
+                print("Defaulting on fallback UID: {}".format(e))
 
     def down_permissions(self):
         """ Drop our current permissions """
@@ -44,7 +44,7 @@ class PermissionsManager:
             os.setegid(self.down_gid)
             os.seteuid(self.down_uid)
         except Exception as e:
-            print("Failed to drop permissions: %s" % e)
+            print("Failed to drop permissions: {}".format(e))
             return False
         return True
 
@@ -54,6 +54,6 @@ class PermissionsManager:
             os.seteuid(0)
             os.setegid(0)
         except Exception as e:
-            print("Failed to raise permissions: %s" % e)
+            print("Failed to raise permissions: {}".format(e))
             return False
         return True

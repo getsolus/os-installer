@@ -45,7 +45,7 @@ class DriveProber:
             try:
                 subprocess.check_call(cmd)
             except Exception as e:
-                print("Failed to execute %s: %s" % (cmd, e))
+                print("Failed to execute {}: {}".format(cmd, e))
                 return False
         return True
 
@@ -366,7 +366,7 @@ class DiskManager:
         try:
             part_file = open("/proc/partitions")
         except Exception as ex:
-            print("Failed to scan parts: %s" % ex)
+            print("Failed to scan parts: {}".format(ex))
             return
 
         groups = [self.re_whole_disk,
@@ -391,7 +391,7 @@ class DiskManager:
         """ Push a newly discovered device into the list """
         fpath = "/dev/{}".format(str(device))
         if not os.path.exists(fpath):
-            print("Debug: Non-existent node: %s" % fpath)
+            print("Debug: Non-existent node: {}".format(fpath))
             return
         fpath = os.path.realpath(fpath)
 
@@ -460,7 +460,7 @@ class DiskManager:
         try:
             subprocess.check_call(mount_cmd, shell=True)
         except Exception as e:
-            print("Failed to mount %s to %s: %s" % (device, mpoint, e))
+            print("Failed to mount {} to {}: {}".format((device, mpoint, e)))
             return False
         return True
 
@@ -484,7 +484,7 @@ class DiskManager:
             subprocess.check_call(umount_cmd)
             return True
         except Exception as e:
-            print("Failed to unmount %s: %s" % (thing, e))
+            print("Failed to unmount {}: {}".format(thing, e))
             return False
 
         # Finally umounted with lazy.
@@ -628,14 +628,14 @@ class DiskManager:
             try:
                 mount_point = tempfile.mkdtemp(suffix='installer')
             except Exception as e:
-                print("Error creating mount point: %s" % e)
+                print("Error creating mount point: {}".format(e))
                 return (None, None)
 
             if not self.do_mount(path, mount_point, "auto", "ro"):
                 try:
                     os.rmdir(mount_point)
                 except Exception as e:
-                    print("Failed to remove stagnant directory: %s" % e)
+                    print("Failed to remove stagnant directory: {}".format(e))
                 return (None, None)
             mounted = True
         else:
@@ -664,9 +664,9 @@ class DiskManager:
                 try:
                     os.rmdir(mount_point)
                 except Exception as e:
-                    print("Failed to remove stagnant directory: %s" % e)
+                    print("Failed to remove stagnant directory: {}".format(e))
             else:
-                print("Warning: %s %s still mount" % (path, mount_point))
+                print("Warning: {} {} still mount".format(path, mount_point))
         return (part, ret)
 
     def _read_line_complete(self, path):

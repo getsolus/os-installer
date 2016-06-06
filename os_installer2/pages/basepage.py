@@ -20,8 +20,8 @@ class BasePage(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
 
-        self.title = Gtk.Label("<span font-size='xx-large'>%s</span>" %
-                               self.get_title())
+        self.title = Gtk.Label(u"<span font-size='xx-large'>{}</span>".format(
+                               self.get_title()))
         self.title.set_use_markup(True)
 
         self.image = Gtk.Image()

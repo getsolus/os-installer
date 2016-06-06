@@ -83,8 +83,8 @@ class InstallerTimezonePage(BasePage):
         zone = location.get_property("zone")
         nice_loc = self.db.tz_to_loc[zone]
 
-        self.timezone_human = "%s (%s)" % (nice_loc.human_zone,
-                                           nice_loc.human_country)
+        self.timezone_human = "{} ({})".format(nice_loc.human_zone,
+                                               nice_loc.human_country)
         self.tmap.set_watermark(self.timezone_human)
         self.locations.set_text(nice_loc.human_zone)
 
