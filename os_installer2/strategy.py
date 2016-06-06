@@ -322,6 +322,10 @@ class UseFreeSpaceStrategy(DiskStrategy):
         # No partitions at all, empty-disk
         if len(self.drive.disk.partitions) == 0:
             return False
+        extended = self.drive.disk.getExtendedPartition()
+        if self.primary_exceeded() and not extended:
+            # Cannot create a partition now
+            return False
         # Build up a selection of free space partitions to use
         for part in self.drive.disk.getFreeSpacePartitions():
             size = part.getLength() * self.drive.device.sectorSize
