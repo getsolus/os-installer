@@ -37,11 +37,18 @@ class DiskStrategy:
     priority = 0
     drive = None
     dp = None
+    errors = None
 
     def __init__(self, dp, drive):
         self.drive = drive
         self.dp = dp
         self.get_suitable_esp()
+
+    def set_errors(self, errors):
+        self.errors = errors
+
+    def get_errors(self, errors):
+        return self.errors
 
     def get_display_string(self):
         return "Fatal Error"
@@ -145,21 +152,23 @@ class WipeDiskStrategy(DiskStrategy):
     def get_boot_loader_options(self):
         if not self.is_uefi():
             paths = [
-                x.path for x in self.dp.drives if x.path != self.drive.path
+                (x.path, x.path) for x in self.dp.drives if x.path != self.drive.path
             ]
-            paths.append(self.drive.path)
+            paths.append((self.drive.path, self.drive.path))
             paths.reverse()
             return paths
         esps = self.dp.collect_esp()
         if len(esps) == 0:
-            return ["Create new ESP on {}".format(self.drive.path)]
+            return [("c", "Create new ESP on {}".format(self.drive.path))]
         cand = self.get_suitable_esp()
         # Are we overwriting this ESP?
         if esps[0].partition.disk == self.drive.disk:
-            return ["Create new ESP on {}".format(self.drive.path)]
+            return [("c", "Create new ESP on {}".format(self.drive.path))]
         if not cand:
-            return ["ESP is too small: {} free space remaining".format(
-                cand.freespace_string)]
+            self.set_errors(
+                "ESP is too small: {} free space remaining".format(
+                    cand.freespace_string))
+            return []
         return [cand.path]
 
 

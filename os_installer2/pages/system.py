@@ -144,7 +144,10 @@ class InstallerSystemPage(BasePage):
 
         self.combo_boot.remove_all()
         options = info.strategy.get_boot_loader_options()
-        for loader in options:
-            self.combo_boot.append_text(loader)
+        for id, loader in options:
+            self.combo_boot.append(id, loader)
         if len(options) > 0:
             self.combo_boot.set_active(0)
+        else:
+            print("Error finding boot-targets: {}".format(
+                info.strategy.get_errors()))
