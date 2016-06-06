@@ -69,7 +69,7 @@ class InstallerSystemPage(BasePage):
         boot.set_halign(Gtk.Align.CENTER)
         boot.set_shadow_type(Gtk.ShadowType.NONE)
         self.check_boot = Gtk.CheckButton.new_with_label(
-            "Installer a bootloader")
+            "Install a bootloader")
         self.check_boot.set_margin_bottom(5)
         self.check_boot.set_margin_top(5)
         boot.set_label_widget(self.check_boot)
