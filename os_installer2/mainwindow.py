@@ -70,6 +70,7 @@ class InstallInfo:
 
     # Bootloader target
     bootloader = None
+    bootloader_sz = None
     bootloader_install = False
 
 

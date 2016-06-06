@@ -112,7 +112,8 @@ class InstallerSystemPage(BasePage):
             return
         if not self.info:
             return
-        self.info.bootloader = combo.get_active_id()
+        self.info.bootloader_sz = combo.get_active_id()
+        self.info.bootloader = combo.get_active_text()
 
         self.check_forward()
 

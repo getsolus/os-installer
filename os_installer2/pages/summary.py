@@ -121,6 +121,12 @@ class InstallerSummaryPage(BasePage):
         if info.windows_present:
             s = "Enable UTC time" if info.system_utc else "Disable UTC time"
             self.system_details.add_label(self._clean_label(s))
+        if info.bootloader_install:
+            if info.bootloader_sz == "c":
+                s = info.bootloader
+            else:
+                s = "Install bootloader to {}".format(info.bootloader_sz)
+            self.system_details.add_label(self._clean_label(s))
 
         # Users
         for kid in self.user_details.vbox.get_children():
