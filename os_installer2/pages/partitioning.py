@@ -16,7 +16,6 @@ from os_installer2 import format_size_local
 from os_installer2.strategy import DualBootStrategy
 from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
-from os_installer2.strategy import UseFreeSpaceStrategy
 from os_installer2.strategy import UserPartitionStrategy
 from os_installer2.strategy import MIN_REQUIRED_SIZE
 from gi.repository import Gtk
@@ -211,7 +210,6 @@ class InstallerPartitioningPage(BasePage):
         skips = [
             EmptyDiskStrategy,
             WipeDiskStrategy,
-            UseFreeSpaceStrategy,
         ]
         for sk in skips:
             if isinstance(info.strategy, sk):

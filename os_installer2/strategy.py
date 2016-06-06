@@ -301,53 +301,6 @@ class WipeDiskStrategy(EmptyDiskStrategy):
         EmptyDiskStrategy.update_operations(self, dm, info)
 
 
-class UseFreeSpaceStrategy(DiskStrategy):
-    """ Use free space on the device """
-    drive = None
-
-    potential_spots = None
-    candidate = None
-
-    priority = 30
-
-    def __init__(self, dp, drive):
-        DiskStrategy.__init__(self, dp, drive)
-        self.drive = drive
-        self.potential_spots = []
-
-    def get_display_string(self):
-        sz = "Use the remaining free space on this disk and install a fresh" \
-             " copy of Solus\nThis will <b>not affect</b> other systems."
-        return sz
-
-    def get_name(self):
-        return "use-free-space: {}".format(self.drive.path)
-
-    def is_possible(self):
-        # No disk, should be empty-disk strategy
-        if not self.drive.disk:
-            return False
-        # No partitions at all, empty-disk
-        if len(self.drive.disk.partitions) == 0:
-            return False
-        extended = self.drive.disk.getExtendedPartition()
-        if self.primary_exceeded() and not extended:
-            # Cannot create a partition now
-            return False
-        # Build up a selection of free space partitions to use
-        for part in self.drive.disk.getFreeSpacePartitions():
-            size = part.getLength() * self.drive.device.sectorSize
-            if size >= MIN_REQUIRED_SIZE:
-                self.potential_spots.append(part)
-        self.potential_spots.sort(key=parted.Partition.getLength, reverse=True)
-        # Got at least one space big enough to use
-        if len(self.potential_spots) > 0:
-            # Pick the biggest guy
-            self.candidate = self.potential_spots[0]
-            return True
-        return False
-
-
 class DualBootStrategy(DiskStrategy):
     """ Dual-boot alongside the biggest install by resizing it """
     drive = None
@@ -527,7 +480,6 @@ class DiskStrategyManager:
         # In short, you're in the wrong mode.
         if not self.broken_uefi:
             strats.extend([
-                UseFreeSpaceStrategy,
                 DualBootStrategy,
             ])
         for pot in strats:
