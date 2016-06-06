@@ -22,7 +22,7 @@ from .pages.timezone import InstallerTimezonePage
 from .pages.disk_location import InstallerDiskLocationPage
 from .pages.partitioning import InstallerPartitioningPage
 from .pages.system import InstallerSystemPage
-from .pages.users import InstallerUsersPage
+# from .pages.users import InstallerUsersPage
 from .pages.summary import InstallerSummaryPage
 from .pages.progress import InstallerProgressPage
 from . import join_resource_path as jrp
@@ -72,6 +72,9 @@ class InstallInfo:
     bootloader = None
     bootloader_sz = None
     bootloader_install = False
+
+    def __init__(self):
+        self.users = list()
 
 
 class MainWindow(Gtk.ApplicationWindow):
@@ -163,7 +166,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.add_installer_page(InstallerDiskLocationPage())
             self.add_installer_page(InstallerPartitioningPage())
             self.add_installer_page(InstallerSystemPage())
-            self.add_installer_page(InstallerUsersPage())
+            # self.add_installer_page(InstallerUsersPage())
             self.add_installer_page(InstallerSummaryPage())
             self.add_installer_page(InstallerProgressPage())
         except Exception as e:
