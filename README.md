@@ -7,6 +7,8 @@ the Solus 1.2 release, and future releases of Solus will make use of
 a native, agnostic installer.
 
 
+**Note**: The installer is seeing highly active development right now.
+Do **NOT** attempt to run unless you intend to lose a disk or two.
 
 Authors
 --------
