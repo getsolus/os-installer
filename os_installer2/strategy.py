@@ -34,9 +34,11 @@ class DiskStrategy:
 
     priority = 0
     drive = None
+    dp = None
 
-    def __init__(self, drive):
+    def __init__(self, dp, drive):
         self.drive = drive
+        self.dp = dp
 
     def get_display_string(self):
         return "Fatal Error"
@@ -61,8 +63,8 @@ class EmptyDiskStrategy(DiskStrategy):
 
     priority = 50
 
-    def __init__(self, drive):
-        DiskStrategy.__init__(self, drive)
+    def __init__(self, dp, drive):
+        DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
 
     def get_display_string(self):
@@ -96,8 +98,8 @@ class WipeDiskStrategy(DiskStrategy):
 
     priority = 20
 
-    def __init__(self, drive):
-        DiskStrategy.__init__(self, drive)
+    def __init__(self, dp, drive):
+        DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
 
     def get_display_string(self):
@@ -129,8 +131,8 @@ class UseFreeSpaceStrategy(DiskStrategy):
 
     priority = 30
 
-    def __init__(self, drive):
-        DiskStrategy.__init__(self, drive)
+    def __init__(self, dp, drive):
+        DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
         self.potential_spots = []
 
@@ -179,8 +181,8 @@ class DualBootStrategy(DiskStrategy):
     our_size = 0
     their_size = 0
 
-    def __init__(self, drive):
-        DiskStrategy.__init__(self, drive)
+    def __init__(self, dp, drive):
+        DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
         self.potential_spots = []
 
@@ -278,8 +280,8 @@ class UserPartitionStrategy(DiskStrategy):
 
     priority = 10
 
-    def __init__(self, drive):
-        DiskStrategy.__init__(self, drive)
+    def __init__(self, dp, drive):
+        DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
 
     def get_display_string(self):
@@ -319,7 +321,7 @@ class DiskStrategyManager:
                 DualBootStrategy,
             ])
         for pot in strats:
-            i = pot(drive)
+            i = pot(self.prober, drive)
             if not i.is_possible():
                 continue
             ret.append(i)
