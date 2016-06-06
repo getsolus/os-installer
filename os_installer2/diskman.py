@@ -654,7 +654,6 @@ class DiskManager:
             dname = vfunc(mount_point)
             if dname:
                 ret = OsType(os_type, dname, device)
-                print("Found %s" % dname)
                 ret.icon_name = self.get_os_icon(ret)
                 break
 
