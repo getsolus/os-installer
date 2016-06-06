@@ -19,6 +19,7 @@ GB = 1000 * MB
 MIN_REQUIRED_SIZE = 10 * GB
 SWAP_USE_THRESHOLD = 15 * GB
 ESP_FREE_REQUIRED = 60 * MB
+ESP_MIN_SIZE = 512
 
 
 def find_best_swap_size(longsize):
@@ -29,6 +30,13 @@ def find_best_swap_size(longsize):
         return 2 * GB
     else:
         return 1 * GB
+
+
+def find_best_esp_size(longsize):
+    gbs = longsize / GB
+    if gbs < 20:
+        return 250 * MB
+    return 512 * MB
 
 
 class DiskStrategy:
@@ -169,8 +177,29 @@ class EmptyDiskStrategy(DiskStrategy):
 
     def explain(self, dm, info):
         ret = []
-        # TODO: Make more useful
-        ret.append("Use entire disk..")
+        size_eat = 0
+        if info.bootloader_install:
+            if info.bootloader_sz == 'c':
+                size_eat += find_best_esp_size(self.drive.size)
+                ret.append("Create {} EFI System Partition".format(
+                    dm.format_size_local(size_eat)))
+            else:
+                ret.append("Install bootloader to {}".format(
+                    info.bootloader_sz))
+
+        # Attempt to create a local swap
+        tnew = self.drive.size - size_eat
+        if tnew >= SWAP_USE_THRESHOLD:
+            new_swap_size = find_best_swap_size(self.drive.size)
+            tnew -= new_swap_size
+            new_sz = dm.format_size_local(new_swap_size, True)
+            ret.append("Create {} swap partition in {}".format(
+                new_sz, self.drive.path))
+            size_eat += new_swap_size
+
+        root_size = self.drive.size - size_eat
+        ret.append("Install Solus to remaining {} of {}".format(
+            dm.format_size_local(root_size), self.drive.path))
         return ret
 
 
