@@ -99,8 +99,12 @@ class InstallerProgressPage(BasePage):
         """ Handle the real work of installing =) """
         self.set_display_string("Analyzing installation configuration")
 
-        # We didn't *really* do anything ;)
-        time.sleep(5)
+        strategy = self.info.strategy
+        for op in strategy.get_operations():
+            self.set_display_string(op.describe())
+            time.sleep(1)
+
+        time.sleep(1)
         self.set_display_string("Nah only kidding")
 
         # Ensure the idle monitor stops
