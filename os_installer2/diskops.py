@@ -92,7 +92,7 @@ class DiskOpCreatePartition(BaseDiskOp):
 
     def get_all_remaining_geom(self, device, start):
         length = device.getLength() - start
-        length -= parted.sizeToSectors(10, 'MB', self.device.sectorSize)
+        length -= parted.sizeToSectors(1, 'MB', self.device.sectorSize)
         return parted.Geometry(device=device, start=start, length=length)
 
     def describe(self):
