@@ -224,13 +224,19 @@ class DiskOpUseSwap(BaseDiskOp):
     """ Use an existing swap paritition """
 
     swap_part = None
+    path = None
 
     def __init__(self, device, swap_part):
         BaseDiskOp.__init__(self, device)
         self.swap_part = swap_part
+        self.path = self.swap_part.path
 
     def describe(self):
         return "Use {} as swap partition".format(self.swap_part.path)
+
+    def apply(self, disk, simulate):
+        """ Can't actually fail here. """
+        return True
 
 
 class DiskOpResizeOS(BaseDiskOp):
