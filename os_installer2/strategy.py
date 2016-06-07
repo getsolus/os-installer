@@ -54,6 +54,8 @@ class DiskStrategy:
     dp = None
     errors = None
     operations = None
+    device = None
+    disk = None
 
     supports_extended_partition = False
 
@@ -62,9 +64,11 @@ class DiskStrategy:
         self.dp = dp
         self.get_suitable_esp()
         self.reset_operations()
+        self.device = self.drive.device
 
         if not self.drive.disk:
             return
+        self.disk = self.drive.disk
         # Set up some common knowledge
         if drive.disk.supportsFeature(parted.DISK_TYPE_EXTENDED):
             self.supports_extended_partition = True

@@ -29,6 +29,7 @@ class BaseDiskOp:
 
     def apply(self, disk):
         """ Apply this operation on the given (optional) disk"""
+        print("IMPLEMENT ME!")
         return False
 
 

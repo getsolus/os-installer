@@ -218,12 +218,15 @@ class InstallerProgressPage(BasePage):
             return False
 
         # Madman time: Go apply the operations. *Gulp*
+        disk = strategy.disk
         for op in ops:
             self.set_display_string(op.describe())
-            if not op.apply():
+            if not op.apply(disk):
                 self.set_display_string("Failed to apply operation")
                 return False
-
+            # If it created a disk, go use it.
+            if not disk and isinstance(op, DiskOpCreateDisk):
+                disk = op.disk
         return True
 
     def install_thread(self):
