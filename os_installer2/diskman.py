@@ -394,6 +394,9 @@ class DiskManager:
             print("Debug: Non-existent node: {}".format(fpath))
             return
         fpath = os.path.realpath(fpath)
+        if fpath.startswith("/dev/sda"):
+            print("DEBUG: SAVING IKEYS DISK FROM DESTRUCTION")
+            return
 
         if device not in self.devices:
             self.devices.append(fpath)
