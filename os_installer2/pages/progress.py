@@ -101,4 +101,6 @@ class InstallerProgressPage(BasePage):
         # We didn't *really* do anything ;)
         time.sleep(3)
         self.set_display_string("Nah only kidding")
+
+        # Ensure the idle monitor stops
         self.installing = False
