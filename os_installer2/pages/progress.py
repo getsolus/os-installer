@@ -210,6 +210,9 @@ class InstallerProgressPage(BasePage):
         """ Handle the real work of installing =) """
         self.set_display_string("Analyzing installation configuration")
 
+        # immediately gain privs
+        self.info.owner.get_perms_manager().up_permissions()
+
         # TODO: Apply disk strategies!!
         strategy = self.info.strategy
         for op in strategy.get_operations():
