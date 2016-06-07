@@ -17,6 +17,7 @@ import threading
 import time
 from collections import OrderedDict
 from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
+from os_installer2.diskops import DiskOpCreateDisk
 import os
 
 
@@ -209,11 +210,21 @@ class InstallerProgressPage(BasePage):
     def apply_disk_strategy(self):
         """ Attempt to apply the given disk strategy """
         strategy = self.info.strategy
-        for op in strategy.get_operations():
+        ops = strategy.get_operations()
+
+        table_ops = [x for x in ops if isinstance(x, DiskOpCreateDisk)]
+        if len(table_ops) > 1:
+            self.set_display_string("Wiping disk more than once, error")
+            return False
+
+        # Madman time: Go apply the operations. *Gulp*
+        for op in ops:
             self.set_display_string(op.describe())
-            time.sleep(1)
-        self.set_display_string("Failed to set disk strategy")
-        return False
+            if not op.apply():
+                self.set_display_string("Failed to apply operation")
+                return False
+
+        return True
 
     def install_thread(self):
         """ Handle the real work of installing =) """
