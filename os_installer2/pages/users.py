@@ -65,7 +65,7 @@ class NewUserPage(Gtk.Grid):
     def is_bad_field(self, field):
         """ Validation for gecos """
         t = field.get_text()
-        if len(t) < 1:
+        if len(t) < 2:
             return True
         bad_guys = ['"', '\'', '/', '\\', ';', '@', '!']
         hits = [x for x in bad_guys if x in t]
