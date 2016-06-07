@@ -20,6 +20,7 @@ from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
 import os
+import parted
 
 
 # Update 5 times a second, vs every byte copied..
@@ -228,16 +229,17 @@ class InstallerProgressPage(BasePage):
             disk = disk.duplicate()
 
         part_offset = 0
+        part_step = parted.sizeToSectors(16, 'kB', strategy.device.sectorSize)
         if disk:
             if resizes:
                 # Got a resize, start after the new size of the OS
                 rs = resizes[0]
                 new_sz_end = rs.part.geometry.start + rs.their_size
-                part_offset = new_sz_end + 1
+                part_offset = new_sz_end + part_step
             else:
                 # Start at the very beginning of the disk, we don't
                 # support free-space installation
-                part_offset = disk.getFirstPartition().geometry.end + 1
+                part_offset = disk.getFirstPartition().geometry.end + part_step
 
         for op in ops:
             self.set_display_string(op.describe())
@@ -252,10 +254,10 @@ class InstallerProgressPage(BasePage):
             if isinstance(op, DiskOpCreateDisk):
                 disk = op.disk
                 # Now set the part offset
-                part_offset = disk.getFirstPartition().geometry.end + 1
+                part_offset = disk.getFirstPartition().geometry.end + part_step
             elif isinstance(op, DiskOpCreatePartition):
                 # Push forward the offset
-                part_offset = op.part.geometry.end + 1
+                part_offset = op.part.geometry.end + part_step
 
         if simulate:
             return True
@@ -265,6 +267,15 @@ class InstallerProgressPage(BasePage):
         except Exception as e:
             self.set_display_string("Failed to update disk: {}".format(e))
             return False
+
+        # Post-process, format all the things
+        for op in ops:
+            if not isinstance(op, DiskOpCreatePartition):
+                continue
+            if not op.apply_format(disk):
+                e = op.get_errors()
+                self.set_display_string("Failed to apply format: {}".format(e))
+                return False
 
         return True
 

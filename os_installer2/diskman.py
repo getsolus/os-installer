@@ -74,12 +74,12 @@ class DriveProber:
             try:
                 device = parted.getDevice(item)
             except Exception as e:
-                print("Cannot probe device: {}".format(e))
+                print("Cannot probe device: {} {}".format(item, e))
                 continue
             try:
                 disk = parted.Disk(device)
             except Exception as e:
-                print("Cannot probe disk: {}".format(e))
+                print("Cannot probe disk: {} {}".format(item, e))
 
             # Get a system drive
             drive = self.dm.parse_system_disk(device, disk, self.mtab)

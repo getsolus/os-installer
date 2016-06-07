@@ -13,6 +13,7 @@
 
 from os_installer2 import format_size_local
 import parted
+import subprocess
 
 
 class BaseDiskOp:
@@ -91,6 +92,7 @@ class DiskOpCreatePartition(BaseDiskOp):
 
     def get_all_remaining_geom(self, device, start):
         length = device.getLength() - start
+        length -= parted.sizeToSectors(10, 'MB', self.device.sectorSize)
         return parted.Geometry(device=device, start=start, length=length)
 
     def describe(self):
@@ -126,6 +128,10 @@ class DiskOpCreatePartition(BaseDiskOp):
             return False
         return True
 
+    def apply_format(self, disk):
+        """ Post-creation all disks must be formatted """
+        return False
+
 
 class DiskOpCreateSwap(DiskOpCreatePartition):
     """ Create a new swap partition """
@@ -141,6 +147,15 @@ class DiskOpCreateSwap(DiskOpCreatePartition):
     def describe(self):
         return "Create {} swap partition on {}".format(
             format_size_local(self.size, True), self.device.path)
+
+    def apply_format(self, disk):
+        cmd = "mkswap {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
 
 
 class DiskOpCreateESP(DiskOpCreatePartition):
@@ -170,6 +185,15 @@ class DiskOpCreateESP(DiskOpCreatePartition):
             return False
         return True
 
+    def apply_format(self, disk):
+        cmd = "mkdosfs -F 32 {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
+
 
 class DiskOpCreateRoot(DiskOpCreatePartition):
     """ Create a new root partition """
@@ -185,6 +209,15 @@ class DiskOpCreateRoot(DiskOpCreatePartition):
     def describe(self):
         return "Create {} root partition on {}".format(
             format_size_local(self.size, True), self.device.path)
+
+    def apply_format(self, disk):
+        cmd = "mkfs.ext4 -F {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
 
 
 class DiskOpUseSwap(BaseDiskOp):
