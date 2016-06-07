@@ -17,7 +17,7 @@ import threading
 import time
 from collections import OrderedDict
 from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
-from os_installer2.diskops import DiskOpCreateDisk
+from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 import os
 
 
@@ -213,14 +213,31 @@ class InstallerProgressPage(BasePage):
         ops = strategy.get_operations()
 
         table_ops = [x for x in ops if isinstance(x, DiskOpCreateDisk)]
+        resizes = [x for x in ops if isinstance(x, DiskOpResizeOS)]
         if len(table_ops) > 1:
             self.set_display_string("Wiping disk more than once, error")
+            return False
+        if len(resizes) > 1:
+            self.set_display_string("Multiple resizes not supported")
             return False
 
         # Madman time: Go apply the operations. *Gulp*
         disk = strategy.disk
+        part_offset = 0
+        if disk:
+            if resizes:
+                # Got a resize, start after the new size of the OS
+                rs = resizes[0]
+                new_sz_end = rs.part.geometry.start + rs.their_size
+                part_offset = new_sz_end + 1
+            else:
+                # Start at the very beginning of the disk, we don't
+                # support free-space installation
+                part_offset = disk.getFirstPartition().geometry.end + 1
+
         for op in ops:
             self.set_display_string(op.describe())
+            op.set_part_offset(part_offset)
             if not op.apply(disk):
                 er = op.get_errors()
                 if not er:
@@ -228,7 +245,7 @@ class InstallerProgressPage(BasePage):
                 self.set_display_string(er)
                 return False
             # If it created a disk, go use it.
-            if not disk and isinstance(op, DiskOpCreateDisk):
+            if isinstance(op, DiskOpCreateDisk):
                 disk = op.disk
         return True
 

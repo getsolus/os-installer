@@ -399,6 +399,10 @@ class DualBootStrategy(DiskStrategy):
         if not self.drive.disk:
             return False
 
+        # Dual-boot will require GPT
+        if self.is_uefi() and self.drive.disk.type != "gpt":
+            return False
+
         self.potential_spots = []
         # The absolute minimum number of partitions we need (swap = bonus.)
         min_partitions = 1
@@ -472,6 +476,9 @@ class ReplaceOSStrategy(DiskStrategy):
     def is_possible(self):
         # Require table
         if not self.drive.disk:
+            return False
+        if self.is_uefi() and self.drive.disk.type != "gpt":
+            # This disk is no good
             return False
 
         self.potential_spots = []

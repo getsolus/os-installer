@@ -20,6 +20,7 @@ class BaseDiskOp:
 
     device = None
     errors = None
+    part_offset = 0
 
     def __init__(self, device):
         self.device = device
@@ -41,6 +42,10 @@ class BaseDiskOp:
     def set_errors(self, er):
         """ Set the errors encountered """
         self.errors = er
+
+    def set_part_offset(self, newoffset):
+        """ Useful only for new partitions """
+        self.part_offset = newoffset
 
 
 class DiskOpCreateDisk(BaseDiskOp):
@@ -80,6 +85,8 @@ class DiskOpCreatePartition(BaseDiskOp):
         self.ptype = ptype
         self.fstype = fstype
         self.size = size
+        if not self.ptype:
+            self.ptype = parted.PARTITION_NORMAL
 
     def describe(self):
         return "I should be described by my children. ._."
@@ -89,7 +96,14 @@ class DiskOpCreatePartition(BaseDiskOp):
         try:
             length = parted.sizeToSectors(
                 self.size, 'B', disk.device.sectorSize)
-            raise RuntimeError("Not implemented, sorry")
+            geom = parted.Geometry(
+                device=self.device, start=self.part_offset, length=length)
+            fs = parted.FileSystem(type=self.fstype, geometry=geom)
+            p = parted.Partition(
+                disk=disk, type=self.ptype, fs=fs, geometry=geom)
+
+            disk.addPartition(
+                p, constraint=self.device.optimalAlignedConstraint)
         except Exception as e:
             self.set_errors(e)
             return False
@@ -163,12 +177,14 @@ class DiskOpResizeOS(BaseDiskOp):
     their_size = None
     our_size = None
     desc = None
+    part = None
 
     def __init__(self, device, part, os, their_size, our_size):
         BaseDiskOp.__init__(self, device)
 
         self.their_size = their_size
         self.our_size = our_size
+        self.part = part.partition
 
         their_new_sz = format_size_local(their_size, True)
         their_old_sz = format_size_local(part.size, True)
@@ -178,6 +194,15 @@ class DiskOpResizeOS(BaseDiskOp):
 
     def describe(self):
         return self.desc
+
+    def apply(self, disk):
+        # TODO: Actually resize the filesystem itself
+        try:
+            self.part.geometry.length = self.their_size
+            return True
+        except Exception, e:
+            self.set_errors(e)
+            return False
 
 
 class DiskOpFormatPartition(BaseDiskOp):
