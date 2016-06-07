@@ -234,6 +234,7 @@ class InstallerUsersPage(BasePage):
     """ User management. """
 
     info = None
+    had_init = False
 
     def __init__(self):
         BasePage.__init__(self)
@@ -336,6 +337,11 @@ class InstallerUsersPage(BasePage):
         self.stack.set_visible_child_name("main")
         self.show_all()
         self.add_user_page.clear_form()
+
+        # Start on the new user page
+        if not self.had_init:
+            self.add_user(None)
+            self.had_init = True
 
     def get_title(self):
         return "Who will use this device?"
