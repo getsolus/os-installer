@@ -20,6 +20,13 @@ gi.require_version('GnomeDesktop', '3.0')
 gi.require_version('TimezoneMap', '1.0')
 
 
+# The path of the source filesystem
+SOURCE_FILESYSTEM = "/run/initramfs/live/LiveOS/squashfs.img"
+
+# The guy inside that is actually our filesystem to copy
+INNER_FILESYSTEM = "rootfs.img"
+
+
 def get_resource_path():
     bsPath = os.path.dirname(__file__)
     return os.path.join(bsPath, "data")
