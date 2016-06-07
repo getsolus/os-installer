@@ -80,6 +80,7 @@ class InstallerProgressPage(BasePage):
     def idle_monitor(self):
         """ Called periodicially so we can update our view """
         self.label.set_markup(self.get_display_string())
+        self.progressbar.pulse()
         if not self.installing:
             print("Finished idle_monitor")
         return self.installing
@@ -99,7 +100,7 @@ class InstallerProgressPage(BasePage):
         self.set_display_string("Analyzing installation configuration")
 
         # We didn't *really* do anything ;)
-        time.sleep(3)
+        time.sleep(5)
         self.set_display_string("Nah only kidding")
 
         # Ensure the idle monitor stops
