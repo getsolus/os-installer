@@ -430,7 +430,11 @@ class DualBootStrategy(DiskStrategy):
                         # "Skipping OS due to excess log"
                         continue
             # Can continue
-            self.potential_spots.append(partition)
+            fs = partition.fileSystem
+            if not fs:
+                continue
+            if fs.type == "ntfs" or fs.type.startswith("ext"):
+                self.potential_spots.append(partition)
 
         self.potential_spots.sort(key=SystemPartition.getLength,
                                   reverse=True)

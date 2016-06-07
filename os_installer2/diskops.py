@@ -258,10 +258,32 @@ class DiskOpResizeOS(BaseDiskOp):
         return self.desc
 
     def apply(self, disk, simulate):
-        # TODO: Actually resize the filesystem itself
         try:
             self.part.geometry.length = self.their_size
-            return True
+            cmd = None
+            if self.part.fileSystem.type == "ntfs":
+                cmd = "ntfsresize --size {} {}".format(
+                    self.their_size, self.part.path)
+                if simulate:
+                    cmd += " --no-action"
+                try:
+                    subprocess.check_call(cmd, shell=True)
+                except Exception as e:
+                    self.set_errors(e)
+                    return False
+                return True
+            elif self.part.fileSystem.type.startswith("ext"):
+                if simulate:
+                    return True
+                cmd = "resize2fs {} {}".format(
+                    self.part.path, self.their_size)
+                try:
+                    subprocess.check_call(cmd, shell=True)
+                except Exception as ex:
+                    self.set_errors(ex)
+                    return False
+            else:
+                return False
         except Exception as e:
             self.set_errors(e)
             return False
