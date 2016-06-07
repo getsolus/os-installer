@@ -246,6 +246,13 @@ class EmptyDiskStrategy(DiskStrategy):
 
     def update_operations(self, dm, info):
         """ Handle all the magicks """
+        if self.is_uefi():
+            t = "gpt"
+        else:
+            t = "msdos"
+        # Need a part table
+        self.push_operation(DiskOpCreateDisk(self.drive.device, t))
+
         size_eat = 0
         if info.bootloader_install:
             if info.bootloader_sz == 'c':
@@ -297,11 +304,6 @@ class WipeDiskStrategy(EmptyDiskStrategy):
         return True
 
     def update_operations(self, dm, info):
-        if self.is_uefi():
-            t = "gpt"
-        else:
-            t = "msdos"
-        self.push_operation(DiskOpCreateDisk(self.drive.device, t))
         # Let empty-disk handle the rest =)
         EmptyDiskStrategy.update_operations(self, dm, info)
 

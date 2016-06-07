@@ -18,6 +18,7 @@ import time
 from collections import OrderedDict
 from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
+from os_installer2.diskops import DiskOpCreatePartition
 import os
 
 
@@ -247,6 +248,17 @@ class InstallerProgressPage(BasePage):
             # If it created a disk, go use it.
             if isinstance(op, DiskOpCreateDisk):
                 disk = op.disk
+                # Now set the part offset
+                part_offset = disk.getFirstPartition().geometry.end + 1
+            elif isinstance(op, DiskOpCreatePartition):
+                # Push forward the offset
+                part_offset = op.part.geometry.end + 1
+        try:
+            disk.commit()
+        except Exception as e:
+            self.set_display_string("Failed to update disk: {}".format(e))
+            return False
+
         return True
 
     def install_thread(self):

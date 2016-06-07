@@ -79,6 +79,7 @@ class DiskOpCreatePartition(BaseDiskOp):
     fstype = None
     size = None
     ptype = None
+    part = None
 
     def __init__(self, device, ptype, fstype, size):
         BaseDiskOp.__init__(self, device)
@@ -88,22 +89,38 @@ class DiskOpCreatePartition(BaseDiskOp):
         if not self.ptype:
             self.ptype = parted.PARTITION_NORMAL
 
+    def get_all_remaining_geom(self, device, start):
+        length = device.getLength() - start
+        return parted.Geometry(device=device, start=start, length=length)
+
     def describe(self):
         return "I should be described by my children. ._."
 
     def apply(self, disk):
         """ Create a partition with the given type... """
         try:
+            if not disk:
+                raise RuntimeError("Cannot create partition on empty disk!")
             length = parted.sizeToSectors(
                 self.size, 'B', disk.device.sectorSize)
             geom = parted.Geometry(
                 device=self.device, start=self.part_offset, length=length)
+
+            # Don't run off the end of the disk ...
+            geom_cmp = self.get_all_remaining_geom(
+                disk.device, self.part_offset)
+            if geom_cmp.length < geom.length:
+                print("Using new size of {} vs {}".format(
+                    geom_cmp.length, geom.length))
+                geom = geom_cmp
+
             fs = parted.FileSystem(type=self.fstype, geometry=geom)
             p = parted.Partition(
                 disk=disk, type=self.ptype, fs=fs, geometry=geom)
 
             disk.addPartition(
                 p, constraint=self.device.optimalAlignedConstraint)
+            self.part = p
         except Exception as e:
             self.set_errors(e)
             return False
@@ -200,7 +217,7 @@ class DiskOpResizeOS(BaseDiskOp):
         try:
             self.part.geometry.length = self.their_size
             return True
-        except Exception, e:
+        except Exception as e:
             self.set_errors(e)
             return False
 
