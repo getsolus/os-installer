@@ -12,12 +12,14 @@
 #
 
 from os_installer2 import format_size_local
+import parted
 
 
 class BaseDiskOp:
     """ Basis of all disk operations """
 
     device = None
+    errors = None
 
     def __init__(self, device):
         self.device = device
@@ -31,6 +33,14 @@ class BaseDiskOp:
         """ Apply this operation on the given (optional) disk"""
         print("IMPLEMENT ME!")
         return False
+
+    def get_errors(self):
+        """ Get the errors, if any, encountered """
+        return self.errors
+
+    def set_errors(self, er):
+        """ Set the errors encountered """
+        self.errors = er
 
 
 class DiskOpCreateDisk(BaseDiskOp):
@@ -46,6 +56,16 @@ class DiskOpCreateDisk(BaseDiskOp):
     def describe(self):
         return "Create {} partition table on {}".format(
             self.label, self.device.path)
+
+    def apply(self, unused_disk):
+        """ Construct a new labeled disk """
+        try:
+            d = parted.freshDisk(self.device, self.label)
+            self.disk = d
+        except Exception as e:
+            self.set_errors(e)
+            return False
+        return True
 
 
 class DiskOpCreatePartition(BaseDiskOp):

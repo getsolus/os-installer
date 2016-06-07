@@ -222,7 +222,10 @@ class InstallerProgressPage(BasePage):
         for op in ops:
             self.set_display_string(op.describe())
             if not op.apply(disk):
-                self.set_display_string("Failed to apply operation")
+                er = op.get_errors()
+                if not er:
+                    er = "Failed to apply operation: {}".format(op.describe())
+                self.set_display_string(er)
                 return False
             # If it created a disk, go use it.
             if not disk and isinstance(op, DiskOpCreateDisk):
