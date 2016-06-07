@@ -30,7 +30,7 @@ class BaseDiskOp:
         """ Describe this operation """
         return None
 
-    def apply(self, disk):
+    def apply(self, disk, simulate):
         """ Apply this operation on the given (optional) disk"""
         print("IMPLEMENT ME!")
         return False
@@ -62,7 +62,7 @@ class DiskOpCreateDisk(BaseDiskOp):
         return "Create {} partition table on {}".format(
             self.label, self.device.path)
 
-    def apply(self, unused_disk):
+    def apply(self, unused_disk, simulate):
         """ Construct a new labeled disk """
         try:
             d = parted.freshDisk(self.device, self.label)
@@ -96,7 +96,7 @@ class DiskOpCreatePartition(BaseDiskOp):
     def describe(self):
         return "I should be described by my children. ._."
 
-    def apply(self, disk):
+    def apply(self, disk, simulate):
         """ Create a partition with the given type... """
         try:
             if not disk:
@@ -158,9 +158,9 @@ class DiskOpCreateESP(DiskOpCreatePartition):
         return "Create {} EFI System Partition on {}".format(
             format_size_local(self.size, True), self.device.path)
 
-    def apply(self, disk):
+    def apply(self, disk, simulate):
         """ Create the fat partition first """
-        b = DiskOpCreatePartition.apply(self, disk)
+        b = DiskOpCreatePartition.apply(self, disk, simulate)
         if not b:
             return b
         try:
@@ -224,7 +224,7 @@ class DiskOpResizeOS(BaseDiskOp):
     def describe(self):
         return self.desc
 
-    def apply(self, disk):
+    def apply(self, disk, simulate):
         # TODO: Actually resize the filesystem itself
         try:
             self.part.geometry.length = self.their_size

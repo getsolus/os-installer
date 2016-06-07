@@ -208,7 +208,7 @@ class InstallerProgressPage(BasePage):
         print("DEBUG: Counted {} files".format(count))
         return False
 
-    def apply_disk_strategy(self):
+    def apply_disk_strategy(self, simulate):
         """ Attempt to apply the given disk strategy """
         strategy = self.info.strategy
         ops = strategy.get_operations()
@@ -224,6 +224,9 @@ class InstallerProgressPage(BasePage):
 
         # Madman time: Go apply the operations. *Gulp*
         disk = strategy.disk
+        if disk and simulate:
+            disk = disk.duplicate()
+
         part_offset = 0
         if disk:
             if resizes:
@@ -239,7 +242,7 @@ class InstallerProgressPage(BasePage):
         for op in ops:
             self.set_display_string(op.describe())
             op.set_part_offset(part_offset)
-            if not op.apply(disk):
+            if not op.apply(disk, simulate):
                 er = op.get_errors()
                 if not er:
                     er = "Failed to apply operation: {}".format(op.describe())
@@ -253,6 +256,10 @@ class InstallerProgressPage(BasePage):
             elif isinstance(op, DiskOpCreatePartition):
                 # Push forward the offset
                 part_offset = op.part.geometry.end + 1
+
+        if simulate:
+            return True
+
         try:
             disk.commit()
         except Exception as e:
@@ -268,9 +275,17 @@ class InstallerProgressPage(BasePage):
         # immediately gain privs
         self.info.owner.get_perms_manager().up_permissions()
 
-        # TODO: Apply disk strategies!!
-        if not self.apply_disk_strategy():
+        # Simulate!
+        self.set_display_string("Simulating disk operations")
+        if not self.apply_disk_strategy(True):
             self.installing = False
+            self.set_display_string("Failed to simulate disk strategy")
+            return False
+
+        # Now do it for real.
+        if not self.apply_disk_strategy(False):
+            self.installing = False
+            self.set_display_string("Failed to apply disk strategy")
             return False
 
         # Now mount up as it were.
