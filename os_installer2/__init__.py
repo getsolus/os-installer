@@ -21,7 +21,10 @@ gi.require_version('TimezoneMap', '1.0')
 
 
 # The path of the source filesystem
-SOURCE_FILESYSTEM = "/run/initramfs/live/LiveOS/squashfs.img"
+# SOURCE_FILESYSTEM = "/run/initramfs/live/LiveOS/squashfs.img"
+# Bad, bad ikey, but for testing, so shush
+SOURCE_FILESYSTEM = \
+    "/home/ikey/Solus/primary/IMAGEROOT/deploy/LiveOS/squashfs.img"
 
 # The guy inside that is actually our filesystem to copy
 INNER_FILESYSTEM = "rootfs.img"
