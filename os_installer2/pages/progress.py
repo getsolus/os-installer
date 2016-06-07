@@ -119,6 +119,12 @@ class InstallerProgressPage(BasePage):
         self.temp_dirs.append(d)
         return d
 
+    def get_mount_point_for(self, node):
+        """ Get the mount point of a given node """
+        if node in self.mount_tracker:
+            return self.mount_tracker[node]
+        return None
+
     def mount_source_filesystem(self):
         """ Mount the source and child """
         source = self._mkdtemp()
@@ -183,6 +189,21 @@ class InstallerProgressPage(BasePage):
     def copy_system(self):
         """ Attempt to copy the entire filesystem across """
         print("Need to copy {} bytes".format(self.filesystem_source_size))
+
+        source_fs = self.get_mount_point_for(INNER_FILESYSTEM)
+        if not source_fs:
+            return False
+
+        # Ensure we don't follow links, i.e. we're never in a situation where
+        # we're creating broken leading directories
+        count = 0
+        for root, dirs, files in os.walk(source_fs,
+                                         topdown=False,
+                                         followlinks=False):
+            # Walk the tree from the back to restore permissions properly
+            count += len(files)
+            pass
+        print("DEBUG: Counted {} files".format(count))
         return False
 
     def install_thread(self):
