@@ -212,7 +212,7 @@ class InstallerProgressPage(BasePage):
         for op in strategy.get_operations():
             self.set_display_string(op.describe())
             time.sleep(1)
-        self.set_display_string("Faield to set disk strategy")
+        self.set_display_string("Failed to set disk strategy")
         return False
 
     def install_thread(self):
