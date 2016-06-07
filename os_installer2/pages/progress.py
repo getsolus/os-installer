@@ -15,6 +15,9 @@ from .basepage import BasePage
 from gi.repository import Gtk, GLib, Pango
 import threading
 import time
+from collections import OrderedDict
+from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
+import os
 
 
 # Update 5 times a second, vs every byte copied..
@@ -29,6 +32,11 @@ class InstallerProgressPage(BasePage):
     label = None
     had_start = False
     installing = False
+    mount_tracker = None
+    temp_dirs = None
+
+    # Our disk manager
+    dm = None
 
     # Current string for the idle monitor to display in Gtk thread
     display_string = None
@@ -48,6 +56,9 @@ class InstallerProgressPage(BasePage):
 
         self.progressbar = Gtk.ProgressBar()
         box.pack_start(self.progressbar, False, False, 2)
+
+        self.mount_tracker = OrderedDict()
+        self.temp_dirs = []
 
     def get_title(self):
         return "Installing Solus"
@@ -76,6 +87,7 @@ class InstallerProgressPage(BasePage):
     def set_display_string(self, sz):
         """ Set the current display string """
         self.display_string = sz
+        print(sz)
 
     def idle_monitor(self):
         """ Called periodicially so we can update our view """
@@ -87,6 +99,7 @@ class InstallerProgressPage(BasePage):
 
     def prepare(self, info):
         self.info = info
+        self.dm = info.owner.get_disk_manager()
         self.info.owner.set_can_next(False)
         self.info.owner.set_can_previous(False)
         self.info.owner.set_can_quit(False)
@@ -95,17 +108,88 @@ class InstallerProgressPage(BasePage):
             self.had_start = True
             self.begin_install()
 
+    def _mkdtemp(self, suffix='installer'):
+        """ Create and track the temporary directory """
+        d = self.dm.create_temp_dir()
+        if not d:
+            return None
+        self.temp_dirs.append(d)
+        return d
+
+    def mount_source_filesystem(self):
+        """ Mount the source and child """
+        source = self._mkdtemp()
+        inner_path = os.path.join(source, INNER_FILESYSTEM)
+        if not source:
+            self.set_display_string("Cannot mkdtemp")
+            return False
+
+        # Try to mount the squashfs
+        if not self.dm.do_mount(SOURCE_FILESYSTEM, source, "auto", "loop"):
+            self.set_display_string("Cannot mount source filesystem")
+            return False
+        self.mount_tracker[SOURCE_FILESYSTEM] = source
+
+        # See if the kid exists or not
+        if not os.path.exists(inner_path):
+            self.set_display_string("Cannot find {}".format(inner_path))
+            return False
+
+        inner_child = self._mkdtemp()
+        # Try to mount the kid to a new temp
+        if not inner_child:
+            self.set_display_string("Cannot mkdtemp")
+            return False
+        if not self.dm.do_mount(inner_path, inner_child, "auto", "loop"):
+            self.set_display_string("Cannot mount inner child")
+            return False
+        self.mount_tracker[INNER_FILESYSTEM] = inner_path
+
+        return True
+
+    def unmount_all(self):
+        """ umount everything we've mounted """
+        ret = True
+
+        # Visit in reverse order
+        keys = self.mount_tracker.keys()
+        keys.reverse()
+        for key in keys:
+            if not self.dm.do_umount(self.mount_tracker[key]):
+                self.set_display_string("Cannot umount {}".format(key))
+                ret = False
+
+        for tmp in self.temp_dirs:
+            try:
+                os.rmdir(tmp)
+            except Exception as e:
+                self.set_display_string("Cannot rmdir {}: {}".format(
+                    tmp, e))
+                ret = False
+        return ret
+
     def install_thread(self):
         """ Handle the real work of installing =) """
         self.set_display_string("Analyzing installation configuration")
 
+        # TODO: Apply disk strategies!!
         strategy = self.info.strategy
         for op in strategy.get_operations():
             self.set_display_string(op.describe())
             time.sleep(1)
 
+        # Now mount up as it were.
+        if not self.mount_source_filesystem():
+            self.unmount_all()
+            self.set_display_string("Failed to mount!")
+            self.installing = False
+            return
+
         time.sleep(1)
         self.set_display_string("Nah only kidding")
 
         # Ensure the idle monitor stops
+        if not self.unmount_all():
+            self.set_display_string("Failed to unmount cleanly!")
+
         self.installing = False

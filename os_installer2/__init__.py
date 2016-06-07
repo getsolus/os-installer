@@ -27,7 +27,7 @@ SOURCE_FILESYSTEM = \
     "/home/ikey/Solus/primary/IMAGEROOT/deploy/LiveOS/squashfs.img"
 
 # The guy inside that is actually our filesystem to copy
-INNER_FILESYSTEM = "rootfs.img"
+INNER_FILESYSTEM = "LiveOS/rootfs.img"
 
 
 def get_resource_path():
