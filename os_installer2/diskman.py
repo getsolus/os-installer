@@ -611,6 +611,15 @@ class DiskManager:
                 return "distributor-logo-{}".format(x)
         return "system-software-install"
 
+    def create_temp_dir(self, suffix='installer'):
+        """ Create a named temp dir. If it fails, return none """
+        try:
+            mdir = tempfile.mkdtemp(suffix=suffix)
+            return mdir
+        except Exception as e:
+            print("Error constructing temp directory: {}".format(e))
+            return None
+
     def detect_operating_system_and_space(self, device, mpoints):
         """ Determine the operating system and space for a given device """
         mounted = False
@@ -625,10 +634,8 @@ class DiskManager:
 
         # Mount it if not already mounted
         if path not in mpoints:
-            try:
-                mount_point = tempfile.mkdtemp(suffix='installer')
-            except Exception as e:
-                print("Error creating mount point: {}".format(e))
+            mount_point = self.create_temp_dir()
+            if not mount_point:
                 return (None, None)
 
             if not self.do_mount(path, mount_point, "auto", "ro"):
