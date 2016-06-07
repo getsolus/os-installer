@@ -430,7 +430,7 @@ class DualBootStrategy(DiskStrategy):
                         # "Skipping OS due to excess log"
                         continue
             # Can continue
-            fs = partition.fileSystem
+            fs = partition.partition.fileSystem
             if not fs:
                 continue
             if fs.type == "ntfs" or fs.type.startswith("ext"):
