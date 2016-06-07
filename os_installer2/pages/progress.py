@@ -206,6 +206,15 @@ class InstallerProgressPage(BasePage):
         print("DEBUG: Counted {} files".format(count))
         return False
 
+    def apply_disk_strategy(self):
+        """ Attempt to apply the given disk strategy """
+        strategy = self.info.strategy
+        for op in strategy.get_operations():
+            self.set_display_string(op.describe())
+            time.sleep(1)
+        self.set_display_string("Faield to set disk strategy")
+        return False
+
     def install_thread(self):
         """ Handle the real work of installing =) """
         self.set_display_string("Analyzing installation configuration")
@@ -214,10 +223,9 @@ class InstallerProgressPage(BasePage):
         self.info.owner.get_perms_manager().up_permissions()
 
         # TODO: Apply disk strategies!!
-        strategy = self.info.strategy
-        for op in strategy.get_operations():
-            self.set_display_string(op.describe())
-            time.sleep(1)
+        if not self.apply_disk_strategy():
+            self.installing = False
+            return False
 
         # Now mount up as it were.
         if not self.mount_source_filesystem():
