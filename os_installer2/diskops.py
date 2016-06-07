@@ -84,6 +84,17 @@ class DiskOpCreatePartition(BaseDiskOp):
     def describe(self):
         return "I should be described by my children. ._."
 
+    def apply(self, disk):
+        """ Create a partition with the given type... """
+        try:
+            length = parted.sizeToSectors(
+                self.size, 'B', disk.device.sectorSize)
+            raise RuntimeError("Not implemented, sorry")
+        except Exception as e:
+            self.set_errors(e)
+            return False
+        return True
+
 
 class DiskOpCreateSwap(DiskOpCreatePartition):
     """ Create a new swap partition """
