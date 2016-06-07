@@ -41,6 +41,9 @@ class InstallerProgressPage(BasePage):
     # Current string for the idle monitor to display in Gtk thread
     display_string = None
 
+    # How much we need to copy
+    filesystem_source_size = 0
+
     def __init__(self):
         BasePage.__init__(self)
 
@@ -143,7 +146,16 @@ class InstallerProgressPage(BasePage):
         if not self.dm.do_mount(inner_path, inner_child, "auto", "loop"):
             self.set_display_string("Cannot mount inner child")
             return False
-        self.mount_tracker[INNER_FILESYSTEM] = inner_path
+        self.mount_tracker[INNER_FILESYSTEM] = inner_child
+
+        # Now grab the size of the source filesystem
+        try:
+            vfs = os.statvfs(inner_child)
+            size = (vfs.f_blocks - vfs.f_bfree) * vfs.f_frsize
+            self.filesystem_source_size = size
+        except Exception as e:
+            self.set_display_string("Cannot compute source size: {}".format(e))
+            return False
 
         return True
 
@@ -168,6 +180,11 @@ class InstallerProgressPage(BasePage):
                 ret = False
         return ret
 
+    def copy_system(self):
+        """ Attempt to copy the entire filesystem across """
+        print("Need to copy {} bytes".format(self.filesystem_source_size))
+        return False
+
     def install_thread(self):
         """ Handle the real work of installing =) """
         self.set_display_string("Analyzing installation configuration")
@@ -182,6 +199,15 @@ class InstallerProgressPage(BasePage):
         if not self.mount_source_filesystem():
             self.unmount_all()
             self.set_display_string("Failed to mount!")
+            self.installing = False
+            return
+
+        # TODO: Mount target filesystem
+
+        # Copy source -> target
+        if not self.copy_system():
+            self.unmount_all()
+            self.set_display_string("Failed to copy filesystem")
             self.installing = False
             return
 
