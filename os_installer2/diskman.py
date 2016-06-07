@@ -460,7 +460,7 @@ class DiskManager:
         try:
             subprocess.check_call(mount_cmd, shell=True)
         except Exception as e:
-            print("Failed to mount {} to {}: {}".format((device, mpoint, e)))
+            print("Failed to mount {} to {}: {}".format(device, mpoint, e))
             return False
         return True
 

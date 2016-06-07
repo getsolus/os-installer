@@ -192,6 +192,7 @@ class MainWindow(Gtk.ApplicationWindow):
         return False
 
     def perform_inits(self):
+        self.info.owner.get_perms_manager().down_permissions()
         """ Force expensive children to init outside main thread """
         for page in self.pages:
             try:

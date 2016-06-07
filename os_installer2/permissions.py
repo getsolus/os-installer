@@ -12,12 +12,14 @@
 #
 
 import os
+import pwd
 
 
 class PermissionsManager:
 
     down_uid = None
     down_gid = None
+    home_dir = None
 
     def __init__(self):
         if "PKEXEC_UID" in os.environ:
@@ -26,6 +28,7 @@ class PermissionsManager:
                 uid = int(id_)
                 self.down_uid = uid
                 self.down_gid = uid
+                self.set_details()
             except Exception as e:
                 print("Defaulting on fallback UID: {}".format(e))
             return
@@ -35,14 +38,23 @@ class PermissionsManager:
                 uid = int(id_)
                 self.down_uid = uid
                 self.down_gid = uid
+                self.set_details()
             except Exception as e:
                 print("Defaulting on fallback UID: {}".format(e))
+
+    def set_details(self):
+        pw = pwd.getpwuid(self.down_uid)
+        if not pw:
+            self.home_dir = "/home/live"
+            return
+        self.home_dir = pw.pw_dir
 
     def down_permissions(self):
         """ Drop our current permissions """
         try:
-            os.setegid(self.down_gid)
-            os.seteuid(self.down_uid)
+            os.setresgid(self.down_gid, self.down_gid, 0)
+            os.setresuid(self.down_uid, self.down_uid, 0)
+            os.environ['HOME'] = self.home_dir
         except Exception as e:
             print("Failed to drop permissions: {}".format(e))
             return False
@@ -51,8 +63,9 @@ class PermissionsManager:
     def up_permissions(self):
         """ Elevate our current permissions """
         try:
-            os.seteuid(0)
-            os.setegid(0)
+            os.setresuid(0, 0, 0)
+            os.setresgid(0, 0, 0)
+            os.environ['HOME'] = '/root'
         except Exception as e:
             print("Failed to raise permissions: {}".format(e))
             return False

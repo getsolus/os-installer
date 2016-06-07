@@ -109,6 +109,7 @@ class InstallerGeoipPage(BasePage):
         return None
 
     def perform_lookup(self):
+        self.info.owner.get_perms_manager().down_permissions()
         """ Perform the actual lookup """
         ip = self.get_ip_address()
         if not ip:
