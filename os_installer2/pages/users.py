@@ -62,6 +62,17 @@ class NewUserPage(Gtk.Grid):
     pword_field = None
     pword_field2 = None
 
+    def is_bad_field(self, field):
+        """ Validation for gecos """
+        t = field.get_text()
+        if len(t) < 1:
+            return True
+        bad_guys = ['"', '\'', '/', '\\', ';', '@', '!']
+        hits = [x for x in bad_guys if x in t]
+        if len(hits) > 0:
+            return True
+        return False
+
     def validator(self, entry):
         if entry == self.uname_field:
             # Perform username validation
@@ -76,8 +87,7 @@ class NewUserPage(Gtk.Grid):
                     "action-unavailable-symbolic")
                 self.update_score(self.uname_field, False)
         elif entry == self.rname_field:
-            # Only care that it's .. what?
-            if len(self.rname_field.get_text()) > 1:
+            if not self.is_bad_field(self.rname_field):
                 self.rname_field.set_icon_from_icon_name(
                     Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
                 self.update_score(self.rname_field, True)
