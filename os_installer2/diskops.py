@@ -158,6 +158,18 @@ class DiskOpCreateESP(DiskOpCreatePartition):
         return "Create {} EFI System Partition on {}".format(
             format_size_local(self.size, True), self.device.path)
 
+    def apply(self, disk):
+        """ Create the fat partition first """
+        b = DiskOpCreatePartition.apply(self, disk)
+        if not b:
+            return b
+        try:
+            self.part.setFlag(parted.PARTITION_BOOT)
+        except Exception as e:
+            self.set_errors("Cannot set ESP type: {}".format(e))
+            return False
+        return True
+
 
 class DiskOpCreateRoot(DiskOpCreatePartition):
     """ Create a new root partition """
