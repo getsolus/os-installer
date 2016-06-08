@@ -337,7 +337,7 @@ class InstallerProgressPage(BasePage):
                     return False
 
         print("Copied all files")
-        return False
+        return True
 
     def apply_disk_strategy(self, simulate):
         """ Attempt to apply the given disk strategy """
