@@ -49,6 +49,8 @@ class InstallerProgressPage(BasePage):
 
     # How much we need to copy
     filesystem_source_size = 0
+    filesystem_copied_size = 0
+    filesystem_copying = False
 
     def __init__(self):
         BasePage.__init__(self)
@@ -101,7 +103,17 @@ class InstallerProgressPage(BasePage):
     def idle_monitor(self):
         """ Called periodicially so we can update our view """
         self.label.set_markup(self.get_display_string())
-        self.progressbar.pulse()
+        if self.filesystem_copying:
+            cp = float(self.filesystem_copied_size)
+            tot = float(self.filesystem_source_size)
+            if cp < tot and cp > 0:
+                fraction = cp / tot
+                self.progressbar.set_fraction(fraction)
+            else:
+                self.progressbar.pulse()
+        else:
+            self.progressbar.pulse()
+
         if not self.installing:
             print("Finished idle_monitor")
         return self.installing
@@ -234,7 +246,18 @@ class InstallerProgressPage(BasePage):
                 source_path = os.path.join(source_fs, dir_root[1:], f)
                 target_path = os.path.join(root_fs, dir_root[1:], f)
 
-                print("Copying {} into {}".format(source_path, target_path))
+                # Not really necessary but meh
+                self.set_display_string("Copying {}".format(
+                    os.path.join(dir_root, f)))
+
+                try:
+                    st = os.lstat(source_path)
+                    # TODO: Actually copy/mknod/ln etc
+                    self.filesystem_copied_size += st.st_size
+                except Exception as ex:
+                    self.set_display_string("Failed to copy {}".format(
+                        source_path))
+                    return False
 
             # Chown/utime the dirs as we come out, meaning we set perms/time
             # on everything but / itself
@@ -245,12 +268,14 @@ class InstallerProgressPage(BasePage):
                     st = os.lstat(source_path)
                     mode = stat.S_IMODE(st.st_mode)
                     if not stat.S_ISDIR(st.st_mode):
-                        print("Something funky..")
+                        print("TODO: Handle symlink dir: {}".format(d))
                         continue
 
                     os.chown(target_path, st.st_uid, st.st_gid)
                     os.chmod(target_path, mode)
                     os.utime(target_path, (st.st_atime, st.st_mtime))
+                    # Update progress
+                    self.filesystem_copied_size += st.st_size
                 except Exception as ex:
                     self.set_display_string("Permissions issue: {}".format(ex))
                     return False
@@ -386,11 +411,13 @@ class InstallerProgressPage(BasePage):
 
         # Copy source -> target
         copied = False
+        self.filesystem_copying = True
         try:
             copied = self.copy_system()
         except Exception:
             traceback.print_exc(file=sys.stderr)
             copied = False
+        self.filesystem_copying = False
 
         if not copied:
             self.unmount_all()
