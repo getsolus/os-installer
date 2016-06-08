@@ -265,6 +265,8 @@ class InstallerProgressPage(BasePage):
                 try:
                     target_path = os.path.join(root_fs, dir_root[1:], d)
                     source_path = os.path.join(source_fs, dir_root[1:], d)
+                    self.set_display_string("Creating: {}".format(
+                        os.path.join(dir_root, f)))
                     st = os.lstat(source_path)
                     mode = stat.S_IMODE(st.st_mode)
                     if not stat.S_ISDIR(st.st_mode):
