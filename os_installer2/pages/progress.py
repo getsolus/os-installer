@@ -186,7 +186,7 @@ class InstallerProgressPage(BasePage):
         """ umount everything we've mounted """
         ret = True
 
-        self.set_display_string("Unmounting filesystems")
+        self.set_display_string("Unmounting filesystems - might take a while")
 
         # Visit in reverse order
         keys = self.mount_tracker.keys()
@@ -326,7 +326,9 @@ class InstallerProgressPage(BasePage):
                     st = os.lstat(source_path)
                     mode = stat.S_IMODE(st.st_mode)
                     if not stat.S_ISDIR(st.st_mode):
-                        print("TODO: Handle symlink dir: {}".format(d))
+                        linkto = os.readlink(source_path)
+                        os.symlink(linkto, target_path)
+                        os.lchown(target_path, st.st_uid, st.st_gid)
                         continue
 
                     os.chown(target_path, st.st_uid, st.st_gid)
@@ -338,7 +340,7 @@ class InstallerProgressPage(BasePage):
                     self.set_display_string("Permissions issue: {}".format(ex))
                     return False
 
-        print("Copied all files")
+        self.set_display_string("Finalizing file copy")
         return True
 
     def apply_disk_strategy(self, simulate):
@@ -476,7 +478,7 @@ class InstallerProgressPage(BasePage):
         self.filesystem_copying = False
 
         time.sleep(1)
-        self.set_display_string("Nah only kidding")
+        self.set_display_string("TODO: Post-install steps")
 
         # Ensure the idle monitor stops
         if not self.unmount_all():
