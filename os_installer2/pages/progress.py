@@ -81,7 +81,7 @@ class InstallerProgressPage(BasePage):
     def begin_install(self):
         """ Begin the real work of doing the installation """
         # We don't yet do anything...
-        self.label.set_markup("Not yet capable of installing :o")
+        self.label.set_markup("Warming up")
 
         self.installing = True
         # Hook up the idle monitor
