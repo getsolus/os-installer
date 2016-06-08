@@ -20,7 +20,10 @@ from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
 import os
+import stat
 import parted
+import sys
+import traceback
 
 
 # Update 5 times a second, vs every byte copied..
@@ -196,6 +199,11 @@ class InstallerProgressPage(BasePage):
         source_fs = self.get_mount_point_for(INNER_FILESYSTEM)
         if not source_fs:
             return False
+        root = self.info.strategy.get_root_partition()
+        root_fs = self.get_mount_point_for(root)
+        if not root_fs:
+            self.set_display_string("Missing rootfs")
+            return False
 
         # Ensure we don't follow links, i.e. we're never in a situation where
         # we're creating broken leading directories
@@ -203,9 +211,51 @@ class InstallerProgressPage(BasePage):
         for root, dirs, files in os.walk(source_fs,
                                          topdown=False,
                                          followlinks=False):
+            # Mend the root to allow source/target use
+            dir_root = root
+            if dir_root.startswith(source_fs):
+                dir_root = dir_root[len(source_fs):]
+                if len(dir_root) > 0 and dir_root[0] != '/':
+                    dir_root = "/" + dir_root
+
+            # Create the container directory first
+            target_dir = os.path.join(root_fs, dir_root[1:])
+            if not os.path.exists(target_dir):
+                print("creating {}".format(target_dir))
+                try:
+                    # We set the permissions up properly later
+                    os.makedirs(target_dir, 755)
+                except Exception as ex:
+                    self.set_display_string("Cannot create dir: {}".format(ex))
+                    return False
+
             # Walk the tree from the back to restore permissions properly
+            for f in files:
+                source_path = os.path.join(source_fs, dir_root[1:], f)
+                target_path = os.path.join(root_fs, dir_root[1:], f)
+
+                print("Copying {} into {}".format(source_path, target_path))
+
+            # Chown/utime the dirs as we come out, meaning we set perms/time
+            # on everything but / itself
+            for d in dirs:
+                try:
+                    target_path = os.path.join(root_fs, dir_root[1:], d)
+                    source_path = os.path.join(source_fs, dir_root[1:], d)
+                    st = os.lstat(source_path)
+                    mode = stat.S_IMODE(st.st_mode)
+                    if not stat.S_ISDIR(st.st_mode):
+                        print("Something funky..")
+                        continue
+
+                    os.chown(target_path, st.st_uid, st.st_gid)
+                    os.chmod(target_path, mode)
+                    os.utime(target_path, (st.st_atime, st.st_mtime))
+                except Exception as ex:
+                    self.set_display_string("Permissions issue: {}".format(ex))
+                    return False
+
             count += len(files)
-            pass
         print("DEBUG: Counted {} files".format(count))
         return False
 
@@ -335,7 +385,14 @@ class InstallerProgressPage(BasePage):
             return
 
         # Copy source -> target
-        if not self.copy_system():
+        copied = False
+        try:
+            copied = self.copy_system()
+        except Exception:
+            traceback.print_exc(file=sys.stderr)
+            copied = False
+
+        if not copied:
             self.unmount_all()
             self.set_display_string("Failed to copy filesystem")
             self.installing = False
