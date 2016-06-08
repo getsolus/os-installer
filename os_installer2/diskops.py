@@ -307,7 +307,7 @@ class DiskOpFormatPartition(BaseDiskOp):
         self.format_type = format_type
 
     def describe(self):
-        return "Format {} as {}".format(self.part, self.format_type)
+        return "Format {} as {}".format(self.part.path, self.format_type)
 
 
 class DiskOpFormatRoot(DiskOpFormatPartition):

@@ -59,6 +59,10 @@ class DiskStrategy:
 
     supports_extended_partition = False
 
+    def get_root_partition(self):
+        print("FATAL: Unimplemented strategy!!")
+        return None
+
     def __init__(self, dp, drive):
         self.drive = drive
         self.dp = dp
@@ -273,6 +277,13 @@ class EmptyDiskStrategy(DiskStrategy):
         op = DiskOpCreateRoot(self.drive.device, None, root_size)
         self.push_operation(op)
 
+    def get_root_partition(self):
+        """ Get our root partition """
+        for op in self.get_operations():
+            if isinstance(op, DiskOpCreateRoot):
+                return op.part.path
+        return None
+
 
 class WipeDiskStrategy(EmptyDiskStrategy):
     """ We simply wipe and take over a complete disk """
@@ -451,6 +462,13 @@ class DualBootStrategy(DiskStrategy):
             return True
         return False
 
+    def get_root_partition(self):
+        """ Get our root partition """
+        for op in self.get_operations():
+            if isinstance(op, DiskOpCreateRoot):
+                return op.part.path
+        return None
+
 
 class ReplaceOSStrategy(DiskStrategy):
     """ Replace the biggest OS with us """
@@ -530,8 +548,15 @@ class ReplaceOSStrategy(DiskStrategy):
 
         # Create root
         op = DiskOpFormatRoot(self.drive.device,
-                              self.candidate_part.partition.path)
+                              self.candidate_part.partition)
         self.push_operation(op)
+
+    def get_root_partition(self):
+        """ Get our root partition """
+        for op in self.get_operations():
+            if isinstance(op, DiskOpFormatRoot):
+                return op.part.path
+        return None
 
 
 class UserPartitionStrategy(DiskStrategy):
