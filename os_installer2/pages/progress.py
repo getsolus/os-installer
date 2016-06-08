@@ -242,6 +242,8 @@ class InstallerProgressPage(BasePage):
             self.set_display_string("Missing rootfs")
             return False
 
+        self.filesystem_copying = True
+
         # Ensure we don't follow links, i.e. we're never in a situation where
         # we're creating broken leading directories
         for root, dirs, files in os.walk(source_fs,
@@ -453,27 +455,23 @@ class InstallerProgressPage(BasePage):
             self.unmount_all()
             self.set_display_string("Failed to mount!")
             self.installing = False
-            return
+            return False
 
         # TODO: Mount target filesystem
         if not self.mount_target_filesystem():
             self.unmount_all()
             self.set_display_string("Failed to mount target!")
             self.installing = False
-            return
+            return False
 
         # Copy source -> target
-        copied = False
-        self.filesystem_copying = True
-        copied = self.copy_system()
-        self.filesystem_copying = False
-        print("returned from copy")
-
-        if not copied:
-            self.unmount_all()
+        if not self.copy_system():
+            self.filesystem_copying = False
             self.set_display_string("Failed to copy filesystem")
+            self.unmount_all()
             self.installing = False
-            return
+            return False
+        self.filesystem_copying = False
 
         time.sleep(1)
         self.set_display_string("Nah only kidding")
