@@ -22,8 +22,6 @@ from os_installer2.diskops import DiskOpCreatePartition
 import os
 import stat
 import parted
-import sys
-import traceback
 
 
 # Update 5 times a second, vs every byte copied..
@@ -98,7 +96,8 @@ class InstallerProgressPage(BasePage):
     def set_display_string(self, sz):
         """ Set the current display string """
         self.display_string = sz
-        print(sz)
+        if not self.filesystem_copying:
+            print(sz)
 
     def idle_monitor(self):
         """ Called periodicially so we can update our view """
@@ -204,6 +203,32 @@ class InstallerProgressPage(BasePage):
                 ret = False
         return ret
 
+    def do_copy_file(self, source, dest):
+        """ Simply copy a file .. """
+        input = None
+        dst = None
+
+        try:
+            BUF_SIZE = 16 * 1024
+            input = open(source, "rb")
+            dst = open(dest, "wb")
+            while (True):
+                read = input.read(BUF_SIZE)
+                if not read:
+                    break
+                self.filesystem_copied_size += len(read)
+                dst.write(read)
+            input.close()
+            dst.close()
+            return True
+        except Exception as ex:
+            self.set_display_string(ex)
+            if input:
+                input.close()
+            if dst:
+                dst.close()
+        return False
+
     def copy_system(self):
         """ Attempt to copy the entire filesystem across """
         print("Need to copy {} bytes".format(self.filesystem_source_size))
@@ -219,7 +244,6 @@ class InstallerProgressPage(BasePage):
 
         # Ensure we don't follow links, i.e. we're never in a situation where
         # we're creating broken leading directories
-        count = 0
         for root, dirs, files in os.walk(source_fs,
                                          topdown=False,
                                          followlinks=False):
@@ -233,7 +257,6 @@ class InstallerProgressPage(BasePage):
             # Create the container directory first
             target_dir = os.path.join(root_fs, dir_root[1:])
             if not os.path.exists(target_dir):
-                print("creating {}".format(target_dir))
                 try:
                     # We set the permissions up properly later
                     os.makedirs(target_dir, 755)
@@ -252,8 +275,37 @@ class InstallerProgressPage(BasePage):
 
                 try:
                     st = os.lstat(source_path)
-                    # TODO: Actually copy/mknod/ln etc
-                    self.filesystem_copied_size += st.st_size
+                    mode = stat.S_IMODE(st.st_mode)
+                    is_link = False
+                    is_copied = False
+
+                    if stat.S_ISLNK(st.st_mode):
+                        linkto = os.readlink(source_path)
+                        os.symlink(linkto, target_path)
+                        is_link = True
+                    elif stat.S_ISCHR(st.st_mode):
+                        os.mknod(target_path, stat.S_IFCHR | mode, st.st_rdev)
+                    elif stat.S_ISBLK(st.st_mode):
+                        os.mknod(target_path, stat.S_IFBLK | mode, st.st_rdev)
+                    elif stat.S_ISFIFO(st.st_mode):
+                        os.mknod(target_path, stat.S_IFIFO | mode)
+                    elif stat.S_ISSOCK(st.st_mode):
+                        os.mknod(target_path, stat.S_IFSOCK | mode)
+                    elif stat.S_ISREG(st.st_mode):
+                        is_copied = True
+                        if not self.do_copy_file(source_path, target_path):
+                            return False
+
+                    # Chown it.
+                    os.lchown(target_path, st.st_uid, st.st_gid)
+                    if not is_link:
+                        # Copy permissiions/utime
+                        os.chmod(target_path, mode)
+                        os.utime(target_path, (st.st_atime, st.st_mtime))
+                    # copy_file handles size
+                    if not is_copied:
+                        self.filesystem_copied_size += st.st_size
+
                 except Exception as ex:
                     self.set_display_string("Failed to copy {}".format(
                         source_path))
@@ -266,7 +318,7 @@ class InstallerProgressPage(BasePage):
                     target_path = os.path.join(root_fs, dir_root[1:], d)
                     source_path = os.path.join(source_fs, dir_root[1:], d)
                     self.set_display_string("Creating: {}".format(
-                        os.path.join(dir_root, f)))
+                        os.path.join(dir_root, d)))
                     st = os.lstat(source_path)
                     mode = stat.S_IMODE(st.st_mode)
                     if not stat.S_ISDIR(st.st_mode):
@@ -282,8 +334,7 @@ class InstallerProgressPage(BasePage):
                     self.set_display_string("Permissions issue: {}".format(ex))
                     return False
 
-            count += len(files)
-        print("DEBUG: Counted {} files".format(count))
+        print("Copied all files")
         return False
 
     def apply_disk_strategy(self, simulate):
@@ -414,12 +465,9 @@ class InstallerProgressPage(BasePage):
         # Copy source -> target
         copied = False
         self.filesystem_copying = True
-        try:
-            copied = self.copy_system()
-        except Exception:
-            traceback.print_exc(file=sys.stderr)
-            copied = False
+        copied = self.copy_system()
         self.filesystem_copying = False
+        print("returned from copy")
 
         if not copied:
             self.unmount_all()
