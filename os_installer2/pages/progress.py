@@ -448,6 +448,11 @@ class InstallerProgressPage(BasePage):
             self.set_display_string("Failed to simulate disk strategy")
             return False
 
+        # Now get scared and not install
+        self.installing = False
+        self.set_display_string("Cowardly refusing to continue!")
+        return False
+
         # Now do it for real.
         if not self.apply_disk_strategy(False):
             self.installing = False
