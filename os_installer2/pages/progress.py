@@ -279,6 +279,27 @@ class InstallerProgressPage(BasePage):
 
         return True
 
+    def mount_target_filesystem(self):
+        """ Mount our target filesystem(s) """
+        strategy = self.info.strategy
+
+        root = strategy.get_root_partition()
+        if not root or root.strip() == "":
+            self.set_display_string("Fatal: Missing root partition")
+            return False
+        target = self._mkdtemp()
+        if not target:
+            self.set_display_string("Cannot create temporary root directory")
+            return False
+        if not self.dm.do_mount(root, target, "auto", "rw"):
+            self.set_display_string("Cannot mount root partition")
+            return False
+        self.mount_tracker[root] = target
+
+        print("DEBUG: / ({}) mounted at {}".format(root, target))
+        # TODO: Mount home if it is needed
+        return True
+
     def install_thread(self):
         """ Handle the real work of installing =) """
         self.set_display_string("Analyzing installation configuration")
@@ -307,6 +328,11 @@ class InstallerProgressPage(BasePage):
             return
 
         # TODO: Mount target filesystem
+        if not self.mount_target_filesystem():
+            self.unmount_all()
+            self.set_display_string("Failed to mount target!")
+            self.installing = False
+            return
 
         # Copy source -> target
         if not self.copy_system():
