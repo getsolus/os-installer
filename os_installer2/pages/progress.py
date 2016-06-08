@@ -186,6 +186,8 @@ class InstallerProgressPage(BasePage):
         """ umount everything we've mounted """
         ret = True
 
+        self.set_display_string("Unmounting filesystems")
+
         # Visit in reverse order
         keys = self.mount_tracker.keys()
         keys.reverse()
