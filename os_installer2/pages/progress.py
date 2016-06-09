@@ -20,6 +20,7 @@ from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
 from os_installer2.postinstall import PostInstallRemoveLiveConfig
+from os_installer2.postinstall import PostInstallSyncFilesystems
 import os
 import stat
 import parted
@@ -83,7 +84,8 @@ class InstallerProgressPage(BasePage):
         self.temp_dirs = []
 
         self.post_install_enabled = [
-            PostInstallRemoveLiveConfig
+            PostInstallSyncFilesystems,
+            PostInstallRemoveLiveConfig,
         ]
         # Active postinstalls..
         self.post_installs = []
@@ -564,6 +566,7 @@ class InstallerProgressPage(BasePage):
                 self.unmount_all()
                 self.installing = False
                 return False
+            self.post_install_current += 1
 
         # Actually made it. :o
         self.in_postinstall = False

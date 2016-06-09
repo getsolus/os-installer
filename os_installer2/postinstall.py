@@ -93,3 +93,23 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
             self.set_errors(e)
             return False
         return True
+
+
+class PostInstallSyncFilesystems(PostInstallStep):
+    """ Just call sync, nothing fancy """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Flushing buffers to disk.. please wait"
+
+    def is_long_step(self):
+        return True
+
+    def apply(self):
+        try:
+            subprocess.check_call("sync", shell=True)
+        except:
+            pass
+        return True
