@@ -343,6 +343,23 @@ class InstallerProgressPage(BasePage):
         self.set_display_string("Finalizing file copy")
         return True
 
+    def wait_disk(self, op):
+        """ Wait for the disk to become available """
+        p = op.part.path
+
+        self.set_display_string("Verifying existence of {}".format(p))
+        count = 0
+        while (count < 5):
+            if os.path.exists(p):
+                return True
+            self.set_display_string("Waiting for {}".format(p))
+            time.sleep(0.5)
+            count += 1
+        if not os.path.exists(p):
+            self.set_display_string("Couldn't locate {}".format(p))
+            return False
+        return True
+
     def apply_disk_strategy(self, simulate):
         """ Attempt to apply the given disk strategy """
         strategy = self.info.strategy
@@ -398,10 +415,18 @@ class InstallerProgressPage(BasePage):
             self.set_display_string("Failed to update disk: {}".format(e))
             return False
 
+        try:
+            os.system("sync")
+        except:
+            pass
+
         # Post-process, format all the things
         for op in ops:
             if not isinstance(op, DiskOpCreatePartition):
                 continue
+            # Wait for device to show up!
+            if not self.wait_disk(op):
+                return False
             if not op.apply_format(disk):
                 e = op.get_errors()
                 self.set_display_string("Failed to apply format: {}".format(e))
