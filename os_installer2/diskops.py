@@ -380,7 +380,10 @@ class DiskOpFormatRoot(DiskOpFormatPartition):
         return "Use {} as {} root partition".format(
             self.part.path, self.format_type)
 
-    def apply(self, disk):
+    def apply(self, disk, simulate):
+        if simulate:
+            return True
+
         cmd = "mkfs.ext4 -F {}".format(self.part.path)
         try:
             subprocess.check_call(cmd, shell=True)
