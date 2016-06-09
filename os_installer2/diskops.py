@@ -277,8 +277,12 @@ class DiskOpResizeOS(BaseDiskOp):
                                         'B', disk.device.sectorSize)
             cmd = None
             if self.part.fileSystem.type == "ntfs":
-                cmd = "ntfsresize --size {} {}".format(
-                    self.their_size, self.part.path)
+                newSz = str(int(self.their_size / 1024))
+                cmd = "ntfsresize "
+                if simulate:
+                    cmd += " --no-action "
+                cmd += "-b --size {}k {}".format(
+                    newSz, self.part.path)
                 if simulate:
                     cmd += " --no-action"
                 try:
