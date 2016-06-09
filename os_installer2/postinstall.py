@@ -140,3 +140,55 @@ class PostInstallMachineID(PostInstallStep):
             self.set_errors("Failed to construct machine-id")
             return False
         return True
+
+
+# We use this guy to set the global layout..
+KEYBOARD_CONFIG_TEMPLATE = """
+# Read and parsed by systemd-localed. It's probably wise not to edit this file
+# manually too freely.
+Section "InputClass"
+        Identifier "system-keyboard"
+        MatchIsKeyboard "on"
+        Option "XkbModel" "%(XKB_MODEL)s"
+        Option "XkbLayout" "%(XKB_LAYOUT)s"
+EndSection
+"""
+
+
+class PostInstallKeyboard(PostInstallStep):
+    """ Set the keyboard layout on the target device """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Storing keyboard configuration"
+
+    def apply(self):
+        xkb_model = "pc104"
+        x11dir = os.path.join(self.installer.get_installer_target_filesystem(),
+                              "etc/X11/xorg.conf.d")
+        x11file = os.path.join(x11dir, "00-keyboard.conf")
+
+        # create the x11 dir
+        if not os.path.exists(x11dir):
+            try:
+                os.makedirs(x11dir, mode=755)
+            except Exception as ex:
+                self.set_errors(ex)
+                return False
+
+        # set up the template
+        tmpl = KEYBOARD_CONFIG_TEMPLATE % {
+            'XKB_MODEL': xkb_model, 'XKB_LAYOUT': self.info.keyboard
+        }
+
+        # write the template to disk
+        tmpl = tmpl.strip() + "\n"
+        try:
+            with open(x11file, "w") as xfile:
+                xfile.write(tmpl)
+        except Exception as ex:
+            self.set_errors(ex)
+            return False
+        return True
