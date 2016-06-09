@@ -231,6 +231,17 @@ class InstallerProgressPage(BasePage):
                 dst.close()
         return False
 
+    def get_installer_target_filesystem(self):
+        """ Get the mount point for the root partition for post-install """
+        root = self.info.strategy.get_root_partition()
+        root_fs = self.get_mount_point_for(root)
+        return root_fs
+
+    def get_installer_source_filesystem(self):
+        """ Get the mount point for the source filesystem for post-install """
+        source_fs = self.get_mount_point_for(INNER_FILESYSTEM)
+        return source_fs
+
     def copy_system(self):
         """ Attempt to copy the entire filesystem across """
         print("Need to copy {} bytes".format(self.filesystem_source_size))
