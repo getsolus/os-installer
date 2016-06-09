@@ -118,9 +118,6 @@ class InstallerSummaryPage(BasePage):
             kid.destroy()
         self.system_details.add_label(self._clean_label(
             "Set device host-name to \"{}\"".format(info.hostname)))
-        if info.windows_present:
-            s = "Enable UTC time" if info.system_utc else "Disable UTC time"
-            self.system_details.add_label(self._clean_label(s))
         if info.bootloader_install:
             if info.bootloader_sz == "c":
                 s = info.bootloader

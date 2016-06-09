@@ -25,7 +25,6 @@ class InstallerSystemPage(BasePage):
     info = None
     host_reg = None
     host_entry = None
-    check_utc = None
     error_label = None
     check_boot = None
     combo_boot = None
@@ -58,15 +57,7 @@ class InstallerSystemPage(BasePage):
         self.host_entry.set_placeholder_text("Type the hostname here")
         host.add(self.host_entry)
 
-        self.check_utc = Gtk.CheckButton.new_with_label(
-            "System clock uses UTC")
-        self.check_utc.set_margin_top(20)
-        mbox.pack_start(self.check_utc, False, False, 0)
-        self.check_utc.set_no_show_all(True)
-        self.check_utc.connect("toggled", self.on_toggled)
-
         wid_group.add_widget(host)
-        wid_group.add_widget(self.check_utc)
 
         boot = Gtk.Frame()
         self.boot_frame = boot
@@ -99,12 +90,6 @@ class InstallerSystemPage(BasePage):
         """ Handle bootloader install """
         self.combo_boot.set_sensitive(w.get_active())
         self.info.bootloader_install = w.get_active()
-
-    def on_toggled(self, w, d=None):
-        """ Handle UTC setting """
-        if not self.info:
-            return
-        self.info.system_utc = w.get_active()
 
     def on_combo_changed(self, combo, w=None):
         """ Combo updated """
@@ -169,12 +154,6 @@ class InstallerSystemPage(BasePage):
             self.check_boot.set_sensitive(False)
             self.check_boot.set_label(
                 "Bootloader installation mandatory with UEFI")
-        # y u no hostname
-        if self.info.windows_present:
-            self.check_utc.show()
-            self.check_utc.get_child().show()
-        else:
-            self.check_utc.hide()
 
         self.check_forward()
 

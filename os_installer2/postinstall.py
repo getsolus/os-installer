@@ -222,6 +222,13 @@ class PostInstallLocale(PostInstallStep):
         return True
 
 
+ADJTIME_LOCAL = """
+0.0 0 0.0
+0
+LOCAL
+"""
+
+
 class PostInstallTimezone(PostInstallStep):
     """ Set up the timezone """
 
@@ -239,4 +246,16 @@ class PostInstallTimezone(PostInstallStep):
         if not self.run_in_chroot(cmd):
             self.set_errors("Failed to set timezone")
             return False
+
+        if not self.info.windows_present:
+            return True
+
+        # Set adjtime to local for Windows users
+        adjp = os.path.join(self.installer.get_installer_target_filesystem(),
+                            "etc/adjtime")
+        try:
+            with open(adjp, "w") as adjtime:
+                adjtime.write(ADJTIME_LOCAL.strip() + "\n")
+        except Exception as e:
+            print("Warning: Failed to update adjtime: {}".format(e))
         return True
