@@ -316,15 +316,20 @@ class PostInstallUsers(PostInstallStep):
 
         # Pass off the passwords to chpasswd
         pwds_done = False
+        fd = None
         try:
-            with open(f, "w") as pwds:
-                pwds.write("\n".join(pwd_file))
-
-                self.run_in_chroot("cat /tmp/newusers.conf | chpasswd")
-                os.remove(f)
-                pwds_done = True
+            fd = open(f, "w")
+            fd.write("\n".join(pwd_file))
+            fd.close()
+            fd = None
+            self.run_in_chroot("cat /tmp/newusers.conf | chpasswd")
+            os.remove(f)
+            pwds_done = True
         except Exception as e:
             self.set_errors("Unable to update passwords: {}".format(e))
+
+        if fd:
+            fd.close()
 
         if not pwds_done:
             try:
