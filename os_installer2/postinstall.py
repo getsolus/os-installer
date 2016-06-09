@@ -173,7 +173,7 @@ class PostInstallKeyboard(PostInstallStep):
         # create the x11 dir
         if not os.path.exists(x11dir):
             try:
-                os.makedirs(x11dir, mode=755)
+                os.makedirs(x11dir, mode=0755)
             except Exception as ex:
                 self.set_errors(ex)
                 return False

@@ -307,7 +307,7 @@ class InstallerProgressPage(BasePage):
             if not os.path.exists(target_dir):
                 try:
                     # We set the permissions up properly later
-                    os.makedirs(target_dir, 755)
+                    os.makedirs(target_dir, 0755)
                 except Exception as ex:
                     self.set_display_string("Cannot create dir: {}".format(ex))
                     return False
