@@ -62,7 +62,6 @@ class InstallInfo:
 
     # Windows was detected
     windows_present = False
-    system_utc = False
 
     users = None
 
