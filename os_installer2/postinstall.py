@@ -187,6 +187,7 @@ class PostInstallKeyboard(PostInstallStep):
         tmpl = tmpl.strip() + "\n"
         try:
             with open(x11file, "w") as xfile:
+                os.chmod(x11file, 0644)
                 xfile.write(tmpl)
         except Exception as ex:
             self.set_errors(ex)
