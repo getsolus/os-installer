@@ -278,15 +278,12 @@ class DiskOpResizeOS(BaseDiskOp):
             cmd = None
 
             if self.part.fileSystem.type == "ntfs":
-                newSz = str(int(self.their_size / 1024))
+                newSz = str(int(self.their_size / 1000))
 
-                check_cmd = "ntfsresize -i -f -v {} {}".format(
+                check_cmd = "ntfsresize -i -f --force -v {} {}".format(
                     "--no-action" if simulate else "", self.part.path)
 
-                grow_cmd = "ntfsresize --force {} {}".format(
-                    "--no-action" if simulate else "", self.part.path)
-
-                resize_cmd = "ntfsresize {} -f -b --size {}k {}".format(
+                resize_cmd = "ntfsresize {} -f -f -b --size {}k {}".format(
                     "--no-action" if simulate else "", newSz, self.part.path)
 
                 # Check first
@@ -311,13 +308,6 @@ class DiskOpResizeOS(BaseDiskOp):
                                                     start=c_start,
                                                     end=c_end)
                 self.new_part_off = self.part.geometry.end
-                # Now grow into new home
-                try:
-                    subprocess.check_call(grow_cmd, shell=True)
-                except Exception as e:
-                    self.set_errors(e)
-                    return False
-
                 # All done
                 return True
             elif self.part.fileSystem.type.startswith("ext"):
