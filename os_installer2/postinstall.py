@@ -83,7 +83,7 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
         if not self.run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers"):
             return False
         # Make sure home is really gone
-        p = os.path.join(self.get_installer_target_filesystem(),
+        p = os.path.join(self.installer.get_installer_target_filesystem(),
                          "home/live")
         if not os.path.exists(p):
             return True
