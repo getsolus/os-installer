@@ -69,8 +69,8 @@ class PostInstallStep:
 class PostInstallRemoveLiveConfig(PostInstallStep):
     """ Remove the live user from the filesystem """
 
-    def __init__(self, info):
-        PostInstallStep.__init__(self, info)
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
 
     def get_display_string(self):
         return "Removing live configuration"
