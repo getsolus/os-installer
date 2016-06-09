@@ -451,7 +451,7 @@ class PostInstallDiskOptimize(PostInstallStep):
 
         cmd = None
         if dm.is_device_ssd(dev_path):
-            cmd = "systemctl enable fstrim"
+            cmd = "systemctl enable fstrim.timer"
         else:
             # TODO: Support readahead
             return True
