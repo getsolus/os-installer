@@ -60,6 +60,11 @@ class PostInstallStep:
             return False
         return True
 
+    def is_long_step(self):
+        """ Override when this is a long operation and the progressbar should
+            pulse, so the user doesn't believe the UI locked up """
+        return False
+
 
 class PostInstallRemoveLiveConfig(PostInstallStep):
     """ Remove the live user from the filesystem """

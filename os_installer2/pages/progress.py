@@ -19,6 +19,7 @@ from collections import OrderedDict
 from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
+from os_installer2.postinstall import PostInstallRemoveLiveConfig
 import os
 import stat
 import parted
@@ -50,6 +51,18 @@ class InstallerProgressPage(BasePage):
     filesystem_copied_size = 0
     filesystem_copying = False
 
+    # Enabled post-install steps
+    post_install_enabled = None
+
+    # Are we in the post stage ?
+    in_postinstall = False
+    post_install_current = 0
+
+    # Initialised post installs
+    post_installs = None
+    # Long-ass steps should pulse...
+    should_pulse = False
+
     def __init__(self):
         BasePage.__init__(self)
 
@@ -68,6 +81,12 @@ class InstallerProgressPage(BasePage):
 
         self.mount_tracker = OrderedDict()
         self.temp_dirs = []
+
+        self.post_install_enabled = [
+            PostInstallRemoveLiveConfig
+        ]
+        # Active postinstalls..
+        self.post_installs = []
 
     def get_title(self):
         return "Installing Solus"
@@ -106,6 +125,14 @@ class InstallerProgressPage(BasePage):
             cp = float(self.filesystem_copied_size)
             tot = float(self.filesystem_source_size)
             if cp < tot and cp > 0:
+                fraction = cp / tot
+                self.progressbar.set_fraction(fraction)
+            else:
+                self.progressbar.pulse()
+        elif self.in_postinstall:
+            cur = float(self.post_install_current)
+            tot = float(len(self.post_installs))
+            if cur < tot and cp > 0 and not self.should_pulse:
                 fraction = cp / tot
                 self.progressbar.set_fraction(fraction)
             else:
@@ -510,7 +537,36 @@ class InstallerProgressPage(BasePage):
         self.filesystem_copying = False
 
         time.sleep(1)
-        self.set_display_string("TODO: Post-install steps")
+        self.set_display_string("Initializing post-installs")
+        for ptype in self.post_install_enabled:
+            r = ptype(self.info, self)
+            self.set_display_string("Initialised {}".format(
+                r.get_display_string()))
+            self.post_installs.append(r)
+
+        # Now run the post-installs
+        self.in_postinstall = True
+        for step in self.post_installs:
+            self.should_pulse = step.is_long_step()
+            disp = step.get_display_string()
+            self.set_display_string(disp)
+            try:
+                b = step.apply()
+                if not b:
+                    self.set_display_string(step.get_errors())
+            except Exception as e:
+                b = False
+                self.set_display_string(e)
+            if not b:
+                self.set_display_string(step.get_errors())
+                # Failed :(
+                self.in_postinstall = False
+                self.unmount_all()
+                self.installing = False
+                return False
+
+        # Actually made it. :o
+        self.in_postinstall = False
 
         # Ensure the idle monitor stops
         if not self.unmount_all():
