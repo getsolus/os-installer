@@ -19,6 +19,7 @@ from collections import OrderedDict
 from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
+from os_installer2.diskops import DiskOpCreateESP
 from os_installer2.postinstall import PostInstallVfs
 from os_installer2.postinstall import PostInstallRemoveLiveConfig
 from os_installer2.postinstall import PostInstallSyncFilesystems
@@ -594,3 +595,15 @@ class InstallerProgressPage(BasePage):
             self.set_display_string("Failed to unmount cleanly!")
 
         self.installing = False
+
+    def locate_esp(self):
+        """ Locate selected ESP """
+        if not self.info.bootloader_install:
+            return None
+        if not self.info.strategy.is_uefi():
+            return None
+
+        for op in self.info.strategy.get_operations():
+            if isinstance(op, DiskOpCreateESP):
+                return op.part.path
+        return self.info.bootloader
