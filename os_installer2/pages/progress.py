@@ -19,6 +19,7 @@ from collections import OrderedDict
 from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
+from os_installer2.diskops import DiskOpFormatPartition
 from os_installer2.postinstall import PostInstallRemoveLiveConfig
 from os_installer2.postinstall import PostInstallSyncFilesystems
 from os_installer2.postinstall import PostInstallMachineID
@@ -470,16 +471,23 @@ class InstallerProgressPage(BasePage):
 
         # Post-process, format all the things
         for op in ops:
-            if not isinstance(op, DiskOpCreatePartition):
+            if isinstance(op, DiskOpCreatePartition):
+                # Wait for device to show up!
+                if not self.wait_disk(op):
+                    return False
+                if not op.apply_format(disk):
+                    e = op.get_errors()
+                    self.set_display_string(
+                        "Failed to apply format: {}".format(e))
+                    return False
+            elif isinstance(op, DiskOpFormatPartition):
+                if not op.apply(disk):
+                    e = op.get_errors()
+                    self.set_display_string(
+                        "Failed to apply format: {}".format(e))
+                    return False
+            else:
                 continue
-            # Wait for device to show up!
-            if not self.wait_disk(op):
-                return False
-            if not op.apply_format(disk):
-                e = op.get_errors()
-                self.set_display_string("Failed to apply format: {}".format(e))
-                return False
-
         return True
 
     def mount_target_filesystem(self):

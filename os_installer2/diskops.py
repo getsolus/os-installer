@@ -379,3 +379,12 @@ class DiskOpFormatRoot(DiskOpFormatPartition):
     def describe(self):
         return "Use {} as {} root partition".format(
             self.part, self.format_type)
+
+    def apply(self, disk):
+        cmd = "mkfs.ext4 -F {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
