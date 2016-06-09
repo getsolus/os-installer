@@ -212,6 +212,7 @@ class PostInstallLocale(PostInstallStep):
                              "etc/locale.conf")
         try:
             with open(fpath, "w") as localef:
+                os.chmod(fpath, 0o0644)
                 if not lang.endswith(".utf8"):
                     lc = lang.split(".")[0]
                     lang = "{}.utf8".format(lc)
@@ -255,6 +256,7 @@ class PostInstallTimezone(PostInstallStep):
                             "etc/adjtime")
         try:
             with open(adjp, "w") as adjtime:
+                os.chmod(adjp, 0o0644)
                 adjtime.write(ADJTIME_LOCAL.strip() + "\n")
         except Exception as e:
             print("Warning: Failed to update adjtime: {}".format(e))
@@ -341,5 +343,43 @@ class PostInstallUsers(PostInstallStep):
         # Disable the root account
         if not self.run_in_chroot("passwd -d root"):
             self.set_errors("Failed to disable root account")
+            return False
+        return True
+
+
+class PostInstallHostname(PostInstallStep):
+    """ Set up the hostname """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Setting the system hostname"
+
+    def apply(self):
+        hosts = [
+            "127.0.0.1\tlocalhost",
+            "127.0.0.1\t{}".format(self.info.hostname),
+            "# The following lines are desirable for IPv6 capable hosts",
+            "::1     localhost ip6-localhost ip6-loopback",
+            "fe00::0 ip6-localnet",
+            "ff00::0 ip6-mcastprefix",
+            "ff02::1 ip6-allnodes",
+            "ff02::2 ip6-allrouters",
+            "ff02::3 ip6-allhosts"
+        ]
+
+        bpath = self.installer.get_installer_target_filesystem()
+        hostname_file = os.path.join(bpath, "etc/hostname")
+        hosts_file = os.path.join(bpath, "etc/hosts")
+        try:
+            with open(hostname_file, "w") as hostname_file:
+                os.chmod(hostname_file, 0o0644)
+                hostname_file.write("{}\n".format(self.info.hostname))
+            with open(hosts_file, "w") as hosts_file:
+                os.chmod(hosts_file, 0o0644)
+                hosts_file.write("\n".join(hosts))
+        except Exception as e:
+            self.set_errors("Failed to configure hosts: {}".format(e))
             return False
         return True
