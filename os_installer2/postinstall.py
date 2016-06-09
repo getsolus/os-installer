@@ -173,7 +173,7 @@ class PostInstallKeyboard(PostInstallStep):
         # create the x11 dir
         if not os.path.exists(x11dir):
             try:
-                os.makedirs(x11dir, mode=0755)
+                os.makedirs(x11dir, 0o0755)
             except Exception as ex:
                 self.set_errors(ex)
                 return False
@@ -187,9 +187,56 @@ class PostInstallKeyboard(PostInstallStep):
         tmpl = tmpl.strip() + "\n"
         try:
             with open(x11file, "w") as xfile:
-                os.chmod(x11file, 0644)
+                os.chmod(x11file, 0o0644)
                 xfile.write(tmpl)
         except Exception as ex:
             self.set_errors(ex)
+            return False
+        return True
+
+
+class PostInstallLocale(PostInstallStep):
+    """ Set the system locale """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Storing system locale"
+
+    def apply(self):
+        lang = self.info.locale
+
+        # Dump to locale.conf
+        fpath = os.path.join(self.installer.get_installer_target_filesystem(),
+                             "locale.conf")
+        try:
+            with open(fpath, "w") as localef:
+                if not lang.endswith(".utf8"):
+                    lc = lang.split(".")[0]
+                    lang = "{}.utf8".format(lc)
+                localef.write("LANG={}\n".format(lang))
+        except Exception as e:
+            self.set_errors(e)
+            return False
+        return True
+
+
+class PostInstallTimezone(PostInstallStep):
+    """ Set up the timezone """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Storing system timezone"
+
+    def apply(self):
+        """ Link /etc/localtime up to zoneinfo """
+        loc = self.info.timezone
+        self.run_in_chroot("rm -f /etc/localtime")
+        cmd = "ln -sf \"/usr/share/zoneinfo/{}\" /etc/localtime".format(loc)
+        if not self.run_in_chroot(cmd):
+            self.set_errors("Failed to set timezone")
             return False
         return True

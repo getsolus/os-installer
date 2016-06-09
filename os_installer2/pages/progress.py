@@ -23,6 +23,8 @@ from os_installer2.postinstall import PostInstallRemoveLiveConfig
 from os_installer2.postinstall import PostInstallSyncFilesystems
 from os_installer2.postinstall import PostInstallMachineID
 from os_installer2.postinstall import PostInstallKeyboard
+from os_installer2.postinstall import PostInstallLocale
+from os_installer2.postinstall import PostInstallTimezone
 import os
 import stat
 import parted
@@ -90,6 +92,8 @@ class InstallerProgressPage(BasePage):
             PostInstallRemoveLiveConfig,
             PostInstallMachineID,
             PostInstallKeyboard,
+            PostInstallLocale,
+            PostInstallTimezone,
         ]
         # Active postinstalls..
         self.post_installs = []
@@ -307,7 +311,7 @@ class InstallerProgressPage(BasePage):
             if not os.path.exists(target_dir):
                 try:
                     # We set the permissions up properly later
-                    os.makedirs(target_dir, 0755)
+                    os.makedirs(target_dir, 0o0755)
                 except Exception as ex:
                     self.set_display_string("Cannot create dir: {}".format(ex))
                     return False
