@@ -209,7 +209,7 @@ class PostInstallLocale(PostInstallStep):
 
         # Dump to locale.conf
         fpath = os.path.join(self.installer.get_installer_target_filesystem(),
-                             "locale.conf")
+                             "etc/locale.conf")
         try:
             with open(fpath, "w") as localef:
                 if not lang.endswith(".utf8"):
