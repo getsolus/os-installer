@@ -69,8 +69,15 @@ class PostInstallStep:
 class PostInstallRemoveLiveConfig(PostInstallStep):
     """ Remove the live user from the filesystem """
 
+    """ Packages that are of no use to the user, i.e. us. """
+    live_packages = None
+
     def __init__(self, info, installer):
         PostInstallStep.__init__(self, info, installer)
+        self.live_packages = [
+            "os-installer",
+            "budgie-desktop-branding-livecd"
+        ]
 
     def get_display_string(self):
         return "Removing live configuration"
@@ -79,6 +86,17 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
         # Forcibly remove the user (TODO: Make all this configurable... )
         if not self.run_in_chroot("userdel -fr live"):
             return False
+
+        # Return live-specific packages
+        cmd_remove = "eopkg remove {} --ignore-comar".format(
+            " ".join(self.live_packages))
+        if not self.run_in_chroot(cmd_remove):
+            self.set_errors("Failed to remove live packages")
+            return False
+
+        # Update schemas. Nasty, I know
+        self.run_in_chroot("glib-compile-schemas /usr/share/glib-2.0/schemas")
+
         # Remove sudo
         if not self.run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers"):
             return False
