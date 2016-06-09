@@ -373,12 +373,12 @@ class PostInstallHostname(PostInstallStep):
         hostname_file = os.path.join(bpath, "etc/hostname")
         hosts_file = os.path.join(bpath, "etc/hosts")
         try:
-            with open(hostname_file, "w") as hostname_file:
+            with open(hostname_file, "w") as hout:
                 os.chmod(hostname_file, 0o0644)
-                hostname_file.write("{}\n".format(self.info.hostname))
-            with open(hosts_file, "w") as hosts_file:
+                hout.write("{}\n".format(self.info.hostname))
+            with open(hosts_file, "w") as hpout:
                 os.chmod(hosts_file, 0o0644)
-                hosts_file.write("\n".join(hosts))
+                hpout.write("\n".join(hosts))
         except Exception as e:
             self.set_errors("Failed to configure hosts: {}".format(e))
             return False
