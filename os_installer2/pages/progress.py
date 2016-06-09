@@ -28,6 +28,7 @@ from os_installer2.postinstall import PostInstallLocale
 from os_installer2.postinstall import PostInstallTimezone
 from os_installer2.postinstall import PostInstallUsers
 from os_installer2.postinstall import PostInstallHostname
+from os_installer2.postinstall import PostInstallDiskOptimize
 import os
 import stat
 import parted
@@ -100,6 +101,7 @@ class InstallerProgressPage(BasePage):
             PostInstallTimezone,
             PostInstallUsers,
             PostInstallHostname,
+            PostInstallDiskOptimize,
         ]
         # Active postinstalls..
         self.post_installs = []

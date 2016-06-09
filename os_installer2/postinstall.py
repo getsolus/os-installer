@@ -434,3 +434,29 @@ class PostInstallHostname(PostInstallStep):
             self.set_errors("Failed to configure hosts: {}".format(e))
             return False
         return True
+
+
+class PostInstallDiskOptimize(PostInstallStep):
+    """ Optimize disk usage """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Optimizing the disk configuration"
+
+    def apply(self):
+        dev_path = self.info.strategy.drive.path
+        dm = self.info.owner.get_disk_manager()
+
+        cmd = None
+        if dm.is_device_ssd(dev_path):
+            cmd = "systemctl enable fstrim"
+        else:
+            # TODO: Support readahead
+            return True
+
+        if not self.run_in_chroot(cmd):
+            self.set_errors("Unable to apply disk optimizations")
+            return False
+        return True
