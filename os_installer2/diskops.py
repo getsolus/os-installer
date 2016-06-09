@@ -276,17 +276,29 @@ class DiskOpResizeOS(BaseDiskOp):
             nlen = parted.sizeToSectors(self.their_size,
                                         'B', disk.device.sectorSize)
             cmd = None
+
             if self.part.fileSystem.type == "ntfs":
                 newSz = str(int(self.their_size / 1024))
-                cmd = "ntfsresize "
-                if simulate:
-                    cmd += " --no-action "
-                cmd += "-b --size {}k {}".format(
-                    newSz, self.part.path)
-                if simulate:
-                    cmd += " --no-action"
+
+                check_cmd = "ntfsresize -i -f -v {} {}".format(
+                    "--no-action" if simulate else "", self.part.path)
+
+                grow_cmd = "ntfsresize --force {} {}".format(
+                    "--no-action" if simulate else "", self.part.path)
+
+                resize_cmd = "ntfsresize {} -f -b --size {}k {}".format(
+                    "--no-action" if simulate else "", newSz, self.part.path)
+
+                # Check first
                 try:
-                    subprocess.check_call(cmd, shell=True)
+                    subprocess.check_call(check_cmd, shell=True)
+                except Exception as e:
+                    self.set_errors(e)
+                    return False
+
+                # Now resize it
+                try:
+                    subprocess.check_call(resize_cmd, shell=True)
                 except Exception as e:
                     self.set_errors(e)
                     return False
@@ -299,6 +311,14 @@ class DiskOpResizeOS(BaseDiskOp):
                                                     start=c_start,
                                                     end=c_end)
                 self.new_part_off = self.part.geometry.end
+                # Now grow into new home
+                try:
+                    subprocess.check_call(grow_cmd, shell=True)
+                except Exception as e:
+                    self.set_errors(e)
+                    return False
+
+                # All done
                 return True
             elif self.part.fileSystem.type.startswith("ext"):
                 if simulate:
