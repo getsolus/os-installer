@@ -145,6 +145,10 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
             return False
         return True
 
+    def is_long_step(self):
+        """ Have to remove packages and users, compile schemas, etc """
+        return True
+
 
 class PostInstallSyncFilesystems(PostInstallStep):
     """ Just call sync, nothing fancy """
