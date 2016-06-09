@@ -404,7 +404,7 @@ class InstallerProgressPage(BasePage):
                 part_offset = op.new_part_off + part_step
             elif isinstance(op, DiskOpCreatePartition):
                 # Push forward the offset
-                part_offset = op.part.geometry.end + part_step
+                part_offset = op.part_end + part_step
 
         if simulate:
             return True

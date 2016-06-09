@@ -81,6 +81,7 @@ class DiskOpCreatePartition(BaseDiskOp):
     size = None
     ptype = None
     part = None
+    part_end = None
 
     def __init__(self, device, ptype, fstype, size):
         BaseDiskOp.__init__(self, device)
@@ -120,7 +121,8 @@ class DiskOpCreatePartition(BaseDiskOp):
             # Don't run off the end of the disk ...
             geom_cmp = self.get_all_remaining_geom(
                 disk, disk.device, self.part_offset)
-            if geom_cmp.length < geom.length:
+
+            if geom_cmp.length < geom.length or geom.length < 0:
                 geom = geom_cmp
 
             fs = parted.FileSystem(type=self.fstype, geometry=geom)
@@ -130,6 +132,7 @@ class DiskOpCreatePartition(BaseDiskOp):
             disk.addPartition(
                 p,  parted.Constraint(device=self.device))
             self.part = p
+            self.part_end = self.part_offset + length
         except Exception as e:
             self.set_errors(e)
             return False
