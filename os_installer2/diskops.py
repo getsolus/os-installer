@@ -90,9 +90,18 @@ class DiskOpCreatePartition(BaseDiskOp):
         if not self.ptype:
             self.ptype = parted.PARTITION_NORMAL
 
-    def get_all_remaining_geom(self, device, start):
+    def get_all_remaining_geom(self, disk, device, start):
+        # See if there is a part after this
+        for part in disk.partitions:
+            geom = part.geometry
+            if self.part_offset < geom.start:
+                length = geom.end - self.part_offset
+                length -= parted.sizeToSectors(1, 'MB', device.sectorSize)
+                return parted.Geometry(
+                    device=device, start=start, length=length)
+
         length = device.getLength() - start
-        length -= parted.sizeToSectors(1, 'MB', self.device.sectorSize)
+        length -= parted.sizeToSectors(1, 'MB', device.sectorSize)
         return parted.Geometry(device=device, start=start, length=length)
 
     def describe(self):
@@ -110,10 +119,8 @@ class DiskOpCreatePartition(BaseDiskOp):
 
             # Don't run off the end of the disk ...
             geom_cmp = self.get_all_remaining_geom(
-                disk.device, self.part_offset)
+                disk, disk.device, self.part_offset)
             if geom_cmp.length < geom.length:
-                print("Using new size of {} vs {}".format(
-                    geom_cmp.length, geom.length))
                 geom = geom_cmp
 
             fs = parted.FileSystem(type=self.fstype, geometry=geom)
@@ -121,7 +128,7 @@ class DiskOpCreatePartition(BaseDiskOp):
                 disk=disk, type=self.ptype, fs=fs, geometry=geom)
 
             disk.addPartition(
-                p, constraint=self.device.optimalAlignedConstraint)
+                p,  parted.Constraint(device=self.device))
             self.part = p
         except Exception as e:
             self.set_errors(e)
@@ -246,6 +253,7 @@ class DiskOpResizeOS(BaseDiskOp):
     our_size = None
     desc = None
     part = None
+    new_part_off = None
 
     def __init__(self, device, part, os, their_size, our_size):
         BaseDiskOp.__init__(self, device)
@@ -265,7 +273,8 @@ class DiskOpResizeOS(BaseDiskOp):
 
     def apply(self, disk, simulate):
         try:
-            self.part.geometry.length = self.their_size
+            nlen = parted.sizeToSectors(self.their_size,
+                                        'B', disk.device.sectorSize)
             cmd = None
             if self.part.fileSystem.type == "ntfs":
                 cmd = "ntfsresize --size {} {}".format(
@@ -277,22 +286,56 @@ class DiskOpResizeOS(BaseDiskOp):
                 except Exception as e:
                     self.set_errors(e)
                     return False
+
+                c = parted.Constraint(device=self.device)
+                c_start = self.part.geometry.start
+                c_end = self.part.geometry.start + nlen
+                self.part.disk.setPartitionGeometry(partition=self.part,
+                                                    constraint=c,
+                                                    start=c_start,
+                                                    end=c_end)
+                self.new_part_off = self.part.geometry.end
                 return True
             elif self.part.fileSystem.type.startswith("ext"):
                 if simulate:
+                    c = parted.Constraint(device=self.device)
+                    c_start = self.part.geometry.start
+                    c_end = self.part.geometry.start + nlen
+                    self.part.disk.setPartitionGeometry(partition=self.part,
+                                                        constraint=c,
+                                                        start=c_start,
+                                                        end=c_end)
+                    self.new_part_off = self.part.geometry.end
                     return True
-                cmd = "resize2fs {} {}".format(
-                    self.part.path, self.their_size)
+                # check it first
+                cmd1 = "e2fsck -f {}".format(self.part.path)
+                try:
+                    subprocess.check_call(cmd1, shell=True)
+                except Exception as ex:
+                    self.set_errors(ex)
+                    return False
+
+                cmd = "resize2fs {} {}K".format(
+                    self.part.path, str(int(self.their_size / 1024)))
                 try:
                     subprocess.check_call(cmd, shell=True)
                 except Exception as ex:
                     self.set_errors(ex)
                     return False
+                c = parted.Constraint(device=self.device)
+                c_start = self.part.geometry.start
+                c_end = self.part.geometry.start + nlen
+                self.part.disk.setPartitionGeometry(partition=self.part,
+                                                    constraint=c,
+                                                    start=c_start,
+                                                    end=c_end)
+                self.new_part_off = self.part.geometry.end
             else:
                 return False
         except Exception as e:
             self.set_errors(e)
             return False
+        return True
 
 
 class DiskOpFormatPartition(BaseDiskOp):

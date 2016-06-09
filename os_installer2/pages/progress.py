@@ -365,15 +365,9 @@ class InstallerProgressPage(BasePage):
         part_offset = 0
         part_step = parted.sizeToSectors(16, 'kB', strategy.device.sectorSize)
         if disk:
-            if resizes:
-                # Got a resize, start after the new size of the OS
-                rs = resizes[0]
-                new_sz_end = rs.part.geometry.start + rs.their_size
-                part_offset = new_sz_end + part_step
-            else:
-                # Start at the very beginning of the disk, we don't
-                # support free-space installation
-                part_offset = disk.getFirstPartition().geometry.end + part_step
+            # Start at the very beginning of the disk, we don't
+            # support free-space installation
+            part_offset = disk.getFirstPartition().geometry.end + part_step
 
         for op in ops:
             self.set_display_string(op.describe())
@@ -389,6 +383,8 @@ class InstallerProgressPage(BasePage):
                 disk = op.disk
                 # Now set the part offset
                 part_offset = disk.getFirstPartition().geometry.end + part_step
+            elif isinstance(op, DiskOpResizeOS):
+                part_offset = op.new_part_off + part_step
             elif isinstance(op, DiskOpCreatePartition):
                 # Push forward the offset
                 part_offset = op.part.geometry.end + part_step
@@ -447,11 +443,6 @@ class InstallerProgressPage(BasePage):
             self.installing = False
             self.set_display_string("Failed to simulate disk strategy")
             return False
-
-        # Now get scared and not install
-        self.installing = False
-        self.set_display_string("Cowardly refusing to continue!")
-        return False
 
         # Now do it for real.
         if not self.apply_disk_strategy(False):
