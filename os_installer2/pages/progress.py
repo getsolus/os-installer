@@ -132,8 +132,8 @@ class InstallerProgressPage(BasePage):
         elif self.in_postinstall:
             cur = float(self.post_install_current)
             tot = float(len(self.post_installs))
-            if cur < tot and cp > 0 and not self.should_pulse:
-                fraction = cp / tot
+            if cur < tot and cur > 0 and not self.should_pulse:
+                fraction = cur / tot
                 self.progressbar.set_fraction(fraction)
             else:
                 self.progressbar.pulse()

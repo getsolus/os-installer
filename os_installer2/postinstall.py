@@ -46,7 +46,7 @@ class PostInstallStep:
 
     def get_errors(self):
         """ Get the errors, if any, for this step """
-        return self.err
+        return self.errors
 
     def run_in_chroot(self, command):
         """ Helper to enable quick boolean chroot usage """
