@@ -14,6 +14,7 @@
 import subprocess
 import shutil
 import os
+from collections import OrderedDict
 
 
 class PostInstallStep:
@@ -64,6 +65,38 @@ class PostInstallStep:
         """ Override when this is a long operation and the progressbar should
             pulse, so the user doesn't believe the UI locked up """
         return False
+
+
+class PostInstallVfs(PostInstallStep):
+    """ Set up the virtual filesystems required for all other steps """
+
+    vfs_points = None
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+        self.vfs_points = OrderedDict([
+            ("/dev", "{}/dev"),
+            ("/dev/shm", "{}/dev/shm"),
+            ("/dev/pts", "{}/dev/pts"),
+            ("/sys", "{}/sys"),
+            ("/proc", "{}/proc"),
+        ])
+
+    def get_display_string(self):
+        return "Setting up virtual filesystems"
+
+    def apply(self):
+        target = self.installer.get_installer_target_filesystem()
+        for source_point in self.vfs_points:
+            target_point = self.vfs_points[source_point].format(target)
+            cmd = "mount --bind {} \"{}\"".format(source_point, target_point)
+            try:
+                subprocess.check_call(cmd, shell=True)
+                self.installer.mount_tracker[source_point] = target_point
+            except Exception as e:
+                self.set_errors("Failed to bind-mount vfs: {}".format(e))
+                return False
+        return True
 
 
 class PostInstallRemoveLiveConfig(PostInstallStep):

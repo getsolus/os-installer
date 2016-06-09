@@ -19,6 +19,7 @@ from collections import OrderedDict
 from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
+from os_installer2.postinstall import PostInstallVfs
 from os_installer2.postinstall import PostInstallRemoveLiveConfig
 from os_installer2.postinstall import PostInstallSyncFilesystems
 from os_installer2.postinstall import PostInstallMachineID
@@ -91,6 +92,7 @@ class InstallerProgressPage(BasePage):
 
         self.post_install_enabled = [
             PostInstallSyncFilesystems,
+            PostInstallVfs,
             PostInstallRemoveLiveConfig,
             PostInstallMachineID,
             PostInstallKeyboard,
