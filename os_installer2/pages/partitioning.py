@@ -43,6 +43,13 @@ class ManualPage(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
 
+        lab = Gtk.Label("Select custom mount points to use with Solus from "
+                        "the available partition selection below.")
+        self.pack_start(lab, False, False, 0)
+        lab.set_margin_top(20)
+        lab.set_margin_bottom(20)
+        lab.set_halign(Gtk.Align.START)
+
         self.treeview = Gtk.TreeView()
         self.scrl = Gtk.ScrolledWindow(None, None)
         self.scrl.add(self.treeview)
