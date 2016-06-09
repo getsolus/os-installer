@@ -259,3 +259,82 @@ class PostInstallTimezone(PostInstallStep):
         except Exception as e:
             print("Warning: Failed to update adjtime: {}".format(e))
         return True
+
+
+class PostInstallUsers(PostInstallStep):
+    """ Add users to the new installation """
+
+    normal_groups = None
+    admin_groups = None
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+        self.normal_groups = [
+            "audio,"
+            "video",
+            "cdrom",
+            "dialout",
+            "fuse"
+        ]
+        self.admin_groups = [
+            "sudo",
+            "lpadmin"
+        ]
+
+    def get_display_string(self):
+        return "Creating users"
+
+    def apply(self):
+        """ Add all of the system users """
+
+        pwd_file = []
+
+        # Add all the users.
+        for user in self.info.users:
+            groups = []
+            groups.extend(self.normal_groups)
+            if user.admin:
+                groups.extend(self.admin_groups)
+
+            cmd = "useradd -s {} -c '{}' -G {} {}".format(
+                "/bin/bash",  # Default shell in Solus
+                user.realname,
+                ",".join(groups),
+                user.username)
+
+            try:
+                self.run_in_chroot(cmd)
+            except Exception as e:
+                self.set_errors("Cannot configure user: {}".format(e))
+                return False
+
+            pwd_file.append("{}:{}".format(user.username, user.password))
+
+        f = os.path.join(self.installer.get_installer_target_filesystem(),
+                         "tmp/newusers.conf")
+
+        # Pass off the passwords to chpasswd
+        pwds_done = False
+        try:
+            with open(f, "w") as pwds:
+                pwds.write("\n".join(pwd_file))
+
+                self.run_in_chroot("cat /tmp/newusers.conf | chpasswd")
+                os.remove(f)
+                pwds_done = True
+        except Exception as e:
+            self.set_errors("Unable to update passwords: {}".format(e))
+
+        if not pwds_done:
+            try:
+                os.remove(f)
+            except:
+                pass
+            return False
+
+        # Disable the root account
+        if not self.run_in_chroot("passwd -d root"):
+            self.set_errors("Failed to disable root account")
+            return False
+        return True

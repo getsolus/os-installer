@@ -25,6 +25,7 @@ from os_installer2.postinstall import PostInstallMachineID
 from os_installer2.postinstall import PostInstallKeyboard
 from os_installer2.postinstall import PostInstallLocale
 from os_installer2.postinstall import PostInstallTimezone
+from os_installer2.postinstall import PostInstallUsers
 import os
 import stat
 import parted
@@ -94,6 +95,7 @@ class InstallerProgressPage(BasePage):
             PostInstallKeyboard,
             PostInstallLocale,
             PostInstallTimezone,
+            PostInstallUsers,
         ]
         # Active postinstalls..
         self.post_installs = []
