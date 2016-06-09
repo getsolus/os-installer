@@ -21,6 +21,7 @@ from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
 from os_installer2.postinstall import PostInstallRemoveLiveConfig
 from os_installer2.postinstall import PostInstallSyncFilesystems
+from os_installer2.postinstall import PostInstallMachineID
 import os
 import stat
 import parted
@@ -86,6 +87,7 @@ class InstallerProgressPage(BasePage):
         self.post_install_enabled = [
             PostInstallSyncFilesystems,
             PostInstallRemoveLiveConfig,
+            PostInstallMachineID,
         ]
         # Active postinstalls..
         self.post_installs = []

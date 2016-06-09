@@ -113,3 +113,30 @@ class PostInstallSyncFilesystems(PostInstallStep):
         except:
             pass
         return True
+
+
+class PostInstallMachineID(PostInstallStep):
+    """ Initialise the machine-id """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Creating machine-id for new installation"
+
+    def apply(self):
+        fp = os.path.join(self.installer.get_installer_target_filesystem(),
+                          "etc/machine-id")
+        # Delete existing machine-id
+        if os.path.exists(fp):
+            try:
+                os.remove(fp)
+            except Exception as e:
+                self.set_errors(e)
+                return False
+
+        # Now create a new machine-id
+        if not self.run_in_chroot("systemd-machine-id-setup"):
+            self.set_errors("Failed to construct machine-id")
+            return False
+        return True
