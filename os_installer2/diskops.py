@@ -307,7 +307,7 @@ class DiskOpResizeOS(BaseDiskOp):
                                                     constraint=c,
                                                     start=c_start,
                                                     end=c_end)
-                self.new_part_off = self.part.geometry.end
+                self.new_part_off = c_end
                 # All done
                 return True
             elif self.part.fileSystem.type.startswith("ext"):
