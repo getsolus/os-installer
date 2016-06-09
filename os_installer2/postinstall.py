@@ -15,6 +15,7 @@ import subprocess
 import shutil
 import os
 from collections import OrderedDict
+from .diskops import DiskOpCreateSwap, DiskOpUseSwap
 
 
 class PostInstallStep:
@@ -462,5 +463,91 @@ class PostInstallDiskOptimize(PostInstallStep):
 
         if not self.run_in_chroot(cmd):
             self.set_errors("Unable to apply disk optimizations")
+            return False
+        return True
+
+
+FSTAB_HEADER = """
+# /etc/fstab: static file system information.
+#
+# <fs>      <mountpoint> <type> <opts>      <dump/pass>
+
+# /dev/ROOT   /            ext3    noatime        0 1
+# /dev/SWAP   none         swap    sw             0 0
+# /dev/fd0    /mnt/floppy  auto    noauto         0 0
+proc\t/proc\tproc\tdefaults\t0\t0
+"""
+
+
+class PostInstallFstab(PostInstallStep):
+    """ Write the fstab to disk """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_part_uuid(self, path, part_uuid=False):
+        """ Get the UUID of a given partition """
+        col = "PARTUUID" if part_uuid else "UUID"
+        cmd = "blkid -s {} -o value {}".format(col, path)
+        try:
+            o = subprocess.check_output(cmd, shell=True)
+            o = o.split("\n")[0]
+            o = o.replace("\r", "").replace("\n", "").strip()
+            return o
+        except Exception as e:
+            print("UUID lookup failed: {}".format(e))
+            return None
+
+    def get_display_string(self):
+        return "Writing filesystem mount points"
+
+    def apply(self):
+        """ Do the dull task of writing the fstab """
+        strat = self.info.strategy
+        disk = strat.disk
+
+        appends = []
+
+        # Add the ESP to /boot/efi
+        if strat.is_uefi() and self.info.bootloader_install:
+            uuid = self.get_part_uuid(self.info.bootloader, True)
+            if uuid:
+                esp_ent = "PARTUUID={}\t/boot/efi\tvfat\tdefaults\t0\t0"
+            else:
+                esp_ent = "{}\t/boot/efi\tvfat\tdefaults\t0\t0"
+            appends.append(esp_ent.format(self.info.bootloader))
+
+        for op in strat.get_operations():
+            # TODO: Add custom mountpoints here!
+            # Skip / and swap for GPT/UEFI
+            if disk.type == "gpt" and strat.is_uefi():
+                continue
+
+            # All swap handling from hereon out
+            swap_path = None
+            if isinstance(op, DiskOpCreateSwap):
+                swap_path = op.part.path
+            elif isinstance(op, DiskOpUseSwap):
+                swap_path = op.swap_part.path
+
+            if not swap_path:
+                continue
+
+            uuid = self.get_part_uuid(swap_path)
+            if uuid:
+                im = "UUID={}\tswap\tswap\tsw\t0\t0".format(swap_path)
+                appends.append(im)
+            else:
+                appends.append("{}\tswap\tswap\tsw\t0\t0".format(swap_path))
+
+        fp = os.path.join(self.installer.get_installer_target_filesystem(),
+                          "etc/fstab")
+
+        try:
+            with open(fp, "w") as fstab:
+                fstab.write(FSTAB_HEADER.strip() + "\n")
+                fstab.write("\n".join(appends) + "\n")
+        except Exception as e:
+            self.set_errors("Failed to write fstab: {}".format(e))
             return False
         return True
