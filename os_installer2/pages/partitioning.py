@@ -19,8 +19,138 @@ from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
 from os_installer2.strategy import UserPartitionStrategy
 from os_installer2.strategy import MIN_REQUIRED_SIZE
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
 import sys
+import os
+import threading
+
+
+INDEX_PARTITION_PATH = 0
+INDEX_PARTITION_TYPE = 1
+INDEX_PARTITION_DESCRIPTION = 2
+INDEX_PARTITION_FORMAT_AS = 3
+INDEX_PARTITION_MOUNT_AS = 4
+INDEX_PARTITION_SIZE = 5
+INDEX_PARTITION_FREE_SPACE = 6
+INDEX_PARTITION_OBJECT = 7
+
+
+class ManualPage(Gtk.VBox):
+    """ Manual partitioning page, mostly TreeView with gparted proxy """
+
+    info = None
+
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+
+        self.treeview = Gtk.TreeView()
+        self.scrl = Gtk.ScrolledWindow(None, None)
+        self.scrl.add(self.treeview)
+        self.set_border_width(12)
+        self.scrl.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.scrl.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        sd = Gtk.JunctionSides.BOTTOM
+        self.scrl.get_style_context().set_junction_sides(sd)
+        self.pack_start(self.scrl, True, True, 0)
+
+        # device
+        ren = Gtk.CellRendererText()
+        self.column3 = Gtk.TreeViewColumn("Device", ren)
+        self.column3.add_attribute(ren, "markup", INDEX_PARTITION_PATH)
+        self.treeview.append_column(self.column3)
+
+        # Type
+        ren = Gtk.CellRendererText()
+        self.column4 = Gtk.TreeViewColumn("Type", ren)
+        self.column4.add_attribute(ren, "markup", INDEX_PARTITION_TYPE)
+        self.treeview.append_column(self.column4)
+
+        # description
+        ren = Gtk.CellRendererText()
+        self.column5 = Gtk.TreeViewColumn("Operating system", ren)
+        self.column5.add_attribute(ren, "markup", INDEX_PARTITION_DESCRIPTION)
+        self.treeview.append_column(self.column5)
+
+        # mount point
+        ren = Gtk.CellRendererText()
+        self.column6 = Gtk.TreeViewColumn("Mount point", ren)
+        self.column6.add_attribute(ren, "markup", INDEX_PARTITION_MOUNT_AS)
+        self.treeview.append_column(self.column6)
+
+        # format
+        ren = Gtk.CellRendererText()
+        self.column7 = Gtk.TreeViewColumn("Format?", ren)
+        self.column7.add_attribute(ren, "markup", INDEX_PARTITION_FORMAT_AS)
+        self.treeview.append_column(self.column7)
+
+        # size
+        ren = Gtk.CellRendererText()
+        self.column8 = Gtk.TreeViewColumn("Size", ren)
+        self.column8.add_attribute(ren, "markup", INDEX_PARTITION_SIZE)
+        self.treeview.append_column(self.column8)
+
+        # Used space
+        ren = Gtk.CellRendererText()
+        self.column9 = Gtk.TreeViewColumn("Free space", ren)
+        self.column9.add_attribute(ren, "markup", INDEX_PARTITION_FREE_SPACE)
+        self.treeview.append_column(self.column9)
+
+        self.treeview.get_selection().connect("changed",
+                                              self._partition_selected)
+
+        toolbar = Gtk.Toolbar()
+        toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_INLINE_TOOLBAR)
+        junctions = Gtk.JunctionSides.TOP
+        toolbar.get_style_context().set_junction_sides(junctions)
+
+        gparted = Gtk.ToolButton()
+        gparted.set_label("Launch Partition Editor")
+        gparted.connect("clicked", self.launch_gparted)
+        gparted.set_is_important(True)
+        toolbar.add(gparted)
+        self.pack_start(toolbar, False, False, 0)
+
+    def launch_gparted(self, btn, udata=None):
+        """ Send off a thread """
+        self.info.owner.set_sensitive(False)
+        t = threading.Thread(target=self._launch_gparted)
+        t.start()
+
+    def _launch_gparted(self):
+        """ Launch this on the thread so the UI doesnt lock """
+        perms = self.info.owner.get_perms_manager()
+        perms.up_permissions()
+        try:
+            os.system("gparted")
+        except:
+            pass
+        perms.down_permissions()
+        GLib.idle_add(self.restore_ui)
+
+    def restore_ui(self):
+        self.info.owner.set_sensitive(True)
+        self.queue_draw()
+        # TODO: Refresh
+
+    def _partition_selected(self, selection):
+        model, treeiter = selection.get_selected()
+
+        if treeiter is None:
+            self.root.set_sensitive(False)
+            self.swap.set_sensitive(False)
+            return
+
+        part = model[treeiter][INDEX_PARTITION_OBJECT]
+        swap = part.type == "swap"
+        self.root.set_sensitive(part.type != "" and not swap)
+        self.swap.set_sensitive(part.type != "" and swap)
+
+        self.selected_row = treeiter
+        self.selected_partition = part
+
+    def update_strategy(self, info):
+        self.info = info
+        info.owner.set_can_next(False)
 
 
 class DualBootPage(Gtk.VBox):
@@ -148,16 +278,6 @@ class DualBootPage(Gtk.VBox):
                 "Your currently installed operating system", min_they_needs,
                 total_size)
         self.info_label.set_markup(l)
-
-
-class ManualPage(Gtk.VBox):
-    """ Manual partitioning page, mostly TreeView with gparted proxy """
-
-    def __init__(self):
-        Gtk.VBox.__init__(self)
-
-    def update_strategy(self, info):
-        info.owner.set_can_next(False)
 
 
 class InstallerPartitioningPage(BasePage):
