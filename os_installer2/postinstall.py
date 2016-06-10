@@ -590,12 +590,15 @@ class PostInstallBootloader(PostInstallStep):
             return self.apply_uefi()
         return self.apply_bios()
 
+    def is_long_step(self):
+        """ UEFI no, GRUB yes. """
+        return not self.info.strategy.is_uefi()
+
     def apply_bios(self):
         """ Take the BIOS approach to bootloader configuration """
         if not self.info.bootloader_install:
             return True
         cmd = "grub-install --force \"{}\"".format(self.info.bootloader_sz)
-        print("DEBUG: GRUB: {}".format(cmd))
         if not self.run_in_chroot(cmd):
             self.set_errors("Failed to install GRUB bootloader")
             return False
