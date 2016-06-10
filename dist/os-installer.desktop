@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Install OS
+GenericName=OS Installer
+Comment=Install the operating system to disk
+Exec=os-installer-wrapper
+Icon=system-software-install
+Terminal=False
+Type=Application
+Categories=System;
