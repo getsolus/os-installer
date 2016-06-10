@@ -12,7 +12,6 @@
 #
 
 import subprocess
-import shutil
 import os
 from collections import OrderedDict
 from .diskops import DiskOpCreateSwap, DiskOpUseSwap
@@ -133,16 +132,6 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
 
         # Remove sudo
         if not self.run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers"):
-            return False
-        # Make sure home is really gone
-        p = os.path.join(self.installer.get_installer_target_filesystem(),
-                         "home/live")
-        if not os.path.exists(p):
-            return True
-        try:
-            shutil.rmtree(p)
-        except Exception as e:
-            self.set_errors(e)
             return False
         return True
 
