@@ -509,7 +509,8 @@ FSTAB_HEADER = """
 # /dev/ROOT   /            ext3    noatime        0 1
 # /dev/SWAP   none         swap    sw             0 0
 # /dev/fd0    /mnt/floppy  auto    noauto         0 0
-proc\t/proc\tproc\tdefaults\t0\t0
+none        /proc        proc    nosuid,noexec  0 0
+none        /dev/shm     tmpfs   defaults       0 0
 """
 
 
@@ -542,7 +543,7 @@ class PostInstallFstab(PostInstallStep):
 
         for op in strat.get_operations():
             # TODO: Add custom mountpoints here!
-            # Skip / and swap for GPT/UEFI
+            # Skip swap for GPT/UEFI
             if disk.type == "gpt" and strat.is_uefi():
                 continue
 
@@ -562,6 +563,14 @@ class PostInstallFstab(PostInstallStep):
                 appends.append(im)
             else:
                 appends.append("{}\tswap\tswap\tsw\t0\t0".format(swap_path))
+
+        # Add the root partition last
+        root = strat.get_root_partition()
+        uuid = self.get_part_uuid(root)
+        appends.append("# {} at time of installation".format(root))
+        appends.append(
+            "UUID={}\t/\text4\trw,relatime,errors=remount-ro\t0\t0".format(
+                uuid))
 
         fp = os.path.join(self.installer.get_installer_target_filesystem(),
                           "etc/fstab")
