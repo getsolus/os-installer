@@ -423,7 +423,7 @@ class PostInstallHostname(PostInstallStep):
                 hout.write("{}\n".format(self.info.hostname))
             with open(hosts_file, "w") as hpout:
                 os.chmod(hosts_file, 0o0644)
-                hpout.write("\n".join(hosts))
+                hpout.write("\n".join(hosts) + "\n")
         except Exception as e:
             self.set_errors("Failed to configure hosts: {}".format(e))
             return False
