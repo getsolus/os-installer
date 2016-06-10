@@ -31,6 +31,7 @@ from os_installer2.postinstall import PostInstallUsers
 from os_installer2.postinstall import PostInstallHostname
 from os_installer2.postinstall import PostInstallDiskOptimize
 from os_installer2.postinstall import PostInstallFstab
+from os_installer2.postinstall import PostInstallBootloader
 import os
 import stat
 import parted
@@ -105,6 +106,7 @@ class InstallerProgressPage(BasePage):
             PostInstallHostname,
             PostInstallDiskOptimize,
             PostInstallFstab,
+            PostInstallBootloader,
         ]
         # Active postinstalls..
         self.post_installs = []
@@ -205,6 +207,11 @@ class InstallerProgressPage(BasePage):
             return False
         self.mount_tracker[esp] = fpath
         return True
+
+    def get_esp_target(self):
+        """ convenience wrapper for postinstall """
+        esp = self.locate_esp()
+        return self.mount_tracker[esp]
 
     def mount_source_filesystem(self):
         """ Mount the source and child """

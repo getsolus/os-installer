@@ -15,6 +15,21 @@ import subprocess
 import os
 from collections import OrderedDict
 from .diskops import DiskOpCreateSwap, DiskOpUseSwap
+import shutil
+
+
+def get_part_uuid(path, part_uuid=False):
+    """ Get the UUID of a given partition """
+    col = "PARTUUID" if part_uuid else "UUID"
+    cmd = "blkid -s {} -o value {}".format(col, path)
+    try:
+        o = subprocess.check_output(cmd, shell=True)
+        o = o.split("\n")[0]
+        o = o.replace("\r", "").replace("\n", "").strip()
+        return o
+    except Exception as e:
+        print("UUID lookup failed: {}".format(e))
+        return None
 
 
 class PostInstallStep:
@@ -474,19 +489,6 @@ class PostInstallFstab(PostInstallStep):
     def __init__(self, info, installer):
         PostInstallStep.__init__(self, info, installer)
 
-    def get_part_uuid(self, path, part_uuid=False):
-        """ Get the UUID of a given partition """
-        col = "PARTUUID" if part_uuid else "UUID"
-        cmd = "blkid -s {} -o value {}".format(col, path)
-        try:
-            o = subprocess.check_output(cmd, shell=True)
-            o = o.split("\n")[0]
-            o = o.replace("\r", "").replace("\n", "").strip()
-            return o
-        except Exception as e:
-            print("UUID lookup failed: {}".format(e))
-            return None
-
     def get_display_string(self):
         return "Writing filesystem mount points"
 
@@ -500,7 +502,7 @@ class PostInstallFstab(PostInstallStep):
         # Add the ESP to /boot/efi
         if strat.is_uefi() and self.info.bootloader_install:
             esp = self.installer.locate_esp()
-            uuid = self.get_part_uuid(esp, True)
+            uuid = get_part_uuid(esp, True)
             if uuid:
                 esp_ent = "PARTUUID={}\t/boot/efi\tvfat\tdefaults\t0\t0"
                 appends.append(esp_ent.format(uuid))
@@ -542,3 +544,126 @@ class PostInstallFstab(PostInstallStep):
             self.set_errors("Failed to write fstab: {}".format(e))
             return False
         return True
+
+
+class PostInstallBootloader(PostInstallStep):
+    """ Install the bootloader itself """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Configuring bootloader.. please wait"
+
+    def apply(self):
+        if self.info.strategy.is_uefi():
+            return self.apply_uefi()
+        return self.apply_bios()
+
+    def apply_bios(self):
+        """ Take the BIOS approach to bootloader configuration """
+        return False
+
+    def apply_uefi(self):
+        """ Take the UEFI approach to bootloader configuration """
+        bpath = self.installer.get_installer_target_filesystem()
+        root_part = self.info.strategy.get_root_partition()
+        uuid = get_part_uuid(root_part, True)
+
+        espt = self.installer.get_esp_target()
+        cmd = "goofiboot install --path=\"{}\" --no-variables".format(espt)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("Unable to install goofiboot: {}".format(e))
+            return False
+
+        ldir = self.get_loader_dir(espt)
+        entfile = os.path.join(ldir, "loader.conf")
+        try:
+            with open(entfile, "w") as defconf:
+                defconf.write("timeout 4\ndefault solus\n")
+
+        except Exception as e:
+            self.set_errors("Cannot set default loader config: {}".format(e))
+            return False
+
+        soldir = os.path.join(ldir, "entries")
+        solfile = os.path.join(soldir, "solus.conf")
+        if not os.path.exists(soldir):
+            try:
+                os.makedirs(soldir)
+            except Exception as ex:
+                self.set_errors("Cannot create EFI dirs: {}".format(ex))
+                return False
+
+        # Now write our loader.config itself..
+        try:
+            with open(solfile, "w") as solconf:
+                conf = [
+                    "title Solus 1.2",
+                    "linux /solus/kernel",
+                    "options root=PARTUUID={} quiet ro".format(uuid)
+                ]
+                solconf.write("\n".join(conf) + "\n")
+        except Exception as e:
+            self.set_errors("Cannot write config: {}".format(e))
+            return False
+
+        # /solus on the ESP
+        sdir = self.get_solus_dir(espt)
+        if not os.path.exists(sdir):
+            try:
+                os.makedirs(sdir)
+            except Exception as ex:
+                self.set_errors("Cannot create solus EFI dir: {}".format(e))
+                return False
+
+        kver = os.uname()[2]
+        kernel = os.path.join(bpath, "boot/kernel-{}".format(kver))
+        initrd = os.path.join(bpath, "boot/initramfs-{}.img".format(kver))
+        tkernel = os.path.join(sdir, "kernel")
+        tinitrd = os.path.join(sdir, "initramfs")
+
+        try:
+            if os.path.exists(tkernel):
+                print("Removing {}".format(tkernel))
+            if os.path.exists(tinitrd):
+                print("Removing {}".format(tinitrd))
+            shutil.copy(kernel, tkernel)
+            shutil.copy(initrd, tinitrd)
+        except Exception as e:
+            self.set_errors("Couldn't install kernel assets: {}".format(e))
+            return False
+        return True
+
+    def get_ichild(self, root, child):
+        t1 = os.path.join(root, child)
+        if os.path.exists(t1) or not os.path.exists(root):
+            return t1
+        try:
+            for i in os.listdir(root):
+                i2 = i.lower()
+                if i2 == child:
+                    return os.path.join(root, i)
+        except Exception as ex:
+            print("Error obtaining {} dir: {}".format(child, ex))
+        return t1
+
+    def get_efi_dir(self, base):
+        return self.get_ichild(base, "EFI")
+
+    def get_loader_dir(self, base):
+        return self.get_ichild(base, "loader")
+
+    def get_efi_boot_dir(self, base):
+        return self.get_ichild(self.get_efi_dir(base), "Boot")
+
+    def get_efi_boot_file(self, base):
+        return self.get_ichild(self.get_efi_boot_dir(base), "BOOTX64.EFI")
+
+    def get_loader_entries(self, base):
+        return self.get_ichild(self.get_loader_dir(base), "entries")
+
+    def get_solus_dir(self, base):
+        return self.get_ichild(base, "solus")
