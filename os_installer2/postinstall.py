@@ -592,8 +592,18 @@ class PostInstallBootloader(PostInstallStep):
 
     def apply_bios(self):
         """ Take the BIOS approach to bootloader configuration """
-        self.set_errors("Sorry, still working on this BIOS doflickey!")
-        return False
+        if not self.info.bootloader_install:
+            return True
+        cmd = "grub-install \"{}\"".format(self.info.bootloader_sz)
+        if not self.run_in_chroot(cmd):
+            self.set_errors("Failed to install GRUB bootloader")
+            return False
+
+        cmd = "grub-mkconfig -o /boot/grub/grub.cfg"
+        if not self.run_in_chroot(cmd):
+            self.set_errors("Failed to update GRUB bootloader configuration")
+            return False
+        return True
 
     def apply_uefi(self):
         """ Take the UEFI approach to bootloader configuration """
