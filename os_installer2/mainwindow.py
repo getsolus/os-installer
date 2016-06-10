@@ -25,6 +25,7 @@ from .pages.system import InstallerSystemPage
 from .pages.users import InstallerUsersPage
 from .pages.summary import InstallerSummaryPage
 from .pages.progress import InstallerProgressPage
+from .pages.complete import InstallationCompletePage
 from . import join_resource_path as jrp
 import sys
 import threading
@@ -169,6 +170,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.add_installer_page(InstallerUsersPage())
             self.add_installer_page(InstallerSummaryPage())
             self.add_installer_page(InstallerProgressPage())
+            self.add_installer_page(InstallationCompletePage())
         except Exception as e:
             print("Fatal error during startup: {}".format(e))
             traceback.print_exc(file=sys.stderr)

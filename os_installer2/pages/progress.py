@@ -186,6 +186,7 @@ class InstallerProgressPage(BasePage):
                 print(" -> {}".format(x))
         else:
             print("Successful install!")
+            self.info.owner.skip_page()
         return False
 
     def prepare(self, info):
