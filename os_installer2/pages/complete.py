@@ -29,14 +29,16 @@ class InstallationCompletePage(BasePage):
         box.set_halign(Gtk.Align.CENTER)
 
         img = Gtk.Image.new_from_file(jrp("install-complete.png"))
+        img.set_halign(Gtk.Align.CENTER)
         box.pack_start(img, False, False, 0)
-        img.set_property("margin", 10)
 
         lab = Gtk.Label("<big>You may now exit the installer.</big>")
         lab.set_use_markup(True)
         lab.set_halign(Gtk.Align.CENTER)
         lab.set_property("xalign", 0.5)
-        box.pack_start(lab, False, False, 5)
+        box.pack_start(lab, False, False, 0)
+        lab.set_property("margin-top", 5)
+        lab.set_property("margin-bottom", 5)
 
         lab = Gtk.Label("Restart and remove any installation media to start "
                         "using your new operating system.")
