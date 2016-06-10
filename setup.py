@@ -2,11 +2,11 @@ from setuptools import setup
 
 setup(
     name            = "os-installer",
-    version         = "5.4",
+    version         = "5.4.1",
     author          = "Ikey Doherty",
     author_email    = "ikey@solus-project.com",
     description     = ("Operating System Installer"),
-    license         = "GPL-3.0",
+    license         = "GPL-2.0",
     url             = "https://github.com/solus-project/os-installer",
     packages        = ['os_installer2', 'os_installer2.pages'],
     scripts         = ['os-installer-gtk'],
