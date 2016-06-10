@@ -594,7 +594,8 @@ class PostInstallBootloader(PostInstallStep):
         """ Take the BIOS approach to bootloader configuration """
         if not self.info.bootloader_install:
             return True
-        cmd = "grub-install \"{}\"".format(self.info.bootloader_sz)
+        cmd = "grub-install --force \"{}\"".format(self.info.bootloader_sz)
+        print("DEBUG: GRUB: {}".format(cmd))
         if not self.run_in_chroot(cmd):
             self.set_errors("Failed to install GRUB bootloader")
             return False

@@ -528,6 +528,8 @@ class InstallerProgressPage(BasePage):
             # If it created a disk, go use it.
             if isinstance(op, DiskOpCreateDisk):
                 disk = op.disk
+                if not strategy.disk:
+                    strategy.disk = disk
                 # Now set the part offset
                 part_offset = disk.getFirstPartition().geometry.end + part_step
             elif isinstance(op, DiskOpResizeOS):
