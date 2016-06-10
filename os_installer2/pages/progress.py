@@ -182,6 +182,8 @@ class InstallerProgressPage(BasePage):
         """ Wrap things out and decide on the final call. """
         if len(self.error_msgs) > 0:
             print("That did not go as expected")
+            for x in self.error_msgs:
+                print(" -> {}".format(x))
         else:
             print("Successful install!")
         return False
@@ -276,7 +278,7 @@ class InstallerProgressPage(BasePage):
         """ umount everything we've mounted """
         ret = True
 
-        self.set_error_message("Unmounting filesystems - might take a while")
+        self.set_display_string("Unmounting filesystems - might take a while")
 
         # Visit in reverse order
         keys = self.mount_tracker.keys()
@@ -667,4 +669,4 @@ class InstallerProgressPage(BasePage):
         for op in self.info.strategy.get_operations():
             if isinstance(op, DiskOpCreateESP):
                 return op.part.path
-        return self.info.bootloader
+        return self.info.bootloader_sz
