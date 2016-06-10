@@ -119,12 +119,19 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
 
     """ Packages that are of no use to the user, i.e. us. """
     live_packages = None
+    original_source = None
+    modified_files = None
 
     def __init__(self, info, installer):
         PostInstallStep.__init__(self, info, installer)
         self.live_packages = [
             "os-installer",
             "budgie-desktop-branding-livecd"
+        ]
+        self.original_source = "/usr/share/os-installer"
+        self.modified_files = [
+            "/etc/lightdm/lightdm.conf",
+            "/etc/gdm/custom.conf"
         ]
 
     def get_display_string(self):
@@ -141,6 +148,30 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
         if not self.run_in_chroot(cmd_remove):
             self.set_errors("Failed to remove live packages")
             return False
+
+        # Replace the modified
+        target_fs = self.installer.get_installer_target_filesystem()
+
+        for replacement in self.modified_files:
+            source_file = os.path.join(self.original_source, replacement[1:])
+            target_file = os.path.join(target_fs, replacement[1:])
+
+            if not os.path.exists(source_file):
+                continue
+            target_dir = os.path.dirname(target_file)
+            if not os.path.exists(target_dir):
+                try:
+                    os.makedirs(target_dir, 0o755)
+                except Exception as e:
+                    self.set_errors("Cannot mkdir: {}".format(e))
+                    return False
+            try:
+                shutil.copy2(source_file, target_file)
+            except Exception as e:
+                self.set_errors("Cannot update file: {}".format(e))
+                return False
+
+            print("DEBUG: Copied: {}".format(target_file))
 
         # Update schemas. Nasty, I know
         self.run_in_chroot("glib-compile-schemas /usr/share/glib-2.0/schemas")
