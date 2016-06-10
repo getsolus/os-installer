@@ -592,6 +592,7 @@ class PostInstallBootloader(PostInstallStep):
 
     def apply_bios(self):
         """ Take the BIOS approach to bootloader configuration """
+        self.set_errors("Sorry, still working on this BIOS doflickey!")
         return False
 
     def apply_uefi(self):

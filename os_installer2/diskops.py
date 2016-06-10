@@ -26,8 +26,6 @@ class BaseDiskOp:
 
     def __init__(self, device):
         self.device = device
-        if device.disk is not None:
-            self.disk = device.disk
 
     def describe(self):
         """ Describe this operation """

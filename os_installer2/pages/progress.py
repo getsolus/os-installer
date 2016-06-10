@@ -81,6 +81,8 @@ class InstallerProgressPage(BasePage):
 
     def set_error_message(self, error_msg):
         """ Set the error message, i.e. something Super Bad happened """
+        if not error_msg:
+            error_msg = "[undefined error]"
         sys.stderr.write(error_msg + '\n')
         sys.stderr.flush()
         self.error_msgs.append(error_msg)
