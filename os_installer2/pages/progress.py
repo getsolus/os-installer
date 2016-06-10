@@ -333,6 +333,11 @@ class InstallerProgressPage(BasePage):
                 if len(dir_root) > 0 and dir_root[0] != '/':
                     dir_root = "/" + dir_root
 
+            # Do we skip this guy? Don't traverse what we don't need
+            dir_base = dir_root.split("/")[0]
+            if dir_base in ["home", "lost+found"]:
+                continue
+
             # Create the container directory first
             target_dir = os.path.join(root_fs, dir_root[1:])
             if not os.path.exists(target_dir):
