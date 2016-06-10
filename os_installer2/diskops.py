@@ -22,10 +22,12 @@ class BaseDiskOp:
     device = None
     errors = None
     part_offset = 0
+    disk = None
 
     def __init__(self, device):
         self.device = device
-        pass
+        if device.disk is not None:
+            self.disk = device.disk
 
     def describe(self):
         """ Describe this operation """
