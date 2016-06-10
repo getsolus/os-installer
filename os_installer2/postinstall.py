@@ -557,7 +557,7 @@ class PostInstallFstab(PostInstallStep):
             if not swap_path:
                 continue
 
-            uuid = self.get_part_uuid(swap_path)
+            uuid = get_part_uuid(swap_path)
             if uuid:
                 im = "UUID={}\tswap\tswap\tsw\t0\t0".format(swap_path)
                 appends.append(im)
@@ -566,7 +566,7 @@ class PostInstallFstab(PostInstallStep):
 
         # Add the root partition last
         root = strat.get_root_partition()
-        uuid = self.get_part_uuid(root)
+        uuid = get_part_uuid(root)
         appends.append("# {} at time of installation".format(root))
         appends.append(
             "UUID={}\t/\text4\trw,relatime,errors=remount-ro\t0\t0".format(
