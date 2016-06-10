@@ -162,7 +162,7 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
             target_dir = os.path.dirname(target_file)
             if not os.path.exists(target_dir):
                 try:
-                    os.makedirs(target_dir, 0o755)
+                    os.makedirs(target_dir, 0o0755)
                 except Exception as e:
                     self.set_errors("Cannot mkdir: {}".format(e))
                     return False
