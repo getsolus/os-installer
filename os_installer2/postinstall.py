@@ -389,7 +389,7 @@ class PostInstallUsers(PostInstallStep):
             if user.admin:
                 groups.extend(self.admin_groups)
 
-            cmd = "useradd -s {} -c '{}' -G {} {}".format(
+            cmd = "useradd -s {} -c '{}' -G {} -m {}".format(
                 "/bin/bash",  # Default shell in Solus
                 user.realname,
                 ",".join(groups),
