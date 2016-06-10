@@ -73,6 +73,9 @@ class DriveProber:
             device = None
             try:
                 device = parted.getDevice(item)
+                if device.readOnly:
+                    print("DEBUG: Skipping read-only device")
+                    continue
             except Exception as e:
                 print("Cannot probe device: {} {}".format(item, e))
                 continue
@@ -83,7 +86,8 @@ class DriveProber:
 
             # Get a system drive
             drive = self.dm.parse_system_disk(device, disk, self.mtab)
-            self.drives.append(drive)
+            if drive:
+                self.drives.append(drive)
 
     def is_broken_windows_uefi(self):
         """ Determine if we booted with UEFI on a MBR Windows system """
@@ -394,10 +398,6 @@ class DiskManager:
             print("Debug: Non-existent node: {}".format(fpath))
             return
         fpath = os.path.realpath(fpath)
-        if fpath.startswith("/dev/sda"):
-            print("DEBUG: SAVING IKEYS DISK FROM DESTRUCTION")
-            return
-
         if device not in self.devices:
             self.devices.append(fpath)
 
@@ -725,9 +725,20 @@ class DiskManager:
         list_esp = list()
         partitions = dict()
 
+        blacklist = []
+
+        for mpoint in mpoints:
+            whence = mpoints[mpoint]
+            if whence == "/" or whence.startswith("/run/initramfs"):
+                blacklist.append(mpoint)
+
         # Could be a disk without a label
         if disk:
             for partition in disk.partitions:
+                if partition.path in blacklist:
+                    print("DEBUG: Skipping boot disk")
+                    return None
+
                 if not partition.fileSystem:
                     continue
 
