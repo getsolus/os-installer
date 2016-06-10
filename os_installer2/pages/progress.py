@@ -190,6 +190,22 @@ class InstallerProgressPage(BasePage):
             return self.mount_tracker[node]
         return None
 
+    def mount_esp(self, esp):
+        """ Mount the ESP into the root """
+        self.set_display_string("Mounting EFI System Partition")
+        root = self.get_installer_target_filesystem()
+        fpath = os.path.join(root, "boot/efi")
+        if not os.path.exists(fpath):
+            try:
+                os.makedirs(fpath, mode=0o755)
+            except:
+                return False
+
+        if not self.dm.do_mount(esp, fpath, "auto"):
+            return False
+        self.mount_tracker[esp] = fpath
+        return True
+
     def mount_source_filesystem(self):
         """ Mount the source and child """
         source = self._mkdtemp()
@@ -547,6 +563,20 @@ class InstallerProgressPage(BasePage):
             self.set_display_string("Failed to mount target!")
             self.installing = False
             return False
+
+        # Mount the ESP
+        if self.info.strategy.is_uefi():
+            esp = self.locate_esp()
+            if not esp:
+                self.unmount_all()
+                self.set_display_string("Failed to locate ESP!")
+                self.installing = False
+                return False
+            if not self.mount_esp(esp):
+                self.unmount_all()
+                self.set_display_string("Failed to mount ESP!")
+                self.installing = False
+                return False
 
         # Copy source -> target
         if not self.copy_system():
