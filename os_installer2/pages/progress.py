@@ -590,15 +590,6 @@ class InstallerProgressPage(BasePage):
         # immediately gain privs
         self.info.owner.get_perms_manager().up_permissions()
 
-        self.set_error_message("Bob fell off the cliff")
-        self.set_error_message("And then, like, Alice followed him")
-        self.set_error_message("And well, it was a big splash")
-        self.set_error_message("But, like, the main thing is..")
-        self.set_error_message("The install didn't work, did it?")
-
-        self.installing = False
-        return False
-
         # Simulate!
         self.set_display_string("Simulating disk operations")
         if not self.apply_disk_strategy(True):
