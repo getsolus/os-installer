@@ -153,7 +153,8 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
         target_fs = self.installer.get_installer_target_filesystem()
 
         for replacement in self.modified_files:
-            source_file = os.path.join(self.original_source, replacement[1:])
+            bname = os.path.basename(replacement)
+            source_file = os.path.join(self.original_source, bname)
             target_file = os.path.join(target_fs, replacement[1:])
 
             if not os.path.exists(source_file):
@@ -170,8 +171,6 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
             except Exception as e:
                 self.set_errors("Cannot update file: {}".format(e))
                 return False
-
-            print("DEBUG: Copied: {}".format(target_file))
 
         # Update schemas. Nasty, I know
         self.run_in_chroot("glib-compile-schemas /usr/share/glib-2.0/schemas")
