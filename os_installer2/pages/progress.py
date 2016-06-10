@@ -35,6 +35,7 @@ from os_installer2.postinstall import PostInstallBootloader
 import os
 import stat
 import parted
+import sys
 
 
 # Update 5 times a second, vs every byte copied..
@@ -75,9 +76,18 @@ class InstallerProgressPage(BasePage):
     # Long-ass steps should pulse...
     should_pulse = False
 
+    error_msgs = None
+
+    def set_error_message(self, error_msg):
+        """ Set the error message, i.e. something Super Bad happened """
+        sys.stderr.write(error_msg + '\n')
+        sys.stderr.flush()
+        self.error_msgs.append(error_msg)
+
     def __init__(self):
         BasePage.__init__(self)
 
+        self.error_msgs = []
         box = Gtk.VBox(0)
         box.set_border_width(20)
         self.pack_end(box, False, False, 0)
@@ -165,7 +175,16 @@ class InstallerProgressPage(BasePage):
 
         if not self.installing:
             print("Finished idle_monitor")
+            GLib.idle_add(self.finish_installer)
         return self.installing
+
+    def finish_installer(self):
+        """ Wrap things out and decide on the final call. """
+        if len(self.error_msgs) > 0:
+            print("That did not go as expected")
+        else:
+            print("Successful install!")
+        return False
 
     def prepare(self, info):
         self.info = info
@@ -218,27 +237,27 @@ class InstallerProgressPage(BasePage):
         source = self._mkdtemp()
         inner_path = os.path.join(source, INNER_FILESYSTEM)
         if not source:
-            self.set_display_string("Cannot mkdtemp")
+            self.set_error_message("Cannot mkdtemp")
             return False
 
         # Try to mount the squashfs
         if not self.dm.do_mount(SOURCE_FILESYSTEM, source, "auto", "loop"):
-            self.set_display_string("Cannot mount source filesystem")
+            self.set_error_message("Cannot mount source filesystem")
             return False
         self.mount_tracker[SOURCE_FILESYSTEM] = source
 
         # See if the kid exists or not
         if not os.path.exists(inner_path):
-            self.set_display_string("Cannot find {}".format(inner_path))
+            self.set_error_message("Cannot find {}".format(inner_path))
             return False
 
         inner_child = self._mkdtemp()
         # Try to mount the kid to a new temp
         if not inner_child:
-            self.set_display_string("Cannot mkdtemp")
+            self.set_error_message("Cannot mkdtemp")
             return False
         if not self.dm.do_mount(inner_path, inner_child, "auto", "loop"):
-            self.set_display_string("Cannot mount inner child")
+            self.set_error_message("Cannot mount inner child")
             return False
         self.mount_tracker[INNER_FILESYSTEM] = inner_child
 
@@ -248,7 +267,7 @@ class InstallerProgressPage(BasePage):
             size = (vfs.f_blocks - vfs.f_bfree) * vfs.f_frsize
             self.filesystem_source_size = size
         except Exception as e:
-            self.set_display_string("Cannot compute source size: {}".format(e))
+            self.set_error_message("Cannot compute source size: {}".format(e))
             return False
 
         return True
@@ -257,21 +276,21 @@ class InstallerProgressPage(BasePage):
         """ umount everything we've mounted """
         ret = True
 
-        self.set_display_string("Unmounting filesystems - might take a while")
+        self.set_error_message("Unmounting filesystems - might take a while")
 
         # Visit in reverse order
         keys = self.mount_tracker.keys()
         keys.reverse()
         for key in keys:
             if not self.dm.do_umount(self.mount_tracker[key]):
-                self.set_display_string("Cannot umount {}".format(key))
+                self.set_error_message("Cannot umount {}".format(key))
                 ret = False
 
         for tmp in self.temp_dirs:
             try:
                 os.rmdir(tmp)
             except Exception as e:
-                self.set_display_string("Cannot rmdir {}: {}".format(
+                self.set_error_message("Cannot rmdir {}: {}".format(
                     tmp, e))
                 ret = False
         return ret
@@ -295,7 +314,7 @@ class InstallerProgressPage(BasePage):
             dst.close()
             return True
         except Exception as ex:
-            self.set_display_string(ex)
+            self.set_error_message(ex)
             if input:
                 input.close()
             if dst:
@@ -323,7 +342,7 @@ class InstallerProgressPage(BasePage):
         root = self.info.strategy.get_root_partition()
         root_fs = self.get_mount_point_for(root)
         if not root_fs:
-            self.set_display_string("Missing rootfs")
+            self.set_error_message("Missing rootfs")
             return False
 
         self.filesystem_copying = True
@@ -352,7 +371,7 @@ class InstallerProgressPage(BasePage):
                     # We set the permissions up properly later
                     os.makedirs(target_dir, 0o0755)
                 except Exception as ex:
-                    self.set_display_string("Cannot create dir: {}".format(ex))
+                    self.set_error_message("Cannot create dir: {}".format(ex))
                     return False
 
             # Walk the tree from the back to restore permissions properly
@@ -398,7 +417,7 @@ class InstallerProgressPage(BasePage):
                         self.filesystem_copied_size += st.st_size
 
                 except Exception as ex:
-                    self.set_display_string("Failed to copy {}".format(
+                    self.set_error_message("Failed to copy {}".format(
                         source_path))
                     return False
 
@@ -424,7 +443,7 @@ class InstallerProgressPage(BasePage):
                     # Update progress
                     self.filesystem_copied_size += st.st_size
                 except Exception as ex:
-                    self.set_display_string("Permissions issue: {}".format(ex))
+                    self.set_error_message("Permissions issue: {}".format(ex))
                     return False
 
         self.set_display_string("Finalizing file copy")
@@ -443,7 +462,7 @@ class InstallerProgressPage(BasePage):
             time.sleep(0.5)
             count += 1
         if not os.path.exists(p):
-            self.set_display_string("Couldn't locate {}".format(p))
+            self.set_error_message("Couldn't locate {}".format(p))
             return False
         return True
 
@@ -455,10 +474,10 @@ class InstallerProgressPage(BasePage):
         table_ops = [x for x in ops if isinstance(x, DiskOpCreateDisk)]
         resizes = [x for x in ops if isinstance(x, DiskOpResizeOS)]
         if len(table_ops) > 1:
-            self.set_display_string("Wiping disk more than once, error")
+            self.set_error_message("Wiping disk more than once, error")
             return False
         if len(resizes) > 1:
-            self.set_display_string("Multiple resizes not supported")
+            self.set_error_message("Multiple resizes not supported")
             return False
 
         # Madman time: Go apply the operations. *Gulp*
@@ -480,7 +499,7 @@ class InstallerProgressPage(BasePage):
                 er = op.get_errors()
                 if not er:
                     er = "Failed to apply operation: {}".format(op.describe())
-                self.set_display_string(er)
+                self.set_error_message(er)
                 return False
             # If it created a disk, go use it.
             if isinstance(op, DiskOpCreateDisk):
@@ -499,7 +518,7 @@ class InstallerProgressPage(BasePage):
         try:
             disk.commit()
         except Exception as e:
-            self.set_display_string("Failed to update disk: {}".format(e))
+            self.set_error_message("Failed to update disk: {}".format(e))
             return False
 
         try:
@@ -516,7 +535,7 @@ class InstallerProgressPage(BasePage):
                 return False
             if not op.apply_format(disk):
                 e = op.get_errors()
-                self.set_display_string("Failed to apply format: {}".format(e))
+                self.set_error_message("Failed to apply format: {}".format(e))
                 return False
 
         return True
@@ -527,14 +546,14 @@ class InstallerProgressPage(BasePage):
 
         root = strategy.get_root_partition()
         if not root or root.strip() == "":
-            self.set_display_string("Fatal: Missing root partition")
+            self.set_error_message("Fatal: Missing root partition")
             return False
         target = self._mkdtemp()
         if not target:
-            self.set_display_string("Cannot create temporary root directory")
+            self.set_error_message("Cannot create temporary root directory")
             return False
         if not self.dm.do_mount(root, target, "auto", "rw"):
-            self.set_display_string("Cannot mount root partition")
+            self.set_error_message("Cannot mount root partition")
             return False
         self.mount_tracker[root] = target
 
@@ -553,26 +572,26 @@ class InstallerProgressPage(BasePage):
         self.set_display_string("Simulating disk operations")
         if not self.apply_disk_strategy(True):
             self.installing = False
-            self.set_display_string("Failed to simulate disk strategy")
+            self.set_error_message("Failed to simulate disk strategy")
             return False
 
         # Now do it for real.
         if not self.apply_disk_strategy(False):
             self.installing = False
-            self.set_display_string("Failed to apply disk strategy")
+            self.set_error_message("Failed to apply disk strategy")
             return False
 
         # Now mount up as it were.
         if not self.mount_source_filesystem():
             self.unmount_all()
-            self.set_display_string("Failed to mount!")
+            self.set_error_message("Failed to mount!")
             self.installing = False
             return False
 
         # TODO: Mount target filesystem
         if not self.mount_target_filesystem():
             self.unmount_all()
-            self.set_display_string("Failed to mount target!")
+            self.set_error_message("Failed to mount target!")
             self.installing = False
             return False
 
@@ -581,19 +600,19 @@ class InstallerProgressPage(BasePage):
             esp = self.locate_esp()
             if not esp:
                 self.unmount_all()
-                self.set_display_string("Failed to locate ESP!")
+                self.set_error_message("Failed to locate ESP!")
                 self.installing = False
                 return False
             if not self.mount_esp(esp):
                 self.unmount_all()
-                self.set_display_string("Failed to mount ESP!")
+                self.set_error_message("Failed to mount ESP!")
                 self.installing = False
                 return False
 
         # Copy source -> target
         if not self.copy_system():
             self.filesystem_copying = False
-            self.set_display_string("Failed to copy filesystem")
+            self.set_error_message("Failed to copy filesystem")
             self.unmount_all()
             self.installing = False
             return False
@@ -616,12 +635,12 @@ class InstallerProgressPage(BasePage):
             try:
                 b = step.apply()
                 if not b:
-                    self.set_display_string(step.get_errors())
+                    self.set_error_message(step.get_errors())
             except Exception as e:
                 b = False
                 self.set_display_string(e)
             if not b:
-                self.set_display_string(step.get_errors())
+                self.set_error_message(step.get_errors())
                 # Failed :(
                 self.in_postinstall = False
                 self.unmount_all()
@@ -634,7 +653,7 @@ class InstallerProgressPage(BasePage):
 
         # Ensure the idle monitor stops
         if not self.unmount_all():
-            self.set_display_string("Failed to unmount cleanly!")
+            self.set_error_message("Failed to unmount cleanly!")
 
         self.installing = False
 
