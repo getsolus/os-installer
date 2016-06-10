@@ -63,6 +63,7 @@ class InstallerProgressPage(BasePage):
     filesystem_source_size = 0
     filesystem_copied_size = 0
     filesystem_copying = False
+    past_simulation = False
 
     # Enabled post-install steps
     post_install_enabled = None
@@ -178,12 +179,30 @@ class InstallerProgressPage(BasePage):
             GLib.idle_add(self.finish_installer)
         return self.installing
 
+    def emit_errors(self):
+        msg = "Issues were encountered during installaton"
+        if not self.past_simulation:
+            msg = "No changes have been made to your disk as simulation " \
+                  "hasn't completed. The following errors were encountered: "
+        else:
+            msg = "Installation has failed, and changes were made to disk\n" \
+                   "The installer will now exit."
+
+        msg += "\n\n{}\n".format("\n".join(self.error_msgs))
+        d = Gtk.MessageDialog(parent=self.info.owner,
+                              flags=Gtk.DialogFlags.MODAL,
+                              type=Gtk.MessageType.ERROR,
+                              buttons=Gtk.ButtonsType.OK,
+                              message_format=msg)
+
+        d.run()
+        d.destroy()
+        sys.exit(0)
+
     def finish_installer(self):
         """ Wrap things out and decide on the final call. """
         if len(self.error_msgs) > 0:
-            print("That did not go as expected")
-            for x in self.error_msgs:
-                print(" -> {}".format(x))
+            self.emit_errors()
         else:
             print("Successful install!")
             self.info.owner.skip_page()
@@ -571,6 +590,15 @@ class InstallerProgressPage(BasePage):
         # immediately gain privs
         self.info.owner.get_perms_manager().up_permissions()
 
+        self.set_error_message("Bob fell off the cliff")
+        self.set_error_message("And then, like, Alice followed him")
+        self.set_error_message("And well, it was a big splash")
+        self.set_error_message("But, like, the main thing is..")
+        self.set_error_message("The install didn't work, did it?")
+
+        self.installing = False
+        return False
+
         # Simulate!
         self.set_display_string("Simulating disk operations")
         if not self.apply_disk_strategy(True):
@@ -578,6 +606,7 @@ class InstallerProgressPage(BasePage):
             self.set_error_message("Failed to simulate disk strategy")
             return False
 
+        self.past_simulation = True
         # Now do it for real.
         if not self.apply_disk_strategy(False):
             self.installing = False
