@@ -76,6 +76,7 @@ class InstallInfo:
 
     def __init__(self):
         self.users = list()
+        self.bootloader_install = True
 
 
 class MainWindow(Gtk.ApplicationWindow):
