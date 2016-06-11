@@ -344,7 +344,7 @@ class DiskOpResizeOS(BaseDiskOp):
                     self.new_part_off = self.part.geometry.end
                     return True
                 # check it first
-                cmd1 = "/sbin/e2fsck -f -y {}".format(self.part.path)
+                cmd1 = "/sbin/e2fsck -f -p {}".format(self.part.path)
                 try:
                     subprocess.check_output(cmd1, shell=True,
                                             stderr=subprocess.STDOUT)
