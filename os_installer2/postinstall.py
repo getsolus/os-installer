@@ -657,6 +657,7 @@ class PostInstallBootloader(PostInstallStep):
                 conf = [
                     "title Solus 1.2",
                     "linux /solus/kernel",
+                    "initrd /solus/initramfs",
                     "options root=UUID={} quiet ro".format(uuid)
                 ]
                 solconf.write("\n".join(conf) + "\n")
