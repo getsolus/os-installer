@@ -229,6 +229,20 @@ class DiskOpCreateRoot(DiskOpCreatePartition):
             return False
         return True
 
+    def apply(self, disk, simulate):
+        """ Create root partition, set to bootable on msdos """
+        b = DiskOpCreatePartition.apply(self, disk, simulate)
+        if not b:
+            return b
+        if disk.type != "msdos":
+            return True
+        try:
+            self.part.setFlag(parted.PARTITION_BOOT)
+        except Exception as e:
+            self.set_errors("Cannot set root as bootable: {}".format(e))
+            return False
+        return True
+
 
 class DiskOpUseSwap(BaseDiskOp):
     """ Use an existing swap paritition """
