@@ -297,10 +297,13 @@ class DiskOpResizeOS(BaseDiskOp):
             if self.part.fileSystem.type == "ntfs":
                 newSz = str(int(self.their_size / 1000))
 
-                check_cmd = "ntfsresize -i -f --force -v {} {}".format(
+                prefix = "/usr/sbin"
+                check_cmd = "{}/ntfsresize -i -f --force -v {} {}".format(
+                    prefix,
                     "--no-action" if simulate else "", self.part.path)
 
-                resize_cmd = "ntfsresize {} -f -f -b --size {}k {}".format(
+                resize_cmd = "{}/ntfsresize {} -f -f -b --size {}k {}".format(
+                    prefix,
                     "--no-action" if simulate else "", newSz, self.part.path)
 
                 # Check first
@@ -341,20 +344,22 @@ class DiskOpResizeOS(BaseDiskOp):
                     self.new_part_off = self.part.geometry.end
                     return True
                 # check it first
-                cmd1 = "e2fsck -f {}".format(self.part.path)
+                cmd1 = "/sbin/e2fsck -f {}".format(self.part.path)
                 try:
                     subprocess.check_output(cmd1, shell=True,
                                             stderr=subprocess.STDOUT)
                 except Exception as ex:
+                    print(ex)
                     self.set_errors(ex)
                     return False
 
-                cmd = "resize2fs {} {}K".format(
+                cmd = "/sbin/resize2fs {} {}K".format(
                     self.part.path, str(int(self.their_size / 1024)))
                 try:
                     subprocess.check_output(cmd, shell=True,
                                             stderr=subprocess.STDOUT)
                 except Exception as ex:
+                    print(ex)
                     self.set_errors(ex)
                     return False
                 c = parted.Constraint(device=self.device)
