@@ -305,14 +305,16 @@ class DiskOpResizeOS(BaseDiskOp):
 
                 # Check first
                 try:
-                    subprocess.check_call(check_cmd, shell=True)
+                    subprocess.check_output(check_cmd, shell=True,
+                                            stderr=subprocess.STDOUT)
                 except Exception as e:
                     self.set_errors(e)
                     return False
 
                 # Now resize it
                 try:
-                    subprocess.check_call(resize_cmd, shell=True)
+                    subprocess.check_output(resize_cmd, shell=True,
+                                            stderr=subprocess.STDOUT)
                 except Exception as e:
                     self.set_errors(e)
                     return False
@@ -341,7 +343,8 @@ class DiskOpResizeOS(BaseDiskOp):
                 # check it first
                 cmd1 = "e2fsck -f {}".format(self.part.path)
                 try:
-                    subprocess.check_call(cmd1, shell=True)
+                    subprocess.check_output(cmd1, shell=True,
+                                            stderr=subprocess.STDOUT)
                 except Exception as ex:
                     self.set_errors(ex)
                     return False
@@ -349,7 +352,8 @@ class DiskOpResizeOS(BaseDiskOp):
                 cmd = "resize2fs {} {}K".format(
                     self.part.path, str(int(self.their_size / 1024)))
                 try:
-                    subprocess.check_call(cmd, shell=True)
+                    subprocess.check_output(cmd, shell=True,
+                                            stderr=subprocess.STDOUT)
                 except Exception as ex:
                     self.set_errors(ex)
                     return False
