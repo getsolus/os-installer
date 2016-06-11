@@ -625,7 +625,7 @@ class PostInstallBootloader(PostInstallStep):
         uuid = get_part_uuid(root_part, True)
 
         espt = self.installer.get_esp_target()
-        cmd = "goofiboot install --path=\"{}\" --no-variables".format(espt)
+        cmd = "goofiboot install --path=\"{}\"".format(espt)
         try:
             subprocess.check_call(cmd, shell=True)
         except Exception as e:
