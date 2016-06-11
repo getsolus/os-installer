@@ -632,7 +632,9 @@ class PostInstallBootloader(PostInstallStep):
             # Update the existing goofiboot stuff, fallback to no nvvars mod
             commands = [
                 "goofiboot update --path=\"{}\"".format(espt),
-                "goofiboot update --path=\"{}\" --no-variables".format(espt)
+                "goofiboot update --path=\"{}\" --no-variables".format(espt),
+                "goofiboot install --path=\"{}\"".format(espt),
+                "goofiboot install --path=\"{}\" --no-variables".format(espt)
             ]
             # Install a fresh goofiboot, fallback to no nvvars mod
         else:
