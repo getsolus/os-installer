@@ -12,6 +12,7 @@
 #
 
 from . import format_size_local
+from . import MIN_REQUIRED_SIZE
 import re
 import os
 import subprocess
@@ -75,6 +76,11 @@ class DriveProber:
                 device = parted.getDevice(item)
                 if device.readOnly:
                     print("DEBUG: Skipping read-only device")
+                    continue
+                size = device.getLength() * device.sectorSize
+                if size < MIN_REQUIRED_SIZE:
+                    print("DEBUG: Skipping tiny drive: {}".format(
+                          device.path))
                     continue
             except Exception as e:
                 print("Cannot probe device: {} {}".format(item, e))

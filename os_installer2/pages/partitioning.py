@@ -12,13 +12,12 @@
 #
 
 from .basepage import BasePage
-from os_installer2 import format_size_local
+from os_installer2 import format_size_local, MIN_REQUIRED_SIZE
 from os_installer2.strategy import DualBootStrategy
 from os_installer2.strategy import ReplaceOSStrategy
 from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
 from os_installer2.strategy import UserPartitionStrategy
-from os_installer2.strategy import MIN_REQUIRED_SIZE
 from gi.repository import Gtk, GLib
 import sys
 import os

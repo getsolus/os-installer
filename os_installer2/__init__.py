@@ -26,6 +26,11 @@ SOURCE_FILESYSTEM = "/run/initramfs/live/LiveOS/squashfs.img"
 # The guy inside that is actually our filesystem to copy
 INNER_FILESYSTEM = "LiveOS/rootfs.img"
 
+# Absolute minimum size
+MB = 1000 * 1000
+GB = 1000 * MB
+MIN_REQUIRED_SIZE = 10 * GB
+
 
 def get_resource_path():
     bsPath = os.path.dirname(__file__)

@@ -159,8 +159,10 @@ class WhoopsPage(Gtk.VBox):
         self.pack_start(img, False, False, 10)
 
         label = Gtk.Label("<big>{}</big>".format(
-                          "Oh no! Your system has no disks available.\n"
-                          "There is nowhere to install Solus."))
+                          "Oh no! Your system has no usable disks available.\n"
+                          "There is nowhere to install Solus.\n"
+                          "Please ensure you have a minimum of 10GB available"
+                          "\nstorage to complete a full Solus installation."))
         label.set_property("xalign", 0.5)
         label.set_use_markup(True)
         self.pack_start(label, False, False, 10)

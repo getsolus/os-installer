@@ -20,10 +20,8 @@ from .diskops import DiskOpCreateESP
 from .diskops import DiskOpFormatRoot
 from .diskops import DiskOpResizeOS
 from .diskops import DiskOpUseSwap
+from . import MIN_REQUIRED_SIZE, MB, GB
 
-MB = 1000 * 1000
-GB = 1000 * MB
-MIN_REQUIRED_SIZE = 10 * GB
 SWAP_USE_THRESHOLD = 15 * GB
 ESP_FREE_REQUIRED = 60 * MB
 ESP_MIN_SIZE = 512
