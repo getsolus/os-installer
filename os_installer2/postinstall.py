@@ -706,9 +706,9 @@ class PostInstallBootloader(PostInstallStep):
 
         try:
             if os.path.exists(tkernel):
-                print("Removing {}".format(tkernel))
+                os.remove(tkernel)
             if os.path.exists(tinitrd):
-                print("Removing {}".format(tinitrd))
+                os.remove(tinitrd)
             shutil.copy(kernel, tkernel)
             shutil.copy(initrd, tinitrd)
         except Exception as e:
