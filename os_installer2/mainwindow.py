@@ -26,7 +26,6 @@ from .pages.users import InstallerUsersPage
 from .pages.summary import InstallerSummaryPage
 from .pages.progress import InstallerProgressPage
 from .pages.complete import InstallationCompletePage
-from . import join_resource_path as jrp
 import sys
 import threading
 import traceback
@@ -111,10 +110,6 @@ class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, app):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
-        try:
-            self.set_icon_from_file(jrp("install-solus-192-arc-style.svg"))
-        except:
-            pass
 
         self.set_title("Installer")
         self.connect("delete-event", self.quit_handler)
