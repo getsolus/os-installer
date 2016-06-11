@@ -625,11 +625,33 @@ class PostInstallBootloader(PostInstallStep):
         uuid = get_part_uuid(root_part)
 
         espt = self.installer.get_esp_target()
-        cmd = "goofiboot install --path=\"{}\"".format(espt)
-        try:
-            subprocess.check_call(cmd, shell=True)
-        except Exception as e:
-            self.set_errors("Unable to install goofiboot: {}".format(e))
+        ofile = os.path.join(self.get_efi_dir(espt),
+                             "goofiboot/goofibootx64.efi")
+
+        if os.path.exists(ofile):
+            # Update the existing goofiboot stuff, fallback to no nvvars mod
+            commands = [
+                "goofiboot update --path=\"{}\"".format(espt),
+                "goofiboot update --path=\"{}\" --no-variables".format(espt)
+            ]
+            # Install a fresh goofiboot, fallback to no nvvars mod
+        else:
+            commands = [
+                "goofiboot install --path=\"{}\"".format(espt),
+                "goofiboot install --path=\"{}\" --no-variables".format(espt)
+            ]
+
+        updated_uefi = False
+        for cmd in commands:
+            try:
+                subprocess.check_call(cmd, shell=True)
+                updated_uefi = True
+                break
+            except:
+                pass
+
+        if not updated_uefi:
+            self.set_errors("Failed to install goofiboot")
             return False
 
         ldir = self.get_loader_dir(espt)
