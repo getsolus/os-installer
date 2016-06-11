@@ -732,8 +732,14 @@ class DiskManager:
             if whence == "/" or whence.startswith("/run/initramfs"):
                 blacklist.append(mpoint)
 
+        # i.e. /dev/sda, full write mount
+        if device.path in blacklist:
+            print("DEBUG: Skipping boot disk")
+            return None
+
         # Could be a disk without a label
         if disk:
+            # i.e. /dev/sda1, partition mount
             for partition in disk.partitions:
                 if partition.path in blacklist:
                     print("DEBUG: Skipping boot disk")
