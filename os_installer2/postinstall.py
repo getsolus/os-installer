@@ -559,7 +559,7 @@ class PostInstallFstab(PostInstallStep):
 
             uuid = get_part_uuid(swap_path)
             if uuid:
-                im = "UUID={}\tswap\tswap\tsw\t0\t0".format(swap_path)
+                im = "UUID={}\tswap\tswap\tsw\t0\t0".format(uuid)
                 appends.append(im)
             else:
                 appends.append("{}\tswap\tswap\tsw\t0\t0".format(swap_path))
