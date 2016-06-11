@@ -109,7 +109,8 @@ class ChooserPage(Gtk.VBox):
             self.strategy_box.pack_start(button, False, False, 8)
             button.show_all()
         # Force selection
-        self.on_radio_toggle(leader)
+        if leader:
+            self.on_radio_toggle(leader)
 
     def reset_options(self):
         """ Reset available strategies """
