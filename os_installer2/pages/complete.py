@@ -40,7 +40,7 @@ class InstallationCompletePage(BasePage):
         lab.set_property("margin-top", 5)
         lab.set_property("margin-bottom", 5)
 
-        lab = Gtk.Label("Restart and remove any installation media to start "
+        lab = Gtk.Label("Restart and then remove any installation media to start "
                         "using your new operating system.")
         lab.set_use_markup(True)
         lab.set_halign(Gtk.Align.CENTER)
