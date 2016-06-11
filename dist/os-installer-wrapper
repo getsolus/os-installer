@@ -1,3 +1,3 @@
 #!/bin/bash
-exec pkexec /usr/bin/os-installer-gtk
+nohup pkexec /usr/bin/os-installer-gtk
 
