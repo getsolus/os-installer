@@ -227,13 +227,7 @@ class DiskOpCreateRoot(DiskOpCreatePartition):
         except Exception as e:
             self.set_errors("{}: {}".format(self.part.path, e))
             return False
-        if disk.type != "msdos":
-            return True
-        try:
-            self.part.setFlag(parted.PARTITION_BOOT)
-        except Exception as e:
-            self.set_errors("Cannot set root as bootable: {}".format(e))
-            return False
+        return True
 
     def apply(self, disk, simulate):
         """ Create root partition  """
