@@ -622,7 +622,7 @@ class PostInstallBootloader(PostInstallStep):
         """ Take the UEFI approach to bootloader configuration """
         bpath = self.installer.get_installer_target_filesystem()
         root_part = self.info.strategy.get_root_partition()
-        uuid = get_part_uuid(root_part, True)
+        uuid = get_part_uuid(root_part)
 
         espt = self.installer.get_esp_target()
         cmd = "goofiboot install --path=\"{}\"".format(espt)
@@ -657,7 +657,7 @@ class PostInstallBootloader(PostInstallStep):
                 conf = [
                     "title Solus 1.2",
                     "linux /solus/kernel",
-                    "options root=PARTUUID={} quiet ro".format(uuid)
+                    "options root=UUID={} quiet ro".format(uuid)
                 ]
                 solconf.write("\n".join(conf) + "\n")
         except Exception as e:
