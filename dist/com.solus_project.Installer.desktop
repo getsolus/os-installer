@@ -1,9 +1,9 @@
 [Desktop Entry]
 Name=Install OS
-GenericName=OS Installer
-Comment=Install the operating system to disk
-Exec=os-installer-wrapper
 Icon=system-software-install
-Terminal=False
+Exec=os-installer-wrapper
+Terminal=false
 Type=Application
-Categories=System;
+Categories=GNOME;GTK;System;
+Keywords=Install;SystemSettings;
+
