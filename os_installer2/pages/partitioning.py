@@ -40,6 +40,11 @@ class ManualPage(Gtk.VBox):
 
     info = None
     store_mountpoints = None
+    selection_label = None
+
+    selection_home = None
+    selection_root = None
+    selection_swap = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -53,6 +58,11 @@ class ManualPage(Gtk.VBox):
         lab.set_margin_top(20)
         lab.set_margin_bottom(20)
         lab.set_halign(Gtk.Align.START)
+
+        self.selection_label = Gtk.Label("")
+        self.selection_label.set_margin_bottom(5)
+        self.pack_start(self.selection_label, False, False, 0)
+        self.selection_label.set_halign(Gtk.Align.START)
 
         self.store_mountpoints = Gtk.ListStore(str, str)
         self.store_mountpoints.append(["/", "/"])
@@ -160,11 +170,14 @@ class ManualPage(Gtk.VBox):
         elif text == '/home':
             self.set_home_partition(path)
 
+        self.update_selection()
+
     def set_root_partition(self, path):
         """ Update the root partition """
         model = self.treeview.get_model()
         row = model[path]
         active_part = row[INDEX_PARTITION_PATH]
+        self.selection_root = active_part
         for p in model:
             skip_part = p[INDEX_PARTITION_PATH]
             skip_mount = p[INDEX_PARTITION_MOUNT_AS]
@@ -186,6 +199,7 @@ class ManualPage(Gtk.VBox):
         model = self.treeview.get_model()
         row = model[path]
         active_part = row[INDEX_PARTITION_PATH]
+        self.selection_home = active_part
         for p in model:
             skip_part = p[INDEX_PARTITION_PATH]
             skip_mount = p[INDEX_PARTITION_MOUNT_AS]
@@ -266,6 +280,23 @@ class ManualPage(Gtk.VBox):
         self.info = info
         info.owner.set_can_next(False)
         self.populate_ui()
+
+    def update_selection(self):
+        """ Test if we can move forward now, i.e. everything is valid... """
+
+        string_sets = [
+            (self.selection_root, "<b>Root partition:</b> {}"),
+            (self.selection_home, "<b>Home partition:</b> {}"),
+            (self.selection_swap, "<b>Swap partition:</b> {}")
+        ]
+
+        lab = []
+
+        for sel, display in string_sets:
+            if not sel:
+                continue
+            lab.append(display.format(sel))
+        self.selection_label.set_markup("\t\t".join(lab))
 
 
 class DualBootPage(Gtk.VBox):
