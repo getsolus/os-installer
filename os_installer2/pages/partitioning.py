@@ -18,6 +18,7 @@ from os_installer2.strategy import ReplaceOSStrategy
 from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
 from os_installer2.strategy import UserPartitionStrategy
+from os_installer2.diskman import SystemPartition
 from gi.repository import Gtk, GLib
 import sys
 import os
@@ -38,6 +39,7 @@ class ManualPage(Gtk.VBox):
     """ Manual partitioning page, mostly TreeView with gparted proxy """
 
     info = None
+    store_mountpoints = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -48,6 +50,12 @@ class ManualPage(Gtk.VBox):
         lab.set_margin_top(20)
         lab.set_margin_bottom(20)
         lab.set_halign(Gtk.Align.START)
+
+        self.store_mountpoints = Gtk.ListStore(str, str)
+        self.store_mountpoints.append(["/", "/"])
+        self.store_mountpoints.append(["/home", "/home"])
+        self.store_mountpoints.append(["swap", "swap"])
+        self.store_mountpoints.append([None, None])
 
         self.treeview = Gtk.TreeView()
         self.scrl = Gtk.ScrolledWindow(None, None)
@@ -65,8 +73,6 @@ class ManualPage(Gtk.VBox):
         self.column3.add_attribute(ren, "markup", INDEX_PARTITION_PATH)
         self.treeview.append_column(self.column3)
 
-        # Type
-        ren = Gtk.CellRendererText()
         self.column4 = Gtk.TreeViewColumn("Type", ren)
         self.column4.add_attribute(ren, "markup", INDEX_PARTITION_TYPE)
         self.treeview.append_column(self.column4)
@@ -78,9 +84,13 @@ class ManualPage(Gtk.VBox):
         self.treeview.append_column(self.column5)
 
         # mount point
-        ren = Gtk.CellRendererText()
-        self.column6 = Gtk.TreeViewColumn("Mount point", ren)
-        self.column6.add_attribute(ren, "markup", INDEX_PARTITION_MOUNT_AS)
+        ren = Gtk.CellRendererCombo()
+        ren.set_property("editable", True)
+        ren.set_property("model", self.store_mountpoints)
+        ren.set_property("has-entry", False)
+        ren.set_property("text-column", 0)
+        ren.connect("edited", self.on_mount_changed)
+        self.column6 = Gtk.TreeViewColumn("Mount point", ren, text=4)
         self.treeview.append_column(self.column6)
 
         # format
@@ -100,9 +110,6 @@ class ManualPage(Gtk.VBox):
         self.column9 = Gtk.TreeViewColumn("Free space", ren)
         self.column9.add_attribute(ren, "markup", INDEX_PARTITION_FREE_SPACE)
         self.treeview.append_column(self.column9)
-
-        self.treeview.get_selection().connect("changed",
-                                              self._partition_selected)
 
         toolbar = Gtk.Toolbar()
         toolbar.get_style_context().add_class(Gtk.STYLE_CLASS_INLINE_TOOLBAR)
@@ -138,25 +145,82 @@ class ManualPage(Gtk.VBox):
         self.queue_draw()
         # TODO: Refresh
 
-    def _partition_selected(self, selection):
-        model, treeiter = selection.get_selected()
+    def on_mount_changed(self, widget, path, text):
+        print("{} = {}".format(path, text))
+        model = self.treeview.get_model()
+        model[path][4] = text
 
-        if treeiter is None:
-            self.root.set_sensitive(False)
-            self.swap.set_sensitive(False)
-            return
+    def push_partition(self, drive, part):
+        model = self.treeview.get_model()
+        os = None
+        if part.path in drive.operating_systems:
+            os = drive.operating_systems[part.path].name
 
-        part = model[treeiter][INDEX_PARTITION_OBJECT]
-        swap = part.type == "swap"
-        self.root.set_sensitive(part.type != "" and not swap)
-        self.swap.set_sensitive(part.type != "" and swap)
+        fs = part.partition.fileSystem
+        fsname = None
+        if fs and fs.type:
+            fsname = fs.type
 
-        self.selected_row = treeiter
-        self.selected_partition = part
+        model.append([
+            part.path,
+            fsname,
+            os,
+            None,
+            None,
+            part.sizeString,
+            part.freespace_string,
+            part])
+        """
+        INDEX_PARTITION_PATH = 0
+        INDEX_PARTITION_TYPE = 1
+        INDEX_PARTITION_DESCRIPTION = 2
+        INDEX_PARTITION_FORMAT_AS = 3
+        INDEX_PARTITION_MOUNT_AS = 4
+        INDEX_PARTITION_SIZE = 5
+        INDEX_PARTITION_FREE_SPACE = 6
+        INDEX_PARTITION_OBJECT = 7
+        """
+
+    def push_swap(self, part):
+        model = self.treeview.get_model()
+        partSize = format_size_local(part.getLength() *
+                                     part.disk.device.sectorSize)
+        model.append([
+            part.path,
+            "swap",
+            None,
+            None,
+            None,
+            partSize,
+            None,
+            None])
+
+    def populate_ui(self):
+        prober = self.info.prober
+
+        model = Gtk.ListStore(str, str, str, str,
+                              str, str, str, SystemPartition)
+        self.treeview.set_model(model)
+        for drive in prober.drives:
+            for swap in drive.get_swap_partitions():
+                try:
+                    print(swap)
+                    self.push_swap(swap)
+                except Exception as e:
+                    print("Swap problem: {}".format(e))
+
+            for part in sorted(drive.partitions):
+                try:
+                    part_prop = drive.partitions[part]
+                    self.push_partition(drive, part_prop)
+                except Exception as e:
+                    print("Init problem: {}".format(e))
+            print(drive)
 
     def update_strategy(self, info):
         self.info = info
         info.owner.set_can_next(False)
+        self.populate_ui()
 
 
 class DualBootPage(Gtk.VBox):

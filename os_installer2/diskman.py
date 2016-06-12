@@ -13,6 +13,7 @@
 
 from . import format_size_local
 from . import MIN_REQUIRED_SIZE
+from gi.repository import GObject
 import re
 import os
 import subprocess
@@ -121,8 +122,10 @@ class DriveProber:
         return False
 
 
-class SystemPartition:
+class SystemPartition(GObject.Object):
     """ Wrapper around partition information """
+
+    __gtype_name__ = "OsSystemPartition"
 
     # Our parted.Partition reference
     partition = None
@@ -199,6 +202,7 @@ class SystemPartition:
             break
 
     def __init__(self, partition, mount_point, dm):
+        GObject.GObject.__init__(self)
         self.partition = partition
         self.path = partition.path
 
