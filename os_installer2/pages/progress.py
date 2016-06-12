@@ -36,6 +36,7 @@ import os
 import stat
 import parted
 import sys
+import shutil
 
 # Update 5 times a second, vs every byte copied..
 UPDATE_FREQUENCY = 1000 / 5
@@ -582,6 +583,17 @@ class InstallerProgressPage(BasePage):
         print("DEBUG: / ({}) mounted at {}".format(root, target))
         return True
 
+    def maybe_nuke_live(self):
+        fpath = os.path.join(self.get_installer_target_filesystem(),
+                             "home/live")
+        if not os.path.exists(fpath):
+            return True
+        try:
+            shutil.rmtree(fpath)
+        except Exception:
+            return False
+        return True
+
     def maybe_mount_home(self):
         strategy = self.info.strategy
         home = strategy.get_home_dir()
@@ -655,6 +667,12 @@ class InstallerProgressPage(BasePage):
             self.installing = False
             return False
         self.filesystem_copying = False
+
+        if not self.maybe_nuke_live():
+            self.set_error_message("Failed to clean /home")
+            self.unmount_all()
+            self.installing = False
+            return False
 
         if not self.maybe_mount_home():
             self.set_error_message("Failed to mount /home")
