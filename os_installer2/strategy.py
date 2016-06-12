@@ -624,7 +624,7 @@ class UserPartitionStrategy(DiskStrategy):
 
     def get_display_string(self):
         sz = "Assign mount points to partitions you have previously created." \
-             "\nThese must already exist prior to launching the installer. If" \
+             "\nThese must already exist prior to launching the installer. If"\
              "\nyou modify them, please restart the installer."
         return sz
 

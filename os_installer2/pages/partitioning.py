@@ -18,11 +18,9 @@ from os_installer2.strategy import ReplaceOSStrategy
 from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
 from os_installer2.strategy import UserPartitionStrategy
-from os_installer2.diskman import SystemPartition, DriveProber
-from gi.repository import Gtk, GLib
+from os_installer2.diskman import SystemPartition
+from gi.repository import Gtk
 import sys
-import os
-import threading
 
 
 INDEX_PARTITION_PATH = 0
