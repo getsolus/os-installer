@@ -360,7 +360,7 @@ class DiskOpResizeOS(BaseDiskOp):
                     self.set_errors(ex)
                     return False
 
-                print("Resizing to constraint of {}".format(new_size)
+                print("Resizing to constraint of {}".format(new_size))
                 c = parted.Constraint(device=self.device)
                 c_start = self.part.geometry.start
                 c_end = self.part.geometry.start + nlen
