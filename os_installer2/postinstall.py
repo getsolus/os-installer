@@ -547,7 +547,9 @@ class PostInstallFstab(PostInstallStep):
             if isinstance(op, DiskOpUseHome):
                 huuid = get_part_uuid(op.home_part.path)
                 fs = op.home_part_fs
+                desc = "# {} at time of installation".format(op.home_part.path)
                 i = "UUID={}\t/home\t{}\trw,relatime,errors=remount-ro\t0\t0"
+                appends.append(desc)
                 appends.append(i.format(huuid, fs))
                 continue
             if disk.type == "gpt" and strat.is_uefi():
