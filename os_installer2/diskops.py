@@ -368,7 +368,7 @@ class DiskOpResizeOS(BaseDiskOp):
                                                     constraint=c,
                                                     start=c_start,
                                                     end=c_end)
-                self.new_part_off = self.part.geometry.end
+                self.new_part_off = c_end
             else:
                 return False
         except Exception as e:
