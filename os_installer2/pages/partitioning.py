@@ -161,6 +161,11 @@ class ManualPage(Gtk.VBox):
     def on_mount_changed(self, widget, path, text):
         print("{} = {}".format(path, text))
         model = self.treeview.get_model()
+
+        if text is None or text.strip() == '':
+            self.nullify_selection(path)
+            return
+
         model[path][4] = text
 
         if text == '/':
@@ -189,6 +194,10 @@ class ManualPage(Gtk.VBox):
             if skip_mount == '/':
                 p[INDEX_PARTITION_MOUNT_AS] = None
                 p[INDEX_PARTITION_FORMAT] = False
+                if self.selection_home == active_part:
+                    self.selection_home = None
+                if self.selection_swap == active_part:
+                    self.selection_swap = None
 
     def set_swap_partition(self, path):
         """ Update the swap partition """
@@ -204,6 +213,28 @@ class ManualPage(Gtk.VBox):
             # Reset anyone trying to be swap..
             if skip_mount == 'swap':
                 p[INDEX_PARTITION_MOUNT_AS] = None
+                if self.selection_home == active_part:
+                    self.selection_home = None
+                if self.selection_root == active_part:
+                    self.selection_root = None
+
+    def nullify_selection(self, path):
+        allowed = ['/', '/home', 'swap']
+
+        model = self.treeview.get_model()
+        row = model[path]
+        sel_for = row[INDEX_PARTITION_MOUNT_AS]
+        if sel_for not in allowed:
+            return
+        row[INDEX_PARTITION_MOUNT_AS] = None
+        row[INDEX_PARTITION_FORMAT] = False
+        if sel_for == '/':
+            self.selection_root = None
+        elif sel_for == '/home':
+            self.selection_home = None
+        else:
+            self.selection_swap = None
+        self.update_selection()
 
     def set_home_partition(self, path):
         """ Update the home partition """
@@ -219,6 +250,10 @@ class ManualPage(Gtk.VBox):
             # Reset anyone trying to be /home..
             if skip_mount == '/home':
                 p[INDEX_PARTITION_MOUNT_AS] = None
+                if self.selection_swap == active_part:
+                    self.selection_swap = None
+                if self.selection_root == active_part:
+                    self.selection_root = None
 
     def push_partition(self, drive, part):
         model = self.treeview.get_model()
@@ -305,6 +340,8 @@ class ManualPage(Gtk.VBox):
 
         for sel, display in string_sets:
             if not sel:
+                continue
+            if sel == "":
                 continue
             lab.append(display.format(sel))
         self.selection_label.set_markup("\t\t".join(lab))
