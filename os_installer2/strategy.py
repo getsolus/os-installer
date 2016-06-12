@@ -597,6 +597,13 @@ class UserPartitionStrategy(DiskStrategy):
                 continue
             return op.path
 
+    def get_root_partition(self):
+        """ Get our root partition """
+        for op in self.get_operations():
+            if isinstance(op, DiskOpFormatRoot):
+                return op.part.path
+        return None
+
     def set_root_partition(self, part):
         """ Set the root partition to use """
         self.root_part = part
