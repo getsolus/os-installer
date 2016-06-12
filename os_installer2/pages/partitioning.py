@@ -47,6 +47,7 @@ class ManualPage(Gtk.VBox):
     selection_root = None
     selection_root_size = None
     selection_swap = None
+    cur_strategy = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -336,7 +337,10 @@ class ManualPage(Gtk.VBox):
     def update_strategy(self, info):
         self.info = info
         info.owner.set_can_next(False)
-        self.populate_ui()
+        if self.info.strategy != self.cur_strategy:
+            self.populate_ui()
+        self.cur_strategy = self.info.strategy
+        self.update_selection()
 
     def update_selection(self):
         """ Test if we can move forward now, i.e. everything is valid... """
