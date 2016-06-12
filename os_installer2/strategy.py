@@ -166,15 +166,18 @@ class DiskStrategy:
             paths.reverse()
             return paths
         esps = self.dp.collect_esp()
-        if len(esps) == 0:
+        if len(esps) == 0 and not isinstance(self, UserPartitionStrategy):
             # Create a new ESP
             return [("Create new ESP on {}".format(self.drive.path), "c")]
         cand = self.get_suitable_esp()
         # Have an ESP and it's not good enough for use.
         if not cand:
-            self.set_errors(
-                "ESP is too small: {} free space remaining".format(
-                    cand.freespace_string))
+            if esps:
+                self.set_errors(
+                    "ESP is too small: {} free space remaining".format(
+                        esps[0].freespace_string))
+            else:
+                self.set_errors("No usable ESP found on this system")
             return []
         return [(self.dsc(cand), cand.path)]
 
