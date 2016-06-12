@@ -155,12 +155,13 @@ class SystemPartition:
         return self.size
 
     def build_ntfs_space(self):
+        """ Figure out ntfs minimum size """
         cmd = "LANG=C ntfsresize -im --no-action {}".format(self.path)
 
         try:
             o = subprocess.check_output(cmd, shell=True)
         except Exception as ex:
-            print("Cannot scan ntfs: {}".format(ex))
+            print("Cannot resize ntfs: {}".format(ex))
             return
 
         for l in o.split("\n"):
@@ -168,8 +169,32 @@ class SystemPartition:
                 continue
             if "MB" not in l:
                 continue
-            min_size = long(l.split(":")[-1])
+            min_size = long(l.split(":")[-1].strip())
             self.min_size = min_size * 1000 * 1000
+            self.resizable = True
+            break
+
+    def build_ext_space(self):
+        """ Figure out ext* min size """
+        cmd = "LANG=C resize2fs -P {}".format(self.path)
+
+        try:
+            o = subprocess.check_output(cmd, shell=True)
+        except Exception as ex:
+            print("Cannot resize ext4: {}".format(ex))
+            return
+
+        for l in o.split("\n"):
+            if ":" not in l:
+                continue
+            if "minimum size" not in l:
+                continue
+            min_size = long(l.split(":")[-1].strip())
+            self.min_size = min_size * 4096 / 1024
+
+            # Handle 1/2k blocks
+            if self.min_size < self.usedspace:
+                self.min_size = self.usedspace
             self.resizable = True
             break
 
@@ -203,6 +228,11 @@ class SystemPartition:
                 self.build_ntfs_space()
             except Exception as e:
                 print("Undefined error in ntfs: {}".format(e))
+        elif fs.type in ["ext2", "ext", "ext3", "ext4"]:
+            try:
+                self.build_ext_space()
+            except Exception as e:
+                print("Undefined error in ext*: {}".format(e))
 
 
 class SystemDrive:
