@@ -18,7 +18,7 @@ from os_installer2.strategy import ReplaceOSStrategy
 from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
 from os_installer2.strategy import UserPartitionStrategy
-from os_installer2.diskman import SystemPartition
+from os_installer2.diskman import SystemPartition, DriveProber
 from gi.repository import Gtk, GLib
 import sys
 import os
@@ -153,12 +153,26 @@ class ManualPage(Gtk.VBox):
             os.system("gparted")
         except:
             pass
+
+        perms = self.info.owner.get_perms_manager()
+        dm = self.info.owner.get_disk_manager()
+
+        prober = DriveProber(dm)
+        self.info.prober = prober
+        self.info.prober.probe()
         perms.down_permissions()
+        self.info.invalidated = True
+        self.selection_root = None
+        self.selection_home = None
+        self.selection_swap = None
+
         GLib.idle_add(self.restore_ui)
 
     def restore_ui(self):
         self.info.owner.set_sensitive(True)
         self.queue_draw()
+        self.populate_ui()
+        self.update_selection()
         # TODO: Refresh
 
     def on_mount_changed(self, widget, path, text):

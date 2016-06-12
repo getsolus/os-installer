@@ -283,8 +283,10 @@ class InstallerDiskLocationPage(BasePage):
 
     def init_view(self):
         """ Prepare for viewing... """
-        if self.had_init:
+        if self.had_init and not self.info.invalidated:
             return
+        self.info.invalidated = False
+        self.can_continue = False
         self.had_init = True
         self.stack.set_visible_child_name("loading")
         self.spinner.start()

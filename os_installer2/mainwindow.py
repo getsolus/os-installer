@@ -73,6 +73,8 @@ class InstallInfo:
     bootloader_sz = None
     bootloader_install = False
 
+    invalidated = False
+
     def __init__(self):
         self.users = list()
         self.bootloader_install = True
