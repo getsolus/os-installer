@@ -61,6 +61,9 @@ class DiskStrategy:
 
     supports_extended_partition = False
 
+    def get_home_dir(self):
+        return None
+
     def get_root_partition(self):
         print("FATAL: Unimplemented strategy!!")
         return None
@@ -587,6 +590,12 @@ class UserPartitionStrategy(DiskStrategy):
     home_format = False
     swap_part = None
     swap_format = False
+
+    def get_home_dir(self):
+        for op in self.get_operations():
+            if not isinstance(op, DiskOpUseHome):
+                continue
+            return op.path
 
     def set_root_partition(self, part):
         """ Set the root partition to use """

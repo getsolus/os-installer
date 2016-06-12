@@ -581,6 +581,21 @@ class InstallerProgressPage(BasePage):
         self.mount_tracker[root] = target
 
         print("DEBUG: / ({}) mounted at {}".format(root, target))
+        return True
+
+    def maybe_mount_home(self):
+        strategy = self.info.strategy
+        home = strategy.get_home_dir()
+        if not home:
+            return True
+        target = os.path.join(self.get_installer_target_filesystem(),
+                              "home")
+        if not self.dm.do_mount(home, target, "auto", "rw"):
+            self.set_error_message("Cannot mount home partition")
+            return False
+        self.mount_tracker[home] = target
+
+        print("DEBUG: /home ({}) mounted at {}".format(home, target))
         # TODO: Mount home if it is needed
         return True
 
@@ -641,6 +656,12 @@ class InstallerProgressPage(BasePage):
             self.installing = False
             return False
         self.filesystem_copying = False
+
+        if not self.maybe_mount_home():
+            self.set_error_message("Failed to mount /home")
+            self.unmount_all()
+            self.installing = False
+            return False
 
         time.sleep(1)
         self.set_display_string("Initializing post-installs")
