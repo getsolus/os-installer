@@ -34,6 +34,7 @@ INDEX_PARTITION_OBJECT = 7
 INDEX_PARTITION_SIZE_NUM = 8
 
 ACCEPTABLE_FS_TYPES = ["ext", "ext2", "ext3", "ext4"]
+NO_HAZ_ASSIGN = "Unassigned"
 
 
 class ManualPage(Gtk.VBox):
@@ -73,7 +74,7 @@ class ManualPage(Gtk.VBox):
         self.store_mountpoints.append(["/", "/"])
         self.store_mountpoints.append(["/home", "/home"])
         self.store_mountpoints.append(["swap", "swap"])
-        self.store_mountpoints.append([None, None])
+        self.store_mountpoints.append([NO_HAZ_ASSIGN, NO_HAZ_ASSIGN])
 
         self.treeview = Gtk.TreeView()
         self.scrl = Gtk.ScrolledWindow(None, None)
@@ -155,7 +156,7 @@ class ManualPage(Gtk.VBox):
     def on_mount_changed(self, widget, path, text):
         model = self.treeview.get_model()
 
-        if text is None or text.strip() == '':
+        if text is None or text.strip() == '' or text == NO_HAZ_ASSIGN:
             self.nullify_selection(path)
             return
 
@@ -186,7 +187,7 @@ class ManualPage(Gtk.VBox):
                 continue
             # Reset anyone trying to be root..
             if skip_mount == '/':
-                p[INDEX_PARTITION_MOUNT_AS] = None
+                p[INDEX_PARTITION_MOUNT_AS] = NO_HAZ_ASSIGN
                 p[INDEX_PARTITION_FORMAT] = False
                 if self.selection_home == active_part:
                     self.selection_home = None
@@ -209,7 +210,7 @@ class ManualPage(Gtk.VBox):
                 continue
             # Reset anyone trying to be swap..
             if skip_mount == 'swap':
-                p[INDEX_PARTITION_MOUNT_AS] = None
+                p[INDEX_PARTITION_MOUNT_AS] = NO_HAZ_ASSIGN
                 p[INDEX_PARTITION_FORMAT] = False
                 if self.selection_home == active_part:
                     self.selection_home = None
@@ -224,7 +225,7 @@ class ManualPage(Gtk.VBox):
         sel_for = row[INDEX_PARTITION_MOUNT_AS]
         if sel_for not in allowed:
             return
-        row[INDEX_PARTITION_MOUNT_AS] = None
+        row[INDEX_PARTITION_MOUNT_AS] = NO_HAZ_ASSIGN
         row[INDEX_PARTITION_FORMAT] = False
         if sel_for == '/':
             self.selection_root = None
@@ -250,7 +251,7 @@ class ManualPage(Gtk.VBox):
                 continue
             # Reset anyone trying to be /home..
             if skip_mount == '/home':
-                p[INDEX_PARTITION_MOUNT_AS] = None
+                p[INDEX_PARTITION_MOUNT_AS] = NO_HAZ_ASSIGN
                 p[INDEX_PARTITION_FORMAT] = False
                 if self.selection_swap == active_part:
                     self.selection_swap = None
@@ -275,7 +276,7 @@ class ManualPage(Gtk.VBox):
             fsname,
             os,
             False,
-            None,
+            NO_HAZ_ASSIGN,
             part.sizeString,
             part.freespace_string,
             part,
@@ -303,7 +304,7 @@ class ManualPage(Gtk.VBox):
             "swap",
             None,
             False,
-            None,
+            NO_HAZ_ASSIGN,
             partSize,
             None,
             None,
