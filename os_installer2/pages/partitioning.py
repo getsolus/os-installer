@@ -158,6 +158,7 @@ class ManualPage(Gtk.VBox):
             return
 
         row[INDEX_PARTITION_FORMAT] = not row[INDEX_PARTITION_FORMAT]
+        self.update_selection()
 
     def launch_gparted(self, btn, udata=None):
         """ Send off a thread """
