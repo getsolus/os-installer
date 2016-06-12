@@ -502,9 +502,13 @@ class ReplaceOSStrategy(DiskStrategy):
         # Require table
         if not self.drive.disk:
             return False
-        if self.is_uefi() and self.drive.disk.type != "gpt":
-            # This disk is no good
-            return False
+
+        if self.is_uefi():
+            if self.drive.disk.type != "gpt":
+                return False
+        else:
+            if self.drive.disk.type != "msdos":
+                return False
 
         self.potential_spots = []
 
