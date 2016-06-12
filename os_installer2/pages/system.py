@@ -176,3 +176,7 @@ class InstallerSystemPage(BasePage):
         if err:
             self.error_label2.set_label(
                 "Failed to find location for bootloader: {}".format(err))
+        else:
+            self.check_boot.set_active(False)
+            self.error_label2.set_label(
+                "Warning: Cannot find a valid bootloader location (MBR disk)")
