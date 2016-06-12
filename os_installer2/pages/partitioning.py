@@ -45,7 +45,10 @@ class ManualPage(Gtk.VBox):
         Gtk.VBox.__init__(self)
 
         lab = Gtk.Label("Select custom mount points to use with Solus from "
-                        "the available partition selection below.")
+                        "the available partition selection below.\n"
+                        "Only available system partitions and swap will be "
+                        "displayed here. Use gparted to edit partitions\nin "
+                        "order for them to be displayed.")
         self.pack_start(lab, False, False, 0)
         lab.set_margin_top(20)
         lab.set_margin_bottom(20)
