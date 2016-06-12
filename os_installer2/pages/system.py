@@ -104,7 +104,7 @@ class InstallerSystemPage(BasePage):
 
     def check_forward(self):
         """ Determine if we can forward/back """
-        bs = [self.info.hostname, self.check_boot.get_active()]
+        bs = [self.info.hostname, self.info.bootloader]
         misfires = [x for x in bs if not x]
         if len(misfires) == 0:
             self.info.owner.set_can_next(True)
@@ -134,7 +134,7 @@ class InstallerSystemPage(BasePage):
             self.info.hostname = text
         else:
             self.info.hostname = None
-        self.info.owner.set_can_next(can_fwd)
+        self.check_forward()
 
     def get_title(self):
         return "System Settings"
@@ -171,5 +171,9 @@ class InstallerSystemPage(BasePage):
         self.info.owner.set_can_next(False)
         err = info.strategy.get_errors()
         # UEFI specific
-        self.error_label2.set_label(
-            "Failed to find location for bootloader: {}".format(err))
+        if err:
+            self.error_label2.set_label(
+                "Failed to find location for bootloader: {}".format(err))
+        else:
+            self.error_label2.set_label(
+                "Cannot find a valid bootloader location (MBR disk)")
