@@ -162,8 +162,18 @@ class ManualPage(Gtk.VBox):
 
     def set_root_partition(self, path):
         """ Update the root partition """
-        print("Updating root partition")
-        pass
+        model = self.treeview.get_model()
+        row = model[path]
+        active_part = row[INDEX_PARTITION_PATH]
+        for p in model:
+            skip_part = p[INDEX_PARTITION_PATH]
+            skip_mount = p[INDEX_PARTITION_MOUNT_AS]
+            if skip_part == active_part:
+                # TODO: Force format!
+                continue
+            # Reset anyone trying to be root..
+            if skip_mount == '/':
+                p[INDEX_PARTITION_MOUNT_AS] = None
 
     def set_swap_partition(self, path):
         """ Update the swap partition """
@@ -171,7 +181,17 @@ class ManualPage(Gtk.VBox):
 
     def set_home_partition(self, path):
         """ Update the home partition """
-        pass
+        model = self.treeview.get_model()
+        row = model[path]
+        active_part = row[INDEX_PARTITION_PATH]
+        for p in model:
+            skip_part = p[INDEX_PARTITION_PATH]
+            skip_mount = p[INDEX_PARTITION_MOUNT_AS]
+            if skip_part == active_part:
+                continue
+            # Reset anyone trying to be /home..
+            if skip_mount == '/home':
+                p[INDEX_PARTITION_MOUNT_AS] = None
 
     def push_partition(self, drive, part):
         model = self.treeview.get_model()
