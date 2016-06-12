@@ -98,7 +98,8 @@ class ManualPage(Gtk.VBox):
 
         # format
         ren = Gtk.CellRendererToggle()
-        self.column7 = Gtk.TreeViewColumn("Format", ren)
+        self.column7 = Gtk.TreeViewColumn("Format", ren,
+                                          active=INDEX_PARTITION_FORMAT)
         self.treeview.append_column(self.column7)
 
         # size
@@ -168,11 +169,13 @@ class ManualPage(Gtk.VBox):
             skip_part = p[INDEX_PARTITION_PATH]
             skip_mount = p[INDEX_PARTITION_MOUNT_AS]
             if skip_part == active_part:
-                # TODO: Force format!
+                # Mandatory format of /
+                p[INDEX_PARTITION_FORMAT] = True
                 continue
             # Reset anyone trying to be root..
             if skip_mount == '/':
                 p[INDEX_PARTITION_MOUNT_AS] = None
+                p[INDEX_PARTITION_FORMAT] = False
 
     def set_swap_partition(self, path):
         """ Update the swap partition """
