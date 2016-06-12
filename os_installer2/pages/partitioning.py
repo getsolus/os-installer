@@ -98,7 +98,7 @@ class ManualPage(Gtk.VBox):
 
         # format
         ren = Gtk.CellRendererToggle()
-        self.column7 = Gtk.TreeViewColumn("Format?", ren)
+        self.column7 = Gtk.TreeViewColumn("Format", ren)
         self.treeview.append_column(self.column7)
 
         # size
