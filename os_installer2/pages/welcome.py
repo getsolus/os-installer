@@ -45,8 +45,8 @@ class InstallerWelcomePage(BasePage):
         self.grid.attach(button, 0, 1, 1, 1)
         # Install label
         label = Gtk.Label.new("<big>{}</big>\n<small>{}</small>".format(
-          "Install Solus to disk",
-          "Permanently use Solus on your device"))
+                              "Install Solus to disk",
+                              "Permanently use Solus on your device"))
         label.get_style_context().add_class("dim-label")
         label.set_use_markup(True)
         self.grid.attach(label, 0, 2, 1, 1)
@@ -61,8 +61,8 @@ class InstallerWelcomePage(BasePage):
         self.grid.attach(button, 1, 1, 1, 1)
         # Continue label
         label = Gtk.Label.new("<big>{}</big>\n<small>{}</small>".format(
-          "Continue using live preview",
-          "No changes will be made to your system"))
+                              "Continue using live preview",
+                              "No changes will be made to your system"))
         label.get_style_context().add_class("dim-label")
         label.set_use_markup(True)
         self.grid.attach(label, 1, 2, 1, 1)

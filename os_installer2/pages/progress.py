@@ -185,7 +185,7 @@ class InstallerProgressPage(BasePage):
                   "hasn't completed. The following errors were encountered: "
         else:
             msg = "Installation has failed, and changes were made to disk\n" \
-                   "The installer will now exit."
+                  "The installer will now exit."
 
         msg += "\n\n{}\n".format("\n".join(self.error_msgs))
         d = Gtk.MessageDialog(parent=self.info.owner,
