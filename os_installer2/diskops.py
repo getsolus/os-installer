@@ -288,6 +288,29 @@ class DiskOpResizeOS(BaseDiskOp):
     def describe(self):
         return self.desc
 
+    def get_size_constraint(self, disk, new_len):
+        """ Gratefully borrowed from blivet, Copyright (C) 2009 Red Hat
+            https://github.com/rhinstaller/blivet/
+        """
+        current_geom = self.part.geometry
+        current_dev = current_geom.device
+        new_geometry = parted.Geometry(device=current_dev,
+                                       start=current_geom.start,
+                                       length=new_len)
+
+        # and align the end sector
+        alignment = disk.partitionAlignment
+        if new_geometry.length < current_geom.length:
+            align = alignment.alignUp
+            align_geom = current_geom  # we can align up into the old geometry
+        else:
+            align = alignment.alignDown
+            align_geom = new_geometry
+
+        new_geometry.end = align(align_geom, new_geometry.end)
+        constraint = parted.Constraint(exactGeom=new_geometry)
+        return (constraint, new_geometry)
+
     def apply(self, disk, simulate):
         try:
             nlen = parted.sizeToSectors(self.their_size,
@@ -320,26 +343,22 @@ class DiskOpResizeOS(BaseDiskOp):
                     self.set_errors(e)
                     return False
 
-                c = parted.Constraint(device=self.device)
-                c_start = self.part.geometry.start
-                c_end = self.part.geometry.start + nlen
+                (c, geom) = self.get_size_constraint(disk, nlen)
                 self.part.disk.setPartitionGeometry(partition=self.part,
                                                     constraint=c,
-                                                    start=c_start,
-                                                    end=c_end)
-                self.new_part_off = c_end
+                                                    start=geom.start,
+                                                    end=geom.end)
+                self.new_part_off = geom.end
                 # All done
                 return True
             elif self.part.fileSystem.type.startswith("ext"):
                 if simulate:
-                    c = parted.Constraint(device=self.device)
-                    c_start = self.part.geometry.start
-                    c_end = self.part.geometry.start + nlen
+                    (c, geom) = self.get_size_constraint(disk, nlen)
                     self.part.disk.setPartitionGeometry(partition=self.part,
                                                         constraint=c,
-                                                        start=c_start,
-                                                        end=c_end)
-                    self.new_part_off = self.part.geometry.end
+                                                        start=geom.start,
+                                                        end=geom.end)
+                    self.new_part_off = geom.end
                     return True
                 # check it first
                 cmd1 = "/sbin/e2fsck -f -p {}".format(self.part.path)
@@ -360,15 +379,12 @@ class DiskOpResizeOS(BaseDiskOp):
                     self.set_errors(ex)
                     return False
 
-                print("Resizing to constraint of {}".format(new_size))
-                c = parted.Constraint(device=self.device)
-                c_start = self.part.geometry.start
-                c_end = self.part.geometry.start + nlen
+                (c, geom) = self.get_size_constraint(disk, nlen)
                 self.part.disk.setPartitionGeometry(partition=self.part,
                                                     constraint=c,
-                                                    start=c_start,
-                                                    end=c_end)
-                self.new_part_off = c_end
+                                                    start=geom.start,
+                                                    end=geom.end)
+                self.new_part_off = geom.end
             else:
                 return False
         except Exception as e:

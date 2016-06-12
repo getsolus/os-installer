@@ -37,7 +37,6 @@ import stat
 import parted
 import sys
 
-
 # Update 5 times a second, vs every byte copied..
 UPDATE_FREQUENCY = 1000 / 5
 
