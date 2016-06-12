@@ -430,7 +430,8 @@ class DualBootStrategy(DiskStrategy):
             partition = self.drive.partitions[os_part]
             if not partition.resizable:
                 continue
-            if partition.size < MIN_REQUIRED_SIZE:
+            # Skip guys that are too small
+            if partition.size - partition.min_size < MIN_REQUIRED_SIZE:
                 continue
             if partition.freespace < MIN_REQUIRED_SIZE:
                 continue
@@ -460,7 +461,7 @@ class DualBootStrategy(DiskStrategy):
             self.candidate_os = self.sel_os.name
             # Default to using the whole thing =P
             self.set_our_size(
-                self.candidate_part.size - self.candidate_part.usedspace)
+                self.candidate_part.size - self.candidate_part.min_size)
             self.set_their_size(self.candidate_part.size - MIN_REQUIRED_SIZE)
             return True
         return False

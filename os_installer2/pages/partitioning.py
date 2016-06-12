@@ -253,7 +253,7 @@ class DualBootPage(Gtk.VBox):
         self.image.set_pixel_size(64)
         self.label.set_markup("<big>{}</big>".format(os.name))
 
-        used = info.strategy.candidate_part.usedspace
+        used = info.strategy.candidate_part.min_size
         avail = info.strategy.candidate_part.size
 
         GB = 1000.0 * 1000.0 * 1000.0

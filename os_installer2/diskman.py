@@ -147,9 +147,31 @@ class SystemPartition:
     # Actual size of this partition
     size = None
 
+    # Absolute minimum size as reported by the filesystem
+    min_size = None
+
     def getLength(self):
         """ Purely for sort compat """
         return self.size
+
+    def build_ntfs_space(self):
+        cmd = "LANG=C ntfsresize -im --no-action {}".format(self.path)
+
+        try:
+            o = subprocess.check_output(cmd, shell=True)
+        except Exception as ex:
+            print("Cannot scan ntfs: {}".format(ex))
+            return
+
+        for l in o.split("\n"):
+            if ":" not in l:
+                continue
+            if "MB" not in l:
+                continue
+            min_size = long(l.split(":")[-1])
+            self.min_size = min_size * 1000 * 1000
+            self.resizable = True
+            break
 
     def __init__(self, partition, mount_point, dm):
         self.partition = partition
@@ -171,6 +193,16 @@ class SystemPartition:
             self.usedspace_string = format_size_local(self.usedspace)
         except Exception as e:
             print("Failed to stat {}: {}".format(mount_point, e))
+
+        # Now work out if we're resizable.
+        fs = partition.fileSystem
+        if not fs:
+            return
+        if fs.type == "ntfs":
+            try:
+                self.build_ntfs_space()
+            except Exception as e:
+                print("Undefined error in ntfs: {}".format(e))
 
 
 class SystemDrive:
