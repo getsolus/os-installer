@@ -295,14 +295,14 @@ class DiskOpResizeOS(BaseDiskOp):
             cmd = None
 
             if self.part.fileSystem.type == "ntfs":
-                newSz = str(int(self.their_size / 1000))
+                newSz = str(long(self.their_size))
 
                 prefix = "/usr/sbin"
                 check_cmd = "{}/ntfsresize -i -f --force -v {} {}".format(
                     prefix,
                     "--no-action" if simulate else "", self.part.path)
 
-                resize_cmd = "{}/ntfsresize {} -f -f -b --size {}k {}".format(
+                resize_cmd = "{}/ntfsresize {} -f -f -b --size {} {}".format(
                     prefix,
                     "--no-action" if simulate else "", newSz, self.part.path)
 
@@ -350,8 +350,8 @@ class DiskOpResizeOS(BaseDiskOp):
                     self.set_errors(ex)
                     return False
 
-                new_size = str(int(self.their_size / 1024))
-                cmd = "/sbin/resize2fs {} {}K".format(
+                new_size = str(long(self.their_size))
+                cmd = "/sbin/resize2fs {} {}".format(
                     self.part.path, new_size)
                 try:
                     subprocess.check_call(cmd, shell=True)
