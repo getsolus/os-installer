@@ -236,10 +236,7 @@ class DualBootPage(Gtk.VBox):
 
         val = self.spin.get_value()
         avail = self.info.strategy.candidate_part.size
-
-        MB = 1000.0 * 1000.0
-        avail -= 100 * MB
-        GB = MB * 1000.0
+        GB = 1000.0 * 1000.0 * 1000.0
 
         nval = (avail / GB) - val
         ssize = format_size_local(nval * GB, double_precision=True)
