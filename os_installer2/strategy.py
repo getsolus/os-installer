@@ -626,6 +626,14 @@ class UserPartitionStrategy(DiskStrategy):
                 if part == path:
                     return drive.device
 
+    def find_format(self, dp, dev):
+        path = dev.path
+        for drive in dp.drives:
+            for part in drive.partitions:
+                print("{} vs {}".format(part, path))
+                if part == path:
+                    return drive.partitions[part].partition.fileSystem.type
+
     def update_operations(self, dm, info):
         if not self.root_part:
             return
@@ -642,10 +650,11 @@ class UserPartitionStrategy(DiskStrategy):
         if self.home_part:
             dev = self.find_device(info.prober, self.home_part)
             if not self.home_format:
-                self.push_operation(DiskOpUseHome(dev, self.home_part))
+                fmt = self.find_format(info.prober, self.home_part)
+                self.push_operation(DiskOpUseHome(dev, self.home_part, fmt))
             else:
                 self.push_operation(DiskOpFormatHome(dev, self.home_part))
-                self.push_operation(DiskOpUseHome(dev, self.home_part))
+                self.push_operation(DiskOpUseHome(dev, self.home_part, "ext4"))
 
 
 class DiskStrategyManager:

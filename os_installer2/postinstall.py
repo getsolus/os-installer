@@ -14,7 +14,7 @@
 import subprocess
 import os
 from collections import OrderedDict
-from .diskops import DiskOpCreateSwap, DiskOpUseSwap
+from .diskops import DiskOpCreateSwap, DiskOpUseSwap, DiskOpUseHome
 import shutil
 
 
@@ -544,6 +544,11 @@ class PostInstallFstab(PostInstallStep):
         for op in strat.get_operations():
             # TODO: Add custom mountpoints here!
             # Skip swap for GPT/UEFI
+            if isinstance(op, DiskOpUseHome):
+                huuid = get_part_uuid(op.home_part.path)
+                fs = op.home_part_fs
+                i = "UUID={}\t/\t{}\trw,relatime,errors=remount-ro\t0\t0"
+                appends.append(i.format(huuid, fs))
             if disk.type == "gpt" and strat.is_uefi():
                 continue
 
