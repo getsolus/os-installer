@@ -623,8 +623,9 @@ class UserPartitionStrategy(DiskStrategy):
         self.drive = drive
 
     def get_display_string(self):
-        sz = "Create, resize and manually configure disk partitions yourself" \
-             ". This method\nmay lead to <b>data loss.</b>"
+        sz = "Assign mount points to partitions you have previously created." \
+             "\nThese must already exist prior to launching the installer. If" \
+             "\nyou modify them, please restart the installer."
         return sz
 
     def get_name(self):
