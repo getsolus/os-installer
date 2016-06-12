@@ -28,7 +28,7 @@ import threading
 INDEX_PARTITION_PATH = 0
 INDEX_PARTITION_TYPE = 1
 INDEX_PARTITION_DESCRIPTION = 2
-INDEX_PARTITION_FORMAT_AS = 3
+INDEX_PARTITION_FORMAT = 3
 INDEX_PARTITION_MOUNT_AS = 4
 INDEX_PARTITION_SIZE = 5
 INDEX_PARTITION_FREE_SPACE = 6
@@ -97,9 +97,8 @@ class ManualPage(Gtk.VBox):
         self.treeview.append_column(self.column6)
 
         # format
-        ren = Gtk.CellRendererText()
+        ren = Gtk.CellRendererToggle()
         self.column7 = Gtk.TreeViewColumn("Format?", ren)
-        self.column7.add_attribute(ren, "markup", INDEX_PARTITION_FORMAT_AS)
         self.treeview.append_column(self.column7)
 
         # size
@@ -208,7 +207,7 @@ class ManualPage(Gtk.VBox):
             part.path,
             fsname,
             os,
-            None,
+            False,
             None,
             part.sizeString,
             part.freespace_string,
@@ -217,7 +216,7 @@ class ManualPage(Gtk.VBox):
         INDEX_PARTITION_PATH = 0
         INDEX_PARTITION_TYPE = 1
         INDEX_PARTITION_DESCRIPTION = 2
-        INDEX_PARTITION_FORMAT_AS = 3
+        INDEX_PARTITION_FORMAT = 3
         INDEX_PARTITION_MOUNT_AS = 4
         INDEX_PARTITION_SIZE = 5
         INDEX_PARTITION_FREE_SPACE = 6
@@ -232,7 +231,7 @@ class ManualPage(Gtk.VBox):
             part.path,
             "swap",
             None,
-            None,
+            False,
             None,
             partSize,
             None,
@@ -241,7 +240,7 @@ class ManualPage(Gtk.VBox):
     def populate_ui(self):
         prober = self.info.prober
 
-        model = Gtk.ListStore(str, str, str, str,
+        model = Gtk.ListStore(str, str, str, bool,
                               str, str, str, SystemPartition)
         self.treeview.set_model(model)
         for drive in prober.drives:
