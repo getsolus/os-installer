@@ -428,6 +428,8 @@ class DualBootStrategy(DiskStrategy):
                 print("Warning: missing os_part: {}".format(os_part))
                 continue
             partition = self.drive.partitions[os_part]
+            if not partition.resizable:
+                continue
             if partition.size < MIN_REQUIRED_SIZE:
                 continue
             if partition.freespace < MIN_REQUIRED_SIZE:

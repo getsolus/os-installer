@@ -129,6 +129,7 @@ class SystemPartition:
 
     # Our actual path, i.e. /dev/sda3
     path = None
+    resizable = False
 
     # How much free space remains, in bytes and with string rep
     freespace = None
