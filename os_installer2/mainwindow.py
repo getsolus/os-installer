@@ -15,17 +15,17 @@ from .diskman import DiskManager
 from .permissions import PermissionsManager
 from .pages.welcome import InstallerWelcomePage
 from .pages.language import InstallerLanguagePage
-# from .pages.location import InstallerLocationPage
-# from .pages.geoip import InstallerGeoipPage
-# from .pages.keyboard import InstallerKeyboardPage
-# from .pages.timezone import InstallerTimezonePage
+from .pages.location import InstallerLocationPage
+from .pages.geoip import InstallerGeoipPage
+from .pages.keyboard import InstallerKeyboardPage
+from .pages.timezone import InstallerTimezonePage
 from .pages.disk_location import InstallerDiskLocationPage
 from .pages.partitioning import InstallerPartitioningPage
 from .pages.system import InstallerSystemPage
-# from .pages.users import InstallerUsersPage
+from .pages.users import InstallerUsersPage
 from .pages.summary import InstallerSummaryPage
-# from .pages.progress import InstallerProgressPage
-# from .pages.complete import InstallationCompletePage
+from .pages.progress import InstallerProgressPage
+from .pages.complete import InstallationCompletePage
 import sys
 import threading
 import traceback
@@ -158,18 +158,17 @@ class MainWindow(Gtk.ApplicationWindow):
         # Load other pages here into installer_stack
         try:
             self.add_installer_page(InstallerLanguagePage())
-            """
             self.add_installer_page(InstallerLocationPage())
             self.add_installer_page(InstallerGeoipPage())
             self.add_installer_page(InstallerKeyboardPage())
-            self.add_installer_page(InstallerTimezonePage())"""
+            self.add_installer_page(InstallerTimezonePage())
             self.add_installer_page(InstallerDiskLocationPage())
             self.add_installer_page(InstallerPartitioningPage())
             self.add_installer_page(InstallerSystemPage())
-            """self.add_installer_page(InstallerUsersPage())"""
+            self.add_installer_page(InstallerUsersPage())
             self.add_installer_page(InstallerSummaryPage())
-            """self.add_installer_page(InstallerProgressPage())
-            self.add_installer_page(InstallationCompletePage())"""
+            self.add_installer_page(InstallerProgressPage())
+            self.add_installer_page(InstallationCompletePage())
         except Exception as e:
             print("Fatal error during startup: {}".format(e))
             traceback.print_exc(file=sys.stderr)
