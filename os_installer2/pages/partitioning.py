@@ -208,7 +208,6 @@ class ManualPage(Gtk.VBox):
         # TODO: Refresh
 
     def on_mount_changed(self, widget, path, text):
-        print("{} = {}".format(path, text))
         model = self.treeview.get_model()
 
         if text is None or text.strip() == '':
@@ -375,7 +374,6 @@ class ManualPage(Gtk.VBox):
         for drive in prober.drives:
             for swap in drive.get_swap_partitions():
                 try:
-                    print(swap)
                     self.push_swap(swap)
                 except Exception as e:
                     print("Swap problem: {}".format(e))
@@ -383,10 +381,11 @@ class ManualPage(Gtk.VBox):
             for part in sorted(drive.partitions):
                 try:
                     part_prop = drive.partitions[part]
+                    if not part_prop:
+                        continue
                     self.push_partition(drive, part_prop)
                 except Exception as e:
                     print("Init problem: {}".format(e))
-            print(drive)
 
     def update_strategy(self, info):
         self.info = info
