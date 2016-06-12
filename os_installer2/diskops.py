@@ -308,16 +308,14 @@ class DiskOpResizeOS(BaseDiskOp):
 
                 # Check first
                 try:
-                    subprocess.check_output(check_cmd, shell=True,
-                                            stderr=subprocess.STDOUT)
+                    subprocess.check_call(check_cmd, shell=True)
                 except Exception as e:
                     self.set_errors(e)
                     return False
 
                 # Now resize it
                 try:
-                    subprocess.check_output(resize_cmd, shell=True,
-                                            stderr=subprocess.STDOUT)
+                    subprocess.check_call(resize_cmd, shell=True)
                 except Exception as e:
                     self.set_errors(e)
                     return False
@@ -346,22 +344,23 @@ class DiskOpResizeOS(BaseDiskOp):
                 # check it first
                 cmd1 = "/sbin/e2fsck -f -p {}".format(self.part.path)
                 try:
-                    subprocess.check_output(cmd1, shell=True,
-                                            stderr=subprocess.STDOUT)
+                    subprocess.check_call(cmd1, shell=True)
                 except Exception as ex:
                     print(ex)
                     self.set_errors(ex)
                     return False
 
+                new_size = str(int(self.their_size / 1024))
                 cmd = "/sbin/resize2fs {} {}K".format(
-                    self.part.path, str(int(self.their_size / 1024)))
+                    self.part.path, new_size)
                 try:
-                    subprocess.check_output(cmd, shell=True,
-                                            stderr=subprocess.STDOUT)
+                    subprocess.check_call(cmd, shell=True)
                 except Exception as ex:
                     print(ex)
                     self.set_errors(ex)
                     return False
+
+                print("Resizing to constraint of {}".format(new_size)
                 c = parted.Constraint(device=self.device)
                 c_start = self.part.geometry.start
                 c_end = self.part.geometry.start + nlen
