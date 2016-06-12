@@ -192,7 +192,18 @@ class ManualPage(Gtk.VBox):
 
     def set_swap_partition(self, path):
         """ Update the swap partition """
-        pass
+        model = self.treeview.get_model()
+        row = model[path]
+        active_part = row[INDEX_PARTITION_PATH]
+        self.selection_swap = active_part
+        for p in model:
+            skip_part = p[INDEX_PARTITION_PATH]
+            skip_mount = p[INDEX_PARTITION_MOUNT_AS]
+            if skip_part == active_part:
+                continue
+            # Reset anyone trying to be swap..
+            if skip_mount == 'swap':
+                p[INDEX_PARTITION_MOUNT_AS] = None
 
     def set_home_partition(self, path):
         """ Update the home partition """
