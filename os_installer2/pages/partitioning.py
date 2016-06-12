@@ -153,6 +153,26 @@ class ManualPage(Gtk.VBox):
         model = self.treeview.get_model()
         model[path][4] = text
 
+        if text == '/':
+            self.set_root_partition(path)
+        elif text == 'swap':
+            self.set_swap_partition(path)
+        elif text == '/home':
+            self.set_home_partition(path)
+
+    def set_root_partition(self, path):
+        """ Update the root partition """
+        print("Updating root partition")
+        pass
+
+    def set_swap_partition(self, path):
+        """ Update the swap partition """
+        pass
+
+    def set_home_partition(self, path):
+        """ Update the home partition """
+        pass
+
     def push_partition(self, drive, part):
         model = self.treeview.get_model()
         os = None
