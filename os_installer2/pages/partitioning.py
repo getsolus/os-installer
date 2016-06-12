@@ -35,6 +35,8 @@ INDEX_PARTITION_FREE_SPACE = 6
 INDEX_PARTITION_OBJECT = 7
 INDEX_PARTITION_SIZE_NUM = 8
 
+ACCEPTABLE_FS_TYPES = ["ext", "ext2", "ext3", "ext4"]
+
 
 class ManualPage(Gtk.VBox):
     """ Manual partitioning page, mostly TreeView with gparted proxy """
@@ -89,7 +91,7 @@ class ManualPage(Gtk.VBox):
         self.column3.add_attribute(ren, "markup", INDEX_PARTITION_PATH)
         self.treeview.append_column(self.column3)
 
-        self.column4 = Gtk.TreeViewColumn("Type", ren)
+        self.column4 = Gtk.TreeViewColumn("Current filesystem", ren)
         self.column4.add_attribute(ren, "markup", INDEX_PARTITION_TYPE)
         self.treeview.append_column(self.column4)
 
@@ -223,6 +225,9 @@ class ManualPage(Gtk.VBox):
         row = model[path]
         active_part = row[INDEX_PARTITION_PATH]
         self.selection_swap = active_part
+        fs = row[INDEX_PARTITION_TYPE]
+        if fs != "swap":
+            row[INDEX_PARTITION_FORMAT] = True
         for p in model:
             skip_part = p[INDEX_PARTITION_PATH]
             skip_mount = p[INDEX_PARTITION_MOUNT_AS]
@@ -231,6 +236,7 @@ class ManualPage(Gtk.VBox):
             # Reset anyone trying to be swap..
             if skip_mount == 'swap':
                 p[INDEX_PARTITION_MOUNT_AS] = None
+                p[INDEX_PARTITION_FORMAT] = False
                 if self.selection_home == active_part:
                     self.selection_home = None
                 if self.selection_root == active_part:
@@ -260,6 +266,9 @@ class ManualPage(Gtk.VBox):
         row = model[path]
         active_part = row[INDEX_PARTITION_PATH]
         self.selection_home = active_part
+        fs = row[INDEX_PARTITION_TYPE]
+        if fs not in ACCEPTABLE_FS_TYPES:
+            row[INDEX_PARTITION_FORMAT] = True
         for p in model:
             skip_part = p[INDEX_PARTITION_PATH]
             skip_mount = p[INDEX_PARTITION_MOUNT_AS]
@@ -268,6 +277,7 @@ class ManualPage(Gtk.VBox):
             # Reset anyone trying to be /home..
             if skip_mount == '/home':
                 p[INDEX_PARTITION_MOUNT_AS] = None
+                p[INDEX_PARTITION_FORMAT] = False
                 if self.selection_swap == active_part:
                     self.selection_swap = None
                 if self.selection_root == active_part:
