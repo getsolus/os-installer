@@ -410,9 +410,12 @@ class DualBootStrategy(DiskStrategy):
         if not self.drive.disk:
             return False
 
-        # Dual-boot will require GPT
-        if self.is_uefi() and self.drive.disk.type != "gpt":
-            return False
+        if self.is_uefi():
+            if self.drive.disk.type != "gpt":
+                return False
+        else:
+            if self.drive.disk.type != "msdos":
+                return False
 
         self.potential_spots = []
         # The absolute minimum number of partitions we need (swap = bonus.)
