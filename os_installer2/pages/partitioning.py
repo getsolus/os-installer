@@ -416,6 +416,30 @@ class ManualPage(Gtk.VBox):
             self.info.owner.set_can_next(False)
             return
 
+        home_format = False
+        home_obj = None
+        swap_format = False
+        swap_obj = None
+        root_obj = None
+        model = self.treeview.get_model()
+        for row in model:
+            point = row[INDEX_PARTITION_MOUNT_AS]
+            if point == 'swap':
+                swap_format = row[INDEX_PARTITION_FORMAT]
+                swap_obj = row[INDEX_PARTITION_OBJECT]
+            elif point == '/home':
+                home_format = row[INDEX_PARTITION_FORMAT]
+                home_obj = row[INDEX_PARTITION_OBJECT]
+                if isinstance(home_obj, SystemPartition):
+                    home_obj = home_obj.partition
+            elif point == '/':
+                root_obj = row[INDEX_PARTITION_OBJECT]
+                if isinstance(root_obj, SystemPartition):
+                    root_obj = root_obj.partition
+
+        self.info.strategy.set_root_partition(root_obj)
+        self.info.strategy.set_home_partition(home_obj, home_format)
+        self.info.strategy.set_swap_partition(swap_obj, swap_format)
         # Now we can go forward.
         self.selection_label.set_markup(labe)
         self.info.owner.set_can_next(True)

@@ -415,7 +415,7 @@ class DiskOpFormatRoot(DiskOpFormatPartition):
         DiskOpFormatPartition.__init__(self, device, part, "ext4")
 
     def describe(self):
-        return "Use {} as {} root partition".format(
+        return "Format {} as {} root partition".format(
             self.part.path, self.format_type)
 
     def apply(self, disk, simulate):
@@ -428,4 +428,69 @@ class DiskOpFormatRoot(DiskOpFormatPartition):
         except Exception as e:
             self.set_errors("{}: {}".format(self.part.path, e))
             return False
+        return True
+
+
+class DiskOpFormatSwap(DiskOpFormatPartition):
+    """ Format the swap partition """
+
+    def __init__(self, device, part):
+        DiskOpFormatPartition.__init__(self, device, part, "swap")
+
+    def describe(self):
+        return "Use {} as {} swap partition".format(
+            self.part.path, self.format_type)
+
+    def apply(self, disk, simulate):
+        if simulate:
+            return True
+
+        cmd = "mkswap {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
+
+
+class DiskOpFormatHome(DiskOpFormatPartition):
+    """ Format the home partition """
+
+    def __init__(self, device, part):
+        DiskOpFormatPartition.__init__(self, device, part, "ext4")
+
+    def describe(self):
+        return "Format {} as {} home partition".format(
+            self.part.path, self.format_type)
+
+    def apply(self, disk, simulate):
+        if simulate:
+            return True
+
+        cmd = "mkfs.ext4 -F {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
+
+
+class DiskOpUseHome(BaseDiskOp):
+    """ Use an existing home paritition """
+
+    home_part = None
+    path = None
+
+    def __init__(self, device, home_part):
+        BaseDiskOp.__init__(self, device)
+        self.home_part = home_part
+        self.path = self.home_part.path
+
+    def describe(self):
+        return "Use {} as home partition".format(self.home_part.path)
+
+    def apply(self, disk, simulate):
+        """ Can't actually fail here. """
         return True

@@ -20,7 +20,11 @@ from .diskops import DiskOpCreateESP
 from .diskops import DiskOpFormatRoot
 from .diskops import DiskOpResizeOS
 from .diskops import DiskOpUseSwap
+from .diskops import DiskOpFormatSwap
+from .diskops import DiskOpFormatHome
+from .diskops import DiskOpUseHome
 from . import MIN_REQUIRED_SIZE, MB, GB
+
 
 SWAP_USE_THRESHOLD = 15 * GB
 ESP_FREE_REQUIRED = 60 * MB
@@ -578,6 +582,26 @@ class UserPartitionStrategy(DiskStrategy):
 
     priority = 10
 
+    root_part = None
+    home_part = None
+    home_format = False
+    swap_part = None
+    swap_format = False
+
+    def set_root_partition(self, part):
+        """ Set the root partition to use """
+        self.root_part = part
+
+    def set_home_partition(self, part, fmt):
+        """ Set the home partition to use and maybe format """
+        self.home_part = part
+        self.home_format = fmt
+
+    def set_swap_partition(self, part, fmt):
+        """ Set the swap partition to use and maybe format """
+        self.swap_part = part
+        self.swap_format = part
+
     def __init__(self, dp, drive):
         DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
@@ -592,6 +616,36 @@ class UserPartitionStrategy(DiskStrategy):
 
     def is_possible(self):
         return self.drive.size >= MIN_REQUIRED_SIZE
+
+    def find_device(self, dp, path):
+        for drive in dp.drives:
+            for part in drive.partitions:
+                if part == path:
+                    return drive.device
+            for part in drive.get_swap_partitions():
+                if part == path:
+                    return drive.device
+
+    def update_operations(self, dm, info):
+        if not self.root_part:
+            return
+        dev = self.find_device(info.prober, self.root_part)
+        self.push_operation(DiskOpFormatRoot(dev, self.root_part))
+
+        if self.swap_part:
+            dev = self.find_device(info.prober, self.swap_part)
+            if not self.swap_format:
+                self.push_operation(DiskOpUseSwap(dev, self.swap_part))
+            else:
+                self.push_operation(DiskOpFormatSwap(dev, self.swap_part))
+                self.push_operation(DiskOpUseSwap(dev, self.swap_part))
+        if self.home_part:
+            dev = self.find_device(info.prober, self.home_part)
+            if not self.home_format:
+                self.push_operation(DiskOpUseHome(dev, self.home_part))
+            else:
+                self.push_operation(DiskOpFormatHome(dev, self.home_part))
+                self.push_operation(DiskOpUseHome(dev, self.home_part))
 
 
 class DiskStrategyManager:
