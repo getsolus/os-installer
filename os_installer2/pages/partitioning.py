@@ -170,13 +170,24 @@ class ManualPage(Gtk.VBox):
         """ Launch this on the thread so the UI doesnt lock """
         perms = self.info.owner.get_perms_manager()
         perms.up_permissions()
+        dm = self.info.owner.get_disk_manager()
+        prober = self.info.prober
+        # Start external access
+        for drive in prober.drives:
+            if not drive.device:
+                continue
+            drive.device.beginExternalAccess()
+
         try:
             os.system("gparted")
         except:
             pass
 
-        perms = self.info.owner.get_perms_manager()
-        dm = self.info.owner.get_disk_manager()
+        # Stop access
+        for drive in prober.drives:
+            if not drive.device:
+                continue
+            drive.device.endExternalAccess()
 
         prober = DriveProber(dm)
         self.info.prober = prober
