@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name            = "os-installer",
-    version         = "5.4.1",
+    version         = "12.0",
     author          = "Ikey Doherty",
     author_email    = "ikey@solus-project.com",
     description     = ("Operating System Installer"),
