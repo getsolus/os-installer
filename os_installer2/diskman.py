@@ -625,6 +625,8 @@ class DiskManager:
                 key = splits[0].lower()
                 val = "=".join(splits[1:]).strip()
 
+                if len(val) == 0:
+                    continue
                 if val[0] == "\"":
                     val = val[1:]
                 if val[-1] == "\"":
