@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
         d = Gtk.MessageDialog(parent=None, flags=Gtk.DialogFlags.MODAL,
                               type=Gtk.MessageType.WARNING,
-                              buttons=Gtk.ButtonsType.OK_CANCEL,
+                              buttons=Gtk.ButtonsType.CLOSE,
                               message_format=msg)
 
         d.run()
