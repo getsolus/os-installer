@@ -68,7 +68,7 @@ class DriveProber:
         # Cache the current mount points, gonna need it.
         self.mtab = self.dm.get_mount_points()
         self.dm.scan_parts()
-        # self.probe_lvm2()
+        self.probe_lvm2()
 
         for item in self.dm.devices:
             disk = None
