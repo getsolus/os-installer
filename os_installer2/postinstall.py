@@ -530,6 +530,11 @@ class PostInstallFstab(PostInstallStep):
 
         appends = []
 
+        # Determine if SSD optimizations should be considered
+        dev_path = self.info.strategy.drive.path
+        dm = self.info.owner.get_disk_manager()
+        ssd = dm.is_device_ssd(dev_path)
+
         # Add the ESP to /boot/efi
         if strat.is_uefi() and self.info.bootloader_install:
             esp = self.installer.locate_esp()
@@ -576,9 +581,12 @@ class PostInstallFstab(PostInstallStep):
         root = strat.get_root_partition()
         uuid = get_part_uuid(root)
         appends.append("# {} at time of installation".format(root))
-        appends.append(
-            "UUID={}\t/\text4\trw,relatime,errors=remount-ro\t0\t0".format(
-                uuid))
+
+        ext4_ops = "rw,relatime,errors=remount-ro"
+        if ssd:
+            ext4_ops = "discard,{}".format(ext4_ops)
+
+        appends.append("UUID={}\t/\text4\t{}\t0\t0".format(uuid, ext4_ops))
 
         fp = os.path.join(self.installer.get_installer_target_filesystem(),
                           "etc/fstab")
