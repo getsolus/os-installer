@@ -586,7 +586,7 @@ class PostInstallFstab(PostInstallStep):
         if ssd:
             ext4_ops = "discard,{}".format(ext4_ops)
 
-        appends.append("UUID={}\t/\text4\t{}\t0\t0".format(uuid, ext4_ops))
+        appends.append("UUID={}\t/\text4\t{}\t0\t1".format(uuid, ext4_ops))
 
         fp = os.path.join(self.installer.get_installer_target_filesystem(),
                           "etc/fstab")
