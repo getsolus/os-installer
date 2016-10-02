@@ -188,7 +188,8 @@ class InstallerProgressPage(BasePage):
             msg = "Installation has failed, and changes were made to disk\n" \
                   "The installer will now exit."
 
-        msg += "\n\n{}\n".format("\n".join(self.error_msgs))
+        msg += "\n\n{}\n".format("\n".join(
+            [str(x) for x in self.error_msgs]))
         d = Gtk.MessageDialog(parent=self.info.owner,
                               flags=Gtk.DialogFlags.MODAL,
                               type=Gtk.MessageType.ERROR,
