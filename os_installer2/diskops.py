@@ -244,6 +244,43 @@ class DiskOpCreateRoot(DiskOpCreatePartition):
         return True
 
 
+class DiskOpCreatePhysicalVolume(DiskOpCreatePartition):
+    """ Create a new physical volume """
+
+    def __init__(self, device, ptype, size):
+        DiskOpCreatePartition.__init__(
+            self,
+            device,
+            ptype,
+            "Linux LVM",
+            size)
+
+    def describe(self):
+        return "Create {} physical volume on {}".format(
+            format_size_local(self.size, True), self.device.path)
+
+    def apply_format(self, disk):
+        cmd = "/sbin/pvcreate -f {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
+
+    def apply(self, disk, simulate):
+        """ Create root partition  """
+        b = DiskOpCreatePartition.apply(self, disk, simulate)
+        if not b:
+            return b
+        try:
+            self.part.setFlag(parted.PARTITION_LVM)
+        except Exception as e:
+            self.set_errors("Cannot set root as bootable: {}".format(e))
+            return False
+        return True
+
+
 class DiskOpUseSwap(BaseDiskOp):
     """ Use an existing swap paritition """
 
