@@ -210,6 +210,9 @@ class EmptyDiskStrategy(DiskStrategy):
 
     priority = 50
 
+    use_lvm2 = False
+    use_encryption = False
+
     def __init__(self, dp, drive):
         DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
