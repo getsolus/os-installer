@@ -217,6 +217,15 @@ class EmptyDiskStrategy(DiskStrategy):
         DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
 
+    def requires_separate_boot(self):
+        """ Determine if we need a separate boot partition too """
+        if self.is_uefi():
+            # Never need /boot with UEFI
+            return False
+        if self.use_lvm2:
+            return True
+        return False
+
     def get_display_string(self):
         sz = "Automatically partition this empty disk and install a fresh " \
              "copy of Solus."
