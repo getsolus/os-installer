@@ -285,7 +285,7 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
     """ Create a VolumeGroup from (currently) a single PhysicalVolume """
 
     # Which part to create this volume group from
-    part = None
+    pv_op = None
 
     # Path of the device..
     path = None
@@ -293,14 +293,14 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
     # Name of this volume group
     vg_name = None
 
-    def __init__(self, device, part, vg_name):
+    def __init__(self, device, pv_op, vg_name):
         BaseDiskOp.__init__(self, device)
-        self.part = part
         self.vg_name = vg_name
 
         self.path = "/dev/mapper/{}".format(vg_name)
 
     def apply(self, disk, simulate):
+        self.part = self.pv_op.part
         cmd = "/sbin/vgcreate {} {}".format(self.vg_name, self.part.path)
         if simulate:
             cmd += " --test"

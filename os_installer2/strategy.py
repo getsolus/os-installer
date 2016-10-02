@@ -23,6 +23,9 @@ from .diskops import DiskOpUseSwap
 from .diskops import DiskOpFormatSwap
 from .diskops import DiskOpFormatHome
 from .diskops import DiskOpUseHome
+from .diskops import DiskOpCreatePhysicalVolume
+from .diskops import DiskOpCreateVolumeGroup
+from .diskops import DiskOpCreateLogicalVolume
 from . import MIN_REQUIRED_SIZE, MB, GB
 
 
@@ -285,6 +288,22 @@ class EmptyDiskStrategy(DiskStrategy):
                 size_eat += find_best_esp_size(self.drive.size)
                 op = DiskOpCreateESP(self.drive.device, None, size_eat)
                 self.push_operation(op)
+
+        # NAUGHTY! Figure out a unique LVM2 ID
+        if self.use_lvm2:
+            vg_name = "SolusSystem"
+            pv_op = DiskOpCreatePhysicalVolume(
+                self.drive.device, None, self.drive.size)
+            self.push_operation(pv_op)
+            vg_op = DiskOpCreateVolumeGroup(self.drive.device, pv_op, vg_name)
+            self.push_operation(vg_op)
+
+            # Create a root partition on the whole thang
+            lv_op = DiskOpCreateLogicalVolume(
+                self.drive.device, vg_name, "Root", "100%FREE")
+            self.push_operation(lv_op)
+
+            return
 
         # Attempt to create a local swap
         tnew = self.drive.size - size_eat

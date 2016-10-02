@@ -632,6 +632,11 @@ class InstallerProgressPage(BasePage):
             self.set_error_message("Failed to apply disk strategy")
             return False
 
+        self.unmount_all()
+        self.set_error_message("Refusing to proceed!")
+        self.installing = False
+        return False
+
         # Now mount up as it were.
         if not self.mount_source_filesystem():
             self.unmount_all()
