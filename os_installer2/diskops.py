@@ -263,7 +263,7 @@ class DiskOpCreatePhysicalVolume(DiskOpCreatePartition):
             format_size_local(self.size, True), self.device.path)
 
     def apply_format(self, disk):
-        cmd = "/sbin/pvcreate -ff {}".format(self.part.path)
+        cmd = "/sbin/pvcreate -ff -y {}".format(self.part.path)
         try:
             subprocess.check_call(cmd, shell=True)
         except Exception as e:
@@ -307,7 +307,7 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
         self.part = self.pv_op.part
         cmd = "/sbin/vgcreate --yes {} {}".format(self.vg_name, self.part.path)
         if simulate:
-            cmd += " --test"
+            return True
         # Check first
         try:
             subprocess.check_call(cmd, shell=True)
@@ -349,7 +349,7 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
         cmd = "/sbin/lvcreate -n {} {} {}".format(
             self.lv_name, size_arg, self.vg_name)
         if simulate:
-            cmd += " --test"
+            return True
         try:
             subprocess.check_call(cmd, shell=True)
         except Exception as e:
