@@ -299,6 +299,7 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
     def __init__(self, device, pv_op, vg_name):
         BaseDiskOp.__init__(self, device)
         self.vg_name = vg_name
+        self.pv_op = pv_op
 
         self.path = "/dev/mapper/{}".format(vg_name)
 
