@@ -66,7 +66,7 @@ class PostInstallStep:
 
     def run_in_chroot(self, command):
         """ Helper to enable quick boolean chroot usage """
-        full_cmd = "chroot \"{}\" /bin/sh -c \"{}\"".format(
+        full_cmd = "LC_ALL=C chroot \"{}\" /bin/sh -c \"{}\"".format(
             self.installer.get_installer_target_filesystem(),
             command)
         try:
