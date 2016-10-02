@@ -583,6 +583,28 @@ class AdvancedOptionsPage(Gtk.VBox):
         desc_wrap.set_margin_start(20)
         self.pack_start(desc_wrap, False, False, 1)
 
+        # Hook up callbacks
+        self.check_lvm2.connect("clicked", self.on_lvm2_clicked)
+        self.check_enc.connect("clicked", self.on_enc_clicked)
+
+    def on_lvm2_clicked(self, w, data=None):
+        # Encryption requires LVM2, disable it if necessary
+        self.check_enc.set_sensitive(w.get_active())
+        self.update_options()
+
+    def on_enc_clicked(self, w, data=None):
+        self.info.strategy.use_encryption = w.get_active()
+        self.update_options()
+
+    def update_options(self):
+        """ Encryption and lvm2 are both linked """
+        if not self.check_lvm2.get_active():
+            self.info.strategy.use_lvm2 = False
+            self.info.strategy.use_encryption = False
+            return
+        self.info.strategy.use_lvm2 = self.check_lvm2.get_active()
+        self.info.strategy.use_encryption = self.check_enc.get_active()
+
     def update_strategy(self, info):
         self.info = info
         info.owner.set_can_next(True)
