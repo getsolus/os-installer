@@ -276,7 +276,7 @@ class DiskOpCreatePhysicalVolume(DiskOpCreatePartition):
         try:
             self.part.setFlag(parted.PARTITION_LVM)
         except Exception as e:
-            self.set_errors("Cannot set root as bootable: {}".format(e))
+            self.set_errors("Cannot set root as LVM: {}".format(e))
             return False
         return True
 
