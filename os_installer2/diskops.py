@@ -125,7 +125,10 @@ class DiskOpCreatePartition(BaseDiskOp):
             if geom_cmp.length < geom.length or geom.length < 0:
                 geom = geom_cmp
 
-            fs = parted.FileSystem(type=self.fstype, geometry=geom)
+            if "LVM" in self.fstype:
+                fs = None
+            else:
+                fs = parted.FileSystem(type=self.fstype, geometry=geom)
             p = parted.Partition(
                 disk=disk, type=self.ptype, fs=fs, geometry=geom)
 
