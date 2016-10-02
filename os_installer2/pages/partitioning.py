@@ -625,10 +625,17 @@ class AdvancedOptionsPage(Gtk.VBox):
         self.pw_grid.attach(hlab, 0, 1, 1, 1)
         self.pw_grid.attach(self.pw_enc_box_confirm, 1, 1, 1, 1)
 
+        # Hook up password boxes
+        self.pw_enc_box.connect("changed", self.on_pw_changed)
+        self.pw_enc_box_confirm.connect("changed", self.on_pw_changed)
+
         # Hide the grid until requested
         self.pw_grid.show_all()
         self.pw_grid.set_no_show_all(True)
         self.pw_grid.hide()
+
+    def on_pw_changed(self, w, data=None):
+        self.update_options()
 
     def on_lvm2_clicked(self, w, data=None):
         # Encryption requires LVM2, disable it if necessary
@@ -646,13 +653,23 @@ class AdvancedOptionsPage(Gtk.VBox):
         if not self.check_lvm2.get_active():
             self.info.strategy.use_lvm2 = False
             self.info.strategy.use_encryption = False
+            self.info.owner.set_can_next(True)
             return
         self.info.strategy.use_lvm2 = self.check_lvm2.get_active()
         self.info.strategy.use_encryption = self.check_enc.get_active()
+        if self.info.strategy.use_encryption:
+            t1 = self.pw_enc_box.get_text()
+            t2 = self.pw_enc_box_confirm.get_text()
+            if t1 != t2 or t1.strip() == "":
+                self.info.owner.set_can_next(False)
+            else:
+                self.info.owner.set_can_next(True)
+        else:
+            self.info.owner.set_can_next(True)
 
     def update_strategy(self, info):
         self.info = info
-        info.owner.set_can_next(True)
+        self.update_options()
 
 
 class InstallerPartitioningPage(BasePage):
