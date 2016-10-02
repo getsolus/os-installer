@@ -212,6 +212,7 @@ class EmptyDiskStrategy(DiskStrategy):
 
     use_lvm2 = False
     use_encryption = False
+    enc_password = None
 
     def __init__(self, dp, drive):
         DiskStrategy.__init__(self, dp, drive)

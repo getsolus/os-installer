@@ -664,6 +664,7 @@ class AdvancedOptionsPage(Gtk.VBox):
                 self.info.owner.set_can_next(False)
             else:
                 self.info.owner.set_can_next(True)
+                self.info.strategy.enc_password = t2
         else:
             self.info.owner.set_can_next(True)
 
