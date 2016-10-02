@@ -533,6 +533,8 @@ class AdvancedOptionsPage(Gtk.VBox):
     """ Advanced options for full disk installs, enabling LVM + encryption """
 
     info_label = None
+    check_lvm2 = None
+    check_enc = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -542,6 +544,44 @@ class AdvancedOptionsPage(Gtk.VBox):
         self.info_label.set_halign(Gtk.Align.START)
         self.info_label.set_use_markup(True)
         self.pack_start(self.info_label, False, False, 0)
+
+        # LVM2 usage
+        self.check_lvm2 = Gtk.CheckButton.new_with_label(
+            "Use LVM in the new installation")
+        self.pack_start(self.check_lvm2, False, False, 1)
+        self.check_lvm2.set_active(False)
+        desc_label = Gtk.Label(
+            "Logical Volume Management allows simpler resizing and alteration"
+            " of the created partitions"
+        )
+        desc_label.set_line_wrap(True)
+        desc_label.set_margin_bottom(15)
+        desc_label.set_halign(Gtk.Align.START)
+        desc_label.set_xalign(0.0)
+        desc_wrap = Gtk.EventBox()
+        desc_wrap.add(desc_label)
+        desc_wrap.set_margin_start(20)
+        self.pack_start(desc_wrap, False, False, 1)
+
+        # Encryption..
+        self.check_enc = Gtk.CheckButton.new_with_label(
+            "Encrypt the new installation")
+        self.pack_start(self.check_enc, False, False, 1)
+        self.check_enc.set_active(False)
+        self.check_enc.set_sensitive(False)
+        desc_label = Gtk.Label(
+            "The new installation will be fully encrypted, requiring the use"
+            " of a password at boot time to unlock the disk and access both "
+            "the Operating System and your files"
+        )
+        desc_label.set_line_wrap(True)
+        desc_label.set_margin_bottom(15)
+        desc_label.set_halign(Gtk.Align.START)
+        desc_label.set_xalign(0.0)
+        desc_wrap = Gtk.EventBox()
+        desc_wrap.add(desc_label)
+        desc_wrap.set_margin_start(20)
+        self.pack_start(desc_wrap, False, False, 1)
 
     def update_strategy(self, info):
         self.info = info
