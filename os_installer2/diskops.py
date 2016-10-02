@@ -313,6 +313,43 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
         return True
 
 
+class DiskOpCreateLogicalVolume(BaseDiskOp):
+    """ Create a Logical Volume within the given VolumeGroup """
+
+    # Owning VolumeGroup
+    vg_name = None
+
+    # Name of this logical volume
+    lv_name = None
+
+    # Size for this logical volume
+    lv_size = None
+
+    def __init__(self, device, vg_name, lv_name, lv_size):
+        BaseDiskOp.__init__(self, device)
+        self.path = "/dev/mapper/{}/{}".format(vg_name, lv_name)
+        self.vg_name = vg_name
+        self.lv_name = lv_name
+        self.lv_size = lv_size
+
+    def apply(self, disk, simulate):
+        if "%" in self.lv_size:
+            size_arg = "-l {}".format(self.lv_size)
+        else:
+            size_arg = "-L {}".format(self.lv_size)
+
+        cmd = "/sbin/lvcreate -n {} {} {}".format(
+            self.lv_name, size_arg, self.vg_name)
+        if simulate:
+            cmd += " --test"
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors(e)
+            return False
+        return True
+
+
 class DiskOpUseSwap(BaseDiskOp):
     """ Use an existing swap paritition """
 
