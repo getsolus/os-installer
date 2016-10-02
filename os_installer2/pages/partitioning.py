@@ -534,8 +534,13 @@ class AdvancedOptionsPage(Gtk.VBox):
 
     info_label = None
     check_lvm2 = None
+
     check_enc = None
     enc_desc_box = None
+
+    pw_enc_box = None
+    pw_enc_box_confirm = None
+    pw_grid = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -590,6 +595,41 @@ class AdvancedOptionsPage(Gtk.VBox):
         self.check_lvm2.connect("clicked", self.on_lvm2_clicked)
         self.check_enc.connect("clicked", self.on_enc_clicked)
 
+        # Add the password box grid.
+        self.pw_grid = Gtk.Grid()
+        self.pw_grid.set_column_spacing(10)
+        self.pw_grid.set_row_spacing(10)
+        self.pw_grid.set_property("margin", 10)
+        self.pack_start(self.pw_grid, False, False, 0)
+
+        # First password entry
+        self.pw_enc_box = Gtk.Entry()
+        self.pw_enc_box.set_visibility(False)
+        self.pw_enc_box.set_input_purpose(Gtk.InputPurpose.PASSWORD)
+
+        # Confirmation
+        self.pw_enc_box_confirm = Gtk.Entry()
+        self.pw_enc_box_confirm.set_visibility(False)
+        self.pw_enc_box_confirm.set_input_purpose(Gtk.InputPurpose.PASSWORD)
+
+        # Throw it all in the grid
+        hlab = Gtk.Label("<b>Password:</b>")
+        hlab.set_use_markup(True)
+        hlab.set_halign(Gtk.Align.END)
+        self.pw_grid.attach(hlab, 0, 0, 1, 1)
+        self.pw_grid.attach(self.pw_enc_box, 1, 0, 1, 1)
+
+        hlab = Gtk.Label("<b>Confirm Password:</b>")
+        hlab.set_use_markup(True)
+        hlab.set_halign(Gtk.Align.END)
+        self.pw_grid.attach(hlab, 0, 1, 1, 1)
+        self.pw_grid.attach(self.pw_enc_box_confirm, 1, 1, 1, 1)
+
+        # Hide the grid until requested
+        self.pw_grid.show_all()
+        self.pw_grid.set_no_show_all(True)
+        self.pw_grid.hide()
+
     def on_lvm2_clicked(self, w, data=None):
         # Encryption requires LVM2, disable it if necessary
         self.check_enc.set_sensitive(w.get_active())
@@ -598,6 +638,7 @@ class AdvancedOptionsPage(Gtk.VBox):
 
     def on_enc_clicked(self, w, data=None):
         self.info.strategy.use_encryption = w.get_active()
+        self.pw_grid.set_visible(w.get_active())
         self.update_options()
 
     def update_options(self):
