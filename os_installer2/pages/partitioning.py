@@ -532,12 +532,16 @@ class DualBootPage(Gtk.VBox):
 class AdvancedOptionsPage(Gtk.VBox):
     """ Advanced options for full disk installs, enabling LVM + encryption """
 
+    info_label = None
+
     def __init__(self):
         Gtk.VBox.__init__(self)
         self.set_border_width(40)
-        placeholder = Gtk.Label("<b>Encryption page not yet implemented</b>")
-        placeholder.set_use_markup(True)
-        self.pack_start(placeholder, False, False, 0)
+        self.info_label = Gtk.Label("<big>Advanced installation options</big>")
+        self.info_label.set_margin_bottom(10)
+        self.info_label.set_halign(Gtk.Align.START)
+        self.info_label.set_use_markup(True)
+        self.pack_start(self.info_label, False, False, 0)
 
     def update_strategy(self, info):
         self.info = info
