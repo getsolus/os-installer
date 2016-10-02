@@ -312,6 +312,10 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
             return False
         return True
 
+    def describe(self):
+        return "Create volume group '{}' on {}".format(
+            self.vg_name, self.part.path)
+
 
 class DiskOpCreateLogicalVolume(BaseDiskOp):
     """ Create a Logical Volume within the given VolumeGroup """
@@ -348,6 +352,10 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
             self.set_errors(e)
             return False
         return True
+
+    def describe(self):
+        return "Create logical volume '{}' on group '{}'".format(
+            self.lv_name, self.vg_name)
 
 
 class DiskOpUseSwap(BaseDiskOp):
