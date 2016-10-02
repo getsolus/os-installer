@@ -314,7 +314,7 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
 
     def describe(self):
         return "Create volume group '{}' on {}".format(
-            self.vg_name, self.part.path)
+            self.vg_name, self.device.path)
 
 
 class DiskOpCreateLogicalVolume(BaseDiskOp):
