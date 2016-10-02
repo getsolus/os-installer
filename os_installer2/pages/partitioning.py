@@ -535,6 +535,7 @@ class AdvancedOptionsPage(Gtk.VBox):
     info_label = None
     check_lvm2 = None
     check_enc = None
+    enc_desc_box = None
 
     def __init__(self):
         Gtk.VBox.__init__(self)
@@ -582,6 +583,8 @@ class AdvancedOptionsPage(Gtk.VBox):
         desc_wrap.add(desc_label)
         desc_wrap.set_margin_start(20)
         self.pack_start(desc_wrap, False, False, 1)
+        self.enc_desc_box = desc_wrap
+        self.enc_desc_box.set_sensitive(False)
 
         # Hook up callbacks
         self.check_lvm2.connect("clicked", self.on_lvm2_clicked)
@@ -590,6 +593,7 @@ class AdvancedOptionsPage(Gtk.VBox):
     def on_lvm2_clicked(self, w, data=None):
         # Encryption requires LVM2, disable it if necessary
         self.check_enc.set_sensitive(w.get_active())
+        self.enc_desc_box.set_sensitive(w.get_active())
         self.update_options()
 
     def on_enc_clicked(self, w, data=None):
