@@ -529,6 +529,21 @@ class DualBootPage(Gtk.VBox):
         self.info_label.set_markup(l)
 
 
+class AdvancedOptionsPage(Gtk.VBox):
+    """ Advanced options for full disk installs, enabling LVM + encryption """
+
+    def __init__(self):
+        Gtk.VBox.__init__(self)
+        self.set_border_width(40)
+        placeholder = Gtk.Label("<b>Encryption page not yet implemented</b>")
+        placeholder.set_use_markup(True)
+        self.pack_start(placeholder, False, False, 0)
+
+    def update_strategy(self, info):
+        self.info = info
+        info.owner.set_can_next(True)
+
+
 class InstallerPartitioningPage(BasePage):
     """ Dual boot + partitioning page """
 
@@ -538,6 +553,9 @@ class InstallerPartitioningPage(BasePage):
     # Dual boot page
     dbpage = None
     mpage = None
+
+    # Advanced partitionining (enc/lvm)
+    advpage = None
 
     def __init__(self):
         BasePage.__init__(self)
@@ -558,6 +576,9 @@ class InstallerPartitioningPage(BasePage):
         self.mpage = ManualPage()
         self.stack.add_named(self.mpage, "manual")
 
+        self.advpage = AdvancedOptionsPage()
+        self.stack.add_named(self.advpage, "advanced")
+
         self.stack.set_visible_child_name("automatic")
 
     def get_title(self):
@@ -577,15 +598,14 @@ class InstallerPartitioningPage(BasePage):
             print("FATAL: No strategy")
             sys.exit(0)
 
-        skips = [
+        can_enc = [
             EmptyDiskStrategy,
-            WipeDiskStrategy,
-            ReplaceOSStrategy,
+            WipeDiskStrategy
         ]
-        for sk in skips:
+        for sk in can_enc:
             if isinstance(info.strategy, sk):
-                self.stack.set_visible_child_name("automatic")
-                self.info.owner.skip_page()
+                self.stack.set_visible_child_name("advanced")
+                self.advpage.update_strategy(info)
                 return
         if isinstance(info.strategy, DualBootStrategy):
             self.stack.set_visible_child_name("dual-boot")
@@ -593,6 +613,10 @@ class InstallerPartitioningPage(BasePage):
         elif isinstance(info.strategy, UserPartitionStrategy):
             self.mpage.update_strategy(info)
             self.stack.set_visible_child_name("manual")
+        elif isinstance(info.strategy, ReplaceOSStrategy):
+            self.stack.set_visible_child_name("automatic")
+            self.info.owner.skip_page()
+            return
         else:
             print("FATAL: Unknown strategy type!")
             sys.exit(0)
