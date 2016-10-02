@@ -281,6 +281,38 @@ class DiskOpCreatePhysicalVolume(DiskOpCreatePartition):
         return True
 
 
+class DiskOpCreateVolumeGroup(BaseDiskOp):
+    """ Create a VolumeGroup from (currently) a single PhysicalVolume """
+
+    # Which part to create this volume group from
+    part = None
+
+    # Path of the device..
+    path = None
+
+    # Name of this volume group
+    vg_name = None
+
+    def __init__(self, device, part, vg_name):
+        BaseDiskOp.__init__(self, device)
+        self.part = part
+        self.vg_name = vg_name
+
+        self.path = "/dev/mapper/{}".format(vg_name)
+
+    def apply(self, disk, simulate):
+        cmd = "/sbin/vgcreate {} {}".format(self.vg_name, self.part.path)
+        if simulate:
+            cmd += " --test"
+        # Check first
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors(e)
+            return False
+        return True
+
+
 class DiskOpUseSwap(BaseDiskOp):
     """ Use an existing swap paritition """
 
