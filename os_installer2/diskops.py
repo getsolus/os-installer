@@ -343,11 +343,9 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
     def apply(self, disk, simulate):
         return True
 
-    def apply_format(self, disk, simulate):
+    def apply_format(self, disk):
         self.part = self.pv_op.part
         cmd = "/sbin/vgcreate --yes {} {}".format(self.vg_name, self.part.path)
-        if simulate:
-            return True
         # Check first
         try:
             subprocess.check_call(cmd, shell=True)
@@ -383,7 +381,7 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
     def apply(self, disk, simulate):
         return True
 
-    def apply_format(self, disk, simulate):
+    def apply_format(self, disk):
         if "%" in self.lv_size:
             size_arg = "-l {}".format(self.lv_size)
         else:
@@ -391,8 +389,6 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
 
         cmd = "/sbin/lvcreate -n {} {} {}".format(
             self.lv_name, size_arg, self.vg_name)
-        if simulate:
-            return True
         try:
             subprocess.check_call(cmd, shell=True)
         except Exception as e:
@@ -605,7 +601,7 @@ class DiskOpFormatRootLate(DiskOpFormatPartition):
     def apply(self, disk, simulate):
         return True
 
-    def apply_format(self):
+    def apply_format(self, disk):
         cmd = "mkfs.ext4 -F {}".format(self.part.path)
         try:
             subprocess.check_call(cmd, shell=True)
@@ -651,7 +647,7 @@ class DiskOpFormatSwapLate(DiskOpFormatPartition):
     def apply(self, disk, simulate):
         return True
 
-    def apply_format(self):
+    def apply_format(self, disk):
         cmd = "mkswap {}".format(self.part.path)
         try:
             subprocess.check_call(cmd, shell=True)

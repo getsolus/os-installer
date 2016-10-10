@@ -570,14 +570,24 @@ class InstallerProgressPage(BasePage):
         ]
 
         for op in ops:
-            if type(op) not in post_types:
+            is_type = False
+            for t in post_types:
+                if isinstance(op, t):
+                    is_type = True
+                    break
+            if not is_type:
+                print("Not op: {}".format(op.describe()))
                 continue
+            print("Debug: next op apply_format ...")
+            print(op.describe())
             # Wait for device to show up!
-            if not self.wait_disk(op):
-                return False
+            if isinstance(op, DiskOpCreatePartition):
+                if not self.wait_disk(op):
+                    return False
             if not op.apply_format(disk):
                 e = op.get_errors()
                 self.set_error_message("Failed to apply format: {}".format(e))
+                print(op.describe())
                 return False
 
         return True
