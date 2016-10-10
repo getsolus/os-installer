@@ -23,6 +23,7 @@ from .diskops import DiskOpUseSwap
 from .diskops import DiskOpFormatSwap
 from .diskops import DiskOpFormatHome
 from .diskops import DiskOpUseHome
+from .diskops import DiskOpCreateBoot
 from .diskops import DiskOpCreatePhysicalVolume
 from .diskops import DiskOpCreateVolumeGroup
 from .diskops import DiskOpCreateLogicalVolume
@@ -32,6 +33,8 @@ from . import MIN_REQUIRED_SIZE, MB, GB
 SWAP_USE_THRESHOLD = 15 * GB
 ESP_FREE_REQUIRED = 60 * MB
 ESP_MIN_SIZE = 512
+
+BOOT_MIN_SIZE = 300 * MB
 
 
 def find_best_swap_size(longsize):
@@ -284,6 +287,7 @@ class EmptyDiskStrategy(DiskStrategy):
 
         size_eat = 0
         if info.bootloader_install:
+            # *Always* consume an ESP
             if info.bootloader_sz == 'c':
                 size_eat += find_best_esp_size(self.drive.size)
                 op = DiskOpCreateESP(self.drive.device, None, size_eat)
@@ -291,9 +295,17 @@ class EmptyDiskStrategy(DiskStrategy):
 
         # NAUGHTY! Figure out a unique LVM2 ID
         if self.use_lvm2:
+
+            # First things first, let's create /boot. Always need this even
+            # if we don't explicitly install GRUB itself
+            if not self.is_uefi():
+                size_eat += BOOT_MIN_SIZE
+                op = DiskOpCreateBoot(self.drive.device, None, size_eat)
+                self.push_operation(op)
+
             vg_name = "SolusSystem"
             pv_op = DiskOpCreatePhysicalVolume(
-                self.drive.device, None, self.drive.size)
+                self.drive.device, None, self.drive.size - size_eat)
             self.push_operation(pv_op)
             vg_op = DiskOpCreateVolumeGroup(self.drive.device, pv_op, vg_name)
             self.push_operation(vg_op)

@@ -208,6 +208,43 @@ class DiskOpCreateESP(DiskOpCreatePartition):
         return True
 
 
+class DiskOpCreateBoot(DiskOpCreatePartition):
+    """ Create a new boot partition """
+
+    def __init__(self, device, ptype, size):
+        DiskOpCreatePartition.__init__(
+            self,
+            device,
+            ptype,
+            "ext4",
+            size)
+
+    def describe(self):
+        return "Create {} /boot partition on {}".format(
+            format_size_local(self.size, True), self.device.path)
+
+    def apply(self, disk, simulate):
+        """ Create the ext4 partition first """
+        b = DiskOpCreatePartition.apply(self, disk, simulate)
+        if not b:
+            return b
+        try:
+            self.part.setFlag(parted.PARTITION_BOOT)
+        except Exception as e:
+            self.set_errors("Cannot set /boot type: {}".format(e))
+            return False
+        return True
+
+    def apply_format(self, disk):
+        cmd = "mkfs.ext4 -F {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
+
+
 class DiskOpCreateRoot(DiskOpCreatePartition):
     """ Create a new root partition """
 
