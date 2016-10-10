@@ -37,6 +37,16 @@ ESP_MIN_SIZE = 512
 BOOT_MIN_SIZE = 300 * MB
 
 
+class DummyPart:
+    """ Used in place of a real parted partition for LVM2 """
+
+    path = None
+
+    def __init__(self, path):
+        """ Create a new DummyPart from the given path """
+        self.path = path
+
+
 def find_best_swap_size(longsize):
     gbs = longsize / GB
     if gbs > 50:
@@ -303,9 +313,8 @@ class EmptyDiskStrategy(DiskStrategy):
                 op = DiskOpCreateESP(self.drive.device, None, size_eat)
                 self.push_operation(op)
 
-        # NAUGHTY! Figure out a unique LVM2 ID
+        # Create LVM2 base specifics
         if self.use_lvm2:
-
             # First things first, let's create /boot. Always need this even
             # if we don't explicitly install GRUB itself
             if not self.is_uefi():
@@ -313,6 +322,7 @@ class EmptyDiskStrategy(DiskStrategy):
                 op = DiskOpCreateBoot(self.drive.device, None, size_eat)
                 self.push_operation(op)
 
+            # NAUGHTY! Figure out a unique LVM2 ID
             vg_name = "SolusSystem"
             pv_op = DiskOpCreatePhysicalVolume(
                 self.drive.device, None, self.drive.size - size_eat)
@@ -320,10 +330,30 @@ class EmptyDiskStrategy(DiskStrategy):
             vg_op = DiskOpCreateVolumeGroup(self.drive.device, pv_op, vg_name)
             self.push_operation(vg_op)
 
-            # Create a root partition on the whole thang
+            # Can we create swap?
+            tnew = self.drive.size - size_eat
+            if tnew >= SWAP_USE_THRESHOLD:
+                new_swap_size = find_best_swap_size(self.drive.size)
+                tnew -= new_swap_size
+                size = "{}".format(new_swap_size)
+                # Create swap volume
+                op = DiskOpCreateLogicalVolume(
+                    self.drive.device, vg_name, "Swap", size)
+                self.push_operation(op)
+                # Format the swap on the LVM2 LV
+                self.push_operation(DiskOpFormatSwap(
+                    self.drive.device, DummyPart(op.path)))
+                # Mark it used and get the path in place
+                self.push_operation(DiskOpUseSwap(
+                    self.drive.device, DummyPart(op.path)))
+
+            # Create a root partition on the whole thang from remaining space
             lv_op = DiskOpCreateLogicalVolume(
                 self.drive.device, vg_name, "Root", "100%FREE")
             self.push_operation(lv_op)
+            # Format the root partition
+            self.push_operation(DiskOpFormatRoot(
+                self.drive.device, DummyPart(lv_op.path)))
 
             return
 
