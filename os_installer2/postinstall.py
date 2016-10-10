@@ -15,6 +15,7 @@ import subprocess
 import os
 from collections import OrderedDict
 from .diskops import DiskOpCreateSwap, DiskOpUseSwap, DiskOpUseHome
+from .diskops import DiskOpCreateBoot
 import shutil
 
 
@@ -560,6 +561,14 @@ class PostInstallFstab(PostInstallStep):
                 i = "UUID={}\t/home\t{}\t{}\t0\t2"
                 appends.append(desc)
                 appends.append(i.format(huuid, fs, ext4_ops))
+                continue
+            elif isinstance(op, DiskOpCreateBoot):
+                buuid = get_part_uuid(op.part.path)
+                fs = op.fstype
+                desc = "# {} at time of installation".format(op.part.path)
+                i = "UUID={}\t/boot\t{}0\t2"
+                appends.append(desc)
+                appends.append(i.format(buuid, fs, ext4_ops))
                 continue
             if disk.type == "gpt" and strat.is_uefi():
                 continue
