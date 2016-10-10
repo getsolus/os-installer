@@ -343,8 +343,15 @@ class EmptyDiskStrategy(DiskStrategy):
     def get_root_partition(self):
         """ Get our root partition """
         for op in self.get_operations():
-            if isinstance(op, DiskOpCreateRoot):
-                return op.part.path
+            # For LVM2 just look for the "Root" LV
+            if self.use_lvm2:
+                if isinstance(op, DiskOpCreateLogicalVolume):
+                    if op.lv_name == "Root":
+                        return op.path
+            else:
+                # Look for where we explicitly create /
+                if isinstance(op, DiskOpCreateRoot):
+                    return op.part.path
         return None
 
 
