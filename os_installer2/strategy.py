@@ -18,9 +18,11 @@ from .diskops import DiskOpCreateRoot
 from .diskops import DiskOpCreateSwap
 from .diskops import DiskOpCreateESP
 from .diskops import DiskOpFormatRoot
+from .diskops import DiskOpFormatRootLate
 from .diskops import DiskOpResizeOS
 from .diskops import DiskOpUseSwap
 from .diskops import DiskOpFormatSwap
+from .diskops import DiskOpFormatSwapLate
 from .diskops import DiskOpFormatHome
 from .diskops import DiskOpUseHome
 from .diskops import DiskOpCreateBoot
@@ -341,7 +343,7 @@ class EmptyDiskStrategy(DiskStrategy):
                     self.drive.device, vg_name, "Swap", size)
                 self.push_operation(op)
                 # Format the swap on the LVM2 LV
-                self.push_operation(DiskOpFormatSwap(
+                self.push_operation(DiskOpFormatSwapLate(
                     self.drive.device, DummyPart(op.path)))
                 # Mark it used and get the path in place
                 self.push_operation(DiskOpUseSwap(
@@ -352,7 +354,7 @@ class EmptyDiskStrategy(DiskStrategy):
                 self.drive.device, vg_name, "Root", "100%FREE")
             self.push_operation(lv_op)
             # Format the root partition
-            self.push_operation(DiskOpFormatRoot(
+            self.push_operation(DiskOpFormatRootLate(
                 self.drive.device, DummyPart(lv_op.path)))
 
             return

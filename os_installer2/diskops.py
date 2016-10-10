@@ -341,6 +341,9 @@ class DiskOpCreateVolumeGroup(BaseDiskOp):
         self.path = "/dev/mapper/{}".format(vg_name)
 
     def apply(self, disk, simulate):
+        return True
+
+    def apply_format(self, disk, simulate):
         self.part = self.pv_op.part
         cmd = "/sbin/vgcreate --yes {} {}".format(self.vg_name, self.part.path)
         if simulate:
@@ -378,6 +381,9 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
         self.lv_size = lv_size
 
     def apply(self, disk, simulate):
+        return True
+
+    def apply_format(self, disk, simulate):
         if "%" in self.lv_size:
             size_arg = "-l {}".format(self.lv_size)
         else:
@@ -586,6 +592,29 @@ class DiskOpFormatRoot(DiskOpFormatPartition):
         return True
 
 
+class DiskOpFormatRootLate(DiskOpFormatPartition):
+    """ Format the root partition """
+
+    def __init__(self, device, part):
+        DiskOpFormatPartition.__init__(self, device, part, "ext4")
+
+    def describe(self):
+        return "Format {} as {} root partition".format(
+            self.part.path, self.format_type)
+
+    def apply(self, disk, simulate):
+        return True
+
+    def apply_format(self):
+        cmd = "mkfs.ext4 -F {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
+
+
 class DiskOpFormatSwap(DiskOpFormatPartition):
     """ Format the swap partition """
 
@@ -600,6 +629,29 @@ class DiskOpFormatSwap(DiskOpFormatPartition):
         if simulate:
             return True
 
+        cmd = "mkswap {}".format(self.part.path)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(self.part.path, e))
+            return False
+        return True
+
+
+class DiskOpFormatSwapLate(DiskOpFormatPartition):
+    """ Format the swap partition """
+
+    def __init__(self, device, part):
+        DiskOpFormatPartition.__init__(self, device, part, "swap")
+
+    def describe(self):
+        return "Use {} as {} swap partition".format(
+            self.part.path, self.format_type)
+
+    def apply(self, disk, simulate):
+        return True
+
+    def apply_format(self):
         cmd = "mkswap {}".format(self.part.path)
         try:
             subprocess.check_call(cmd, shell=True)

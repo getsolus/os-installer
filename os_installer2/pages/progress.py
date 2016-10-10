@@ -20,6 +20,10 @@ from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
 from os_installer2.diskops import DiskOpCreatePartition
 from os_installer2.diskops import DiskOpCreateESP
+from os_installer2.diskops import DiskOpCreateLogicalVolume
+from os_installer2.diskops import DiskOpCreateVolumeGroup
+from os_installer2.diskops import DiskOpFormatRootLate
+from os_installer2.diskops import DiskOpFormatSwapLate
 from os_installer2.postinstall import PostInstallVfs
 from os_installer2.postinstall import PostInstallRemoveLiveConfig
 from os_installer2.postinstall import PostInstallSyncFilesystems
@@ -474,7 +478,12 @@ class InstallerProgressPage(BasePage):
 
     def wait_disk(self, op):
         """ Wait for the disk to become available """
-        p = op.part.path
+        if isinstance(op, DiskOpCreateLogicalVolume):
+            p = op.part
+        elif isinstance(op, DiskOpCreateVolumeGroup):
+            p = op.path
+        else:
+            p = op.part.path
 
         self.set_display_string("Verifying existence of {}".format(p))
         count = 0
@@ -552,8 +561,16 @@ class InstallerProgressPage(BasePage):
             pass
 
         # Post-process, format all the things
+        post_types = [
+            DiskOpCreatePartition,
+            DiskOpCreateLogicalVolume,
+            DiskOpCreateVolumeGroup,
+            DiskOpFormatRootLate,
+            DiskOpFormatSwapLate,
+        ]
+
         for op in ops:
-            if not isinstance(op, DiskOpCreatePartition):
+            if type(op) not in post_types:
                 continue
             # Wait for device to show up!
             if not self.wait_disk(op):
@@ -635,12 +652,14 @@ class InstallerProgressPage(BasePage):
 
         # Simulate!
         self.set_display_string("Simulating disk operations")
+        print("SIMULATING")
         if not self.apply_disk_strategy(True):
             self.installing = False
             self.set_error_message("Failed to simulate disk strategy")
             return False
 
         self.past_simulation = True
+        print("NO LONGER SIMULATING")
         # Now do it for real.
         if not self.apply_disk_strategy(False):
             self.installing = False
