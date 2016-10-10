@@ -70,6 +70,10 @@ class DiskStrategy:
     def get_home_dir(self):
         return None
 
+    def get_boot_partition(self):
+        """ On LVM2 setups with BIOS we create a /boot partition """
+        return None
+
     def get_root_partition(self):
         print("FATAL: Unimplemented strategy!!")
         return None
@@ -223,6 +227,12 @@ class EmptyDiskStrategy(DiskStrategy):
     def __init__(self, dp, drive):
         DiskStrategy.__init__(self, dp, drive)
         self.drive = drive
+
+    def get_boot_partition(self):
+        for op in self.get_operations():
+            if not isinstance(op, DiskOpCreateBoot):
+                continue
+            return op.part.path
 
     def requires_separate_boot(self):
         """ Determine if we need a separate boot partition too """

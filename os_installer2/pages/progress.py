@@ -609,7 +609,21 @@ class InstallerProgressPage(BasePage):
         self.mount_tracker[home] = target
 
         print("DEBUG: /home ({}) mounted at {}".format(home, target))
-        # TODO: Mount home if it is needed
+        return True
+
+    def maybe_mount_boot(self):
+        strategy = self.info.strategy
+        boot = strategy.get_boot_partition()
+        if not boot:
+            return True
+        target = os.path.join(self.get_installer_target_filesystem(),
+                              "boot")
+        if not self.dm.do_mount(boot, target, "auto", "rw"):
+            self.set_error_message("Cannot mount boot partition")
+            return False
+        self.mount_tracker[boot] = target
+
+        print("DEBUG: /boot ({}) mounted at {}".format(boot, target))
         return True
 
     def install_thread(self):
@@ -645,10 +659,17 @@ class InstallerProgressPage(BasePage):
             self.installing = False
             return False
 
-        # TODO: Mount target filesystem
+        # Mount the / filesystem
         if not self.mount_target_filesystem():
             self.unmount_all()
             self.set_error_message("Failed to mount target!")
+            self.installing = False
+            return False
+
+        # If we have a /boot, mount it here
+        if not self.maybe_mount_boot():
+            self.set_error_message("Failed to mount /boot")
+            self.unmount_all()
             self.installing = False
             return False
 
