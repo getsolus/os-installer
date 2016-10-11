@@ -373,7 +373,7 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
 
     def __init__(self, device, vg_name, lv_name, lv_size):
         BaseDiskOp.__init__(self, device)
-        self.path = "/dev/mapper/{}/{}".format(vg_name, lv_name)
+        self.path = "/dev/{}/{}".format(vg_name, lv_name)
         self.vg_name = vg_name
         self.lv_name = lv_name
         self.lv_size = lv_size
