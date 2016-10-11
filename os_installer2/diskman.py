@@ -388,7 +388,7 @@ class DiskManager:
         }
 
         # Set up UEFI knowledge
-        if os.path.exists("/sys/firmware/efi2"):
+        if os.path.exists("/sys/firmware/efi"):
             self.is_uefi = True
             pl_f = "/sys/firmware/efi/fw_platform_size"
             if os.path.exists(pl_f):
