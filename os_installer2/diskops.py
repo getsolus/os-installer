@@ -339,6 +339,9 @@ class DiskOpCreateLUKSContainer(DiskOpCreatePartition):
             cmd = "/usr/sbin/cryptsetup -d {} luksFormat {}".format(
                 tmpfile.name, self.part.path)
 
+            # Not wanting to run into issues..
+            cmd += " --force-password --batch-mode"
+
             # SSD? --allow-discards
             dev_path = self.device.path
             if DiskManager.is_device_ssd(dev_path):
