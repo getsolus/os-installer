@@ -18,6 +18,16 @@ import subprocess
 import tempfile
 
 
+class DummyPart:
+    """ Used in place of a real parted partition for LVM2 """
+
+    path = None
+
+    def __init__(self, path):
+        """ Create a new DummyPart from the given path """
+        self.path = path
+
+
 class BaseDiskOp:
     """ Basis of all disk operations """
 
@@ -394,6 +404,34 @@ class DiskOpCreatePhysicalVolume(DiskOpCreatePartition):
         except Exception as e:
             self.set_errors("Cannot set root as LVM: {}".format(e))
             return False
+        return True
+
+
+class DiskOpCreateLUKSPhysicalVolume(BaseDiskOp):
+    """ Create a new physical volume """
+
+    luks_op = None
+    part = None
+
+    def __init__(self, device, luks_op):
+        BaseDiskOp.__init__(self, device)
+        self.luks_op = luks_op
+        self.part = DummyPart(self.luks_op.mapper_name)
+
+    def describe(self):
+        return "Create physical volume on {}".format(self.luks_op.mapper_name)
+
+    def apply_format(self, disk):
+        fpath = self.luks_op.mapper_name
+        cmd = "/sbin/pvcreate -ff -y {}".format(fpath)
+        try:
+            subprocess.check_call(cmd, shell=True)
+        except Exception as e:
+            self.set_errors("{}: {}".format(fpath, e))
+            return False
+        return True
+
+    def apply(self, disk, simulate):
         return True
 
 

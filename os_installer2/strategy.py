@@ -13,6 +13,7 @@
 
 import parted
 from .diskman import SystemPartition
+from .diskops import DummyPart
 from .diskops import DiskOpCreateDisk
 from .diskops import DiskOpCreateRoot
 from .diskops import DiskOpCreateSwap
@@ -37,16 +38,6 @@ ESP_FREE_REQUIRED = 60 * MB
 ESP_MIN_SIZE = 512
 
 BOOT_MIN_SIZE = 300 * MB
-
-
-class DummyPart:
-    """ Used in place of a real parted partition for LVM2 """
-
-    path = None
-
-    def __init__(self, path):
-        """ Create a new DummyPart from the given path """
-        self.path = path
 
 
 def find_best_swap_size(longsize):
