@@ -16,6 +16,7 @@ import os
 from collections import OrderedDict
 from .diskops import DiskOpCreateSwap, DiskOpUseSwap, DiskOpUseHome
 from .diskops import DiskOpCreateBoot
+from .strategy import EmptyDiskStrategy
 import shutil
 
 
@@ -498,6 +499,58 @@ class PostInstallDiskOptimize(PostInstallStep):
 
         if not self.run_in_chroot(cmd):
             self.set_errors("Unable to apply disk optimizations")
+            return False
+        return True
+
+
+class PostInstallDracut(PostInstallStep):
+    """ Rebuild dracut for the target """
+
+    def __init__(self, info, installer):
+        PostInstallStep.__init__(self, info, installer)
+
+    def get_display_string(self):
+        return "Rebuild the initramfs"
+
+    def get_kernel_version(self, base_dir):
+        ret = None
+        try:
+            r = os.listdir(os.path.join(base_dir, "lib", "modules"))
+            ret = os.path.basename(r[0])
+        except Exception, ex:
+            self.set_errors("Unable to discover kernel version: {}".format(ex))
+            return None
+        return ret
+
+    def write_lvm2_config(self):
+        fp = "add_dracutmodules+=\"lvm\""
+
+        bpath = self.installer.get_installer_target_filesystem()
+        dconf = os.path.join(bpath, "etc/dracut.conf.d/lvm.conf")
+
+        try:
+            with open(dconf, "w") as hout:
+                os.chmod(dconf, 0o0644)
+                hout.write("{}\n".format(fp))
+        except Exception as e:
+            self.set_errors("Failed to configure lvm2: {}".format(e))
+            return False
+
+    def apply(self):
+        strategy = self.info.strategy
+        if isinstance(strategy, EmptyDiskStrategy):
+            if strategy.use_lvm2:
+                if not self.write_lvm2_config():
+                    return False
+
+        bpath = self.installer.get_installer_target_filesystem()
+        kversion = self.get_kernel_version(bpath)
+        if not kversion:
+            return False
+        try:
+            self.run_in_chroot("dracut -N -f --kver {}".format(kversion))
+        except Exception as e:
+            self.set_errors("Failed to rebuild initramfs: {}".format(e))
             return False
         return True
 
