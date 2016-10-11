@@ -387,7 +387,7 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
         else:
             size_arg = "-L {}".format(self.lv_size)
 
-        cmd = "/sbin/lvcreate -n {} {} {}".format(
+        cmd = "/sbin/lvcreate --yes -n {} {} {}".format(
             self.lv_name, size_arg, self.vg_name)
         try:
             subprocess.check_call(cmd, shell=True)
