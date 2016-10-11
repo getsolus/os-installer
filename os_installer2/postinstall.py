@@ -604,7 +604,7 @@ class PostInstallFstab(PostInstallStep):
                 buuid = get_part_uuid(op.part.path)
                 fs = op.fstype
                 desc = "# {} at time of installation".format(op.part.path)
-                i = "UUID={}\t/boot\t{}0\t2"
+                i = "UUID={}\t/boot\t{}\t{}\t0\t2"
                 appends.append(desc)
                 appends.append(i.format(buuid, fs, ext4_ops))
                 continue
