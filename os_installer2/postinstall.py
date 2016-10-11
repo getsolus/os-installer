@@ -17,6 +17,7 @@ from collections import OrderedDict
 from .diskman import DiskManager
 from .diskops import DiskOpCreateSwap, DiskOpUseSwap, DiskOpUseHome
 from .diskops import DiskOpCreateBoot
+from .diskops import DiskOpCreateLUKSContainer
 from .strategy import EmptyDiskStrategy
 import shutil
 
@@ -666,10 +667,60 @@ class PostInstallBootloader(PostInstallStep):
         """ UEFI no, GRUB yes. """
         return not self.info.strategy.is_uefi()
 
+    def get_luks_uuid(self):
+        """ Get the cached LUKS Container UUID """
+        luks_uuid = None
+        for op in self.info.strategy.get_operations():
+            if isinstance(op, DiskOpCreateLUKSContainer):
+                luks_uuid = op.crypto_uuid
+                break
+        return luks_uuid
+
+    def is_encrypted_install(self):
+        strategy = self.info.strategy
+        if isinstance(strategy, EmptyDiskStrategy):
+            if not strategy.use_lvm2:
+                return False
+            if not strategy.use_encryption:
+                return False
+        else:
+            return False
+        return True
+
+    def apply_bios_config(self):
+        """ Rewrite /etc/default/grub for GRUB_CMDLINE """
+        if not self.is_encrypted_install():
+            return True
+
+        luks_uuid = self.get_luks_uuid()
+        # Now, load in, rewrite as we go..
+        lines = []
+        ogrub = os.path.join(self.installer.get_installer_target_filesystem(),
+                             "etc/default/grub")
+        try:
+            with open("/etc/default/grub", "r") as grub_input:
+                for line in grub_input.readlines():
+                    line = line.replace("\n", "").replace("\r", "").strip()
+
+                    # Have to provide rd.luks.uuid
+                    if "GRUB_CMDLINE_LINUX_DEFAULT=" in line:
+                        line = "GRUB_CMDLINE_LINUX_DEFAULT=\"{}\"".format(
+                            "quiet splash rd.luks.uuid={}".format(luks_uuid))
+                    lines.append(line)
+
+            with open(ogrub, "w") as grub_output:
+                grub_output.write("\n".join(lines))
+        except Exception as ex:
+            self.set_errors("Error writing GRUB defaults: {}".format(ex))
+            return False
+        return True
+
     def apply_bios(self):
         """ Take the BIOS approach to bootloader configuration """
         if not self.info.bootloader_install:
             return True
+        if not self.apply_bios_config():
+            return False
         cmd = "grub-install --force \"{}\"".format(self.info.bootloader_sz)
         if not self.run_in_chroot(cmd):
             self.set_errors("Failed to install GRUB bootloader")
@@ -739,13 +790,17 @@ class PostInstallBootloader(PostInstallStep):
                 return False
 
         # Now write our loader.config itself..
+        cmdline = "root=UUID={} quiet ro".format(uuid)
+        if self.is_encrypted_install():
+            cmdline += " rd.luks.uuid={}".format(self.get_luks_uuid())
+
         try:
             with open(solfile, "w") as solconf:
                 conf = [
                     "title Solus 1.2",
                     "linux /solus/kernel",
                     "initrd /solus/initramfs",
-                    "options root=UUID={} quiet ro".format(uuid)
+                    "options {}".format(cmdline)
                 ]
                 solconf.write("\n".join(conf) + "\n")
         except Exception as e:
