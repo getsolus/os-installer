@@ -525,6 +525,7 @@ class PostInstallDracut(PostInstallStep):
         except Exception as e:
             self.set_errors("Failed to configure lvm2: {}".format(e))
             return False
+        return True
 
     def apply(self):
         strategy = self.info.strategy
