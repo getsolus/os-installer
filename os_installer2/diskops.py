@@ -12,8 +12,10 @@
 #
 
 from os_installer2 import format_size_local
+from .diskman import DiskManager
 import parted
 import subprocess
+import tempfile
 
 
 class BaseDiskOp:
@@ -280,6 +282,80 @@ class DiskOpCreateRoot(DiskOpCreatePartition):
             self.part.setFlag(parted.PARTITION_BOOT)
         except Exception as e:
             self.set_errors("Cannot set root as bootable: {}".format(e))
+            return False
+        return True
+
+
+class DiskOpCreateLUKSContainer(DiskOpCreatePartition):
+    """ Create a new luks container """
+
+    password = None
+    crypto_point = None
+    mapper_name = None
+
+    def __init__(self, device, ptype, size, password):
+        DiskOpCreatePartition.__init__(
+            self,
+            device,
+            ptype,
+            "Linux LVM",
+            size)
+        self.password = password
+        # Unimportant to the installation, we just need somewhere to access now
+        self.crypto_point = "solInstallerCrypto"
+        self.mapper_name = "/dev/mapper/{}".format(self.crypto_point)
+
+    def describe(self):
+        return "Create {} LUKS container on {}".format(
+            format_size_local(self.size, True), self.device.path)
+
+    def create_temp_dir(self, suffix='installer'):
+        """ Create a named temp dir. If it fails, return none """
+        try:
+            mdir = tempfile.mkdtemp(suffix=suffix)
+            return mdir
+        except Exception as e:
+            print("Error constructing temp directory: {}".format(e))
+            return None
+
+    def apply_format(self, disk):
+        # Write the password out to create/
+        tmpfile = tempfile.NamedTemporaryFile(delete=True)
+        try:
+            tmpfile.write(self.password)
+            tmpfile.flush()
+
+            # pass cryptsetup the password file and format it
+            cmd = "/usr/sbin/cryptsetup -d {} luksFormat {}".format(
+                tmpfile.name, self.part.path)
+
+            # SSD? --allow-discards
+            dev_path = self.device.path
+            if DiskManager.is_device_ssd(dev_path):
+                cmd += " --allow-discards"
+
+            subprocess.check_call(cmd, shell=True)
+
+            # Now we want to open it so it's usable.
+            cmd = "/usr/sbin/cryptsetup -d {} luksOpen {} {} {}".format(
+                tmpfile.name, self.part.path, self.crypto_point)
+            subprocess.check_call(cmd, shell=True)
+        except Exception as ex:
+            self.set_errors("Cannot create LUKS: {}".format(ex))
+            return False
+        finally:
+            tmpfile.close()
+        return True
+
+    def apply(self, disk, simulate):
+        """ Create LUKS partition  """
+        b = DiskOpCreatePartition.apply(self, disk, simulate)
+        if not b:
+            return b
+        try:
+            self.part.setFlag(parted.PARTITION_LVM)
+        except Exception as e:
+            self.set_errors("Cannot set root as LVM: {}".format(e))
             return False
         return True
 
