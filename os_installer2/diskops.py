@@ -358,7 +358,7 @@ class DiskOpCreateLUKSContainer(DiskOpCreatePartition):
             # And now we need the UUID
             cmd = "/usr/sbin/cryptsetup luksUUID {}".format(self.part.path)
             o = subprocess.check_output(cmd, shell=True)
-            self.crypto_uuid = o.split("\n")[0].trim()
+            self.crypto_uuid = o.split("\n")[0].strip()
         except Exception as ex:
             self.set_errors("Cannot create LUKS: {}".format(ex))
             return False
