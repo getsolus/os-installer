@@ -14,6 +14,7 @@
 import subprocess
 import os
 from collections import OrderedDict
+from .diskman import DiskManager
 from .diskops import DiskOpCreateSwap, DiskOpUseSwap, DiskOpUseHome
 from .diskops import DiskOpCreateBoot
 from .strategy import EmptyDiskStrategy
@@ -488,10 +489,9 @@ class PostInstallDiskOptimize(PostInstallStep):
 
     def apply(self):
         dev_path = self.info.strategy.drive.path
-        dm = self.info.owner.get_disk_manager()
 
         cmd = None
-        if dm.is_device_ssd(dev_path):
+        if DiskManager.is_device_ssd(dev_path):
             cmd = "systemctl enable fstrim.timer"
         else:
             # TODO: Support readahead
@@ -572,8 +572,7 @@ class PostInstallFstab(PostInstallStep):
 
         # Determine if SSD optimizations should be considered
         dev_path = self.info.strategy.drive.path
-        dm = self.info.owner.get_disk_manager()
-        ssd = dm.is_device_ssd(dev_path)
+        ssd = DiskManager.is_device_ssd(dev_path)
 
         ext4_ops = "rw,relatime,errors=remount-ro"
         if ssd:

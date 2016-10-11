@@ -474,7 +474,8 @@ class DiskManager:
         if device not in self.devices:
             self.devices.append(fpath)
 
-    def is_device_ssd(self, path):
+    @staticmethod
+    def is_device_ssd(path):
         """ Determine if the device is an SSD """
         nodename = os.path.basename(path)
         fpath = "/sys/block/{}/queue/rotational".format(nodename)
