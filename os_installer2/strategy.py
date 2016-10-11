@@ -337,7 +337,7 @@ class EmptyDiskStrategy(DiskStrategy):
             if tnew >= SWAP_USE_THRESHOLD:
                 new_swap_size = find_best_swap_size(self.drive.size)
                 tnew -= new_swap_size
-                size = "{}".format(new_swap_size)
+                size = "{}B".format(new_swap_size)
                 # Create swap volume
                 op = DiskOpCreateLogicalVolume(
                     self.drive.device, vg_name, "Swap", size)
