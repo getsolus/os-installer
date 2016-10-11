@@ -347,7 +347,7 @@ class DiskOpCreateLUKSContainer(DiskOpCreatePartition):
             subprocess.check_call(cmd, shell=True)
 
             # Now we want to open it so it's usable.
-            cmd = "/usr/sbin/cryptsetup -d {} luksOpen {} {} {}".format(
+            cmd = "/usr/sbin/cryptsetup -d {} luksOpen {} {}".format(
                 tmpfile.name, self.part.path, self.crypto_point)
             subprocess.check_call(cmd, shell=True)
         except Exception as ex:
