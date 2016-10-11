@@ -28,6 +28,8 @@ from .diskops import DiskOpFormatHome
 from .diskops import DiskOpUseHome
 from .diskops import DiskOpCreateBoot
 from .diskops import DiskOpCreatePhysicalVolume
+from .diskops import DiskOpCreateLUKSPhysicalVolume
+from .diskops import DiskOpCreateLUKSContainer
 from .diskops import DiskOpCreateVolumeGroup
 from .diskops import DiskOpCreateLogicalVolume
 from . import MIN_REQUIRED_SIZE, MB, GB
@@ -317,9 +319,23 @@ class EmptyDiskStrategy(DiskStrategy):
 
             # NAUGHTY! Figure out a unique LVM2 ID
             vg_name = "SolusSystem"
-            pv_op = DiskOpCreatePhysicalVolume(
-                self.drive.device, None, self.drive.size - size_eat)
-            self.push_operation(pv_op)
+            if not self.use_encryption:
+                pv_op = DiskOpCreatePhysicalVolume(
+                    self.drive.device, None, self.drive.size - size_eat)
+                self.push_operation(pv_op)
+            else:
+                # First move, create a LUKS Container
+                luks_op = DiskOpCreateLUKSContainer(
+                    self.drive.device, None, self.drive.size - size_eat,
+                    self.enc_password)
+                self.push_operation(luks_op)
+
+                # Now create a physical volume on the LUKS Container
+                pv_op = DiskOpCreateLUKSPhysicalVolume(
+                    self.drive.device, luks_op)
+                self.push_operation(pv_op)
+
+            # From here on out everything is identical.
             vg_op = DiskOpCreateVolumeGroup(self.drive.device, pv_op, vg_name)
             self.push_operation(vg_op)
 
