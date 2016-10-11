@@ -645,6 +645,11 @@ class InstallerProgressPage(BasePage):
             return True
         target = os.path.join(self.get_installer_target_filesystem(),
                               "boot")
+        if not os.path.exists(target):
+            try:
+                os.makedirs(target, mode=0o755)
+            except:
+                return False
         if not self.dm.do_mount(boot, target, "auto", "rw"):
             self.set_error_message("Cannot mount boot partition")
             return False
