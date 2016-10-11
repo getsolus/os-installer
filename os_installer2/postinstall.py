@@ -512,16 +512,6 @@ class PostInstallDracut(PostInstallStep):
     def get_display_string(self):
         return "Rebuild the initramfs"
 
-    def get_kernel_version(self, base_dir):
-        ret = None
-        try:
-            r = os.listdir(os.path.join(base_dir, "lib", "modules"))
-            ret = os.path.basename(r[0])
-        except Exception, ex:
-            self.set_errors("Unable to discover kernel version: {}".format(ex))
-            return None
-        return ret
-
     def write_lvm2_config(self):
         fp = "add_dracutmodules+=\"lvm\""
 
@@ -542,13 +532,8 @@ class PostInstallDracut(PostInstallStep):
             if strategy.use_lvm2:
                 if not self.write_lvm2_config():
                     return False
-
-        bpath = self.installer.get_installer_target_filesystem()
-        kversion = self.get_kernel_version(bpath)
-        if not kversion:
-            return False
         try:
-            self.run_in_chroot("dracut -N -f --kver {}".format(kversion))
+            self.run_in_chroot("dracut -N -f")
         except Exception as e:
             self.set_errors("Failed to rebuild initramfs: {}".format(e))
             return False
