@@ -12,7 +12,6 @@
 #
 
 from os_installer2 import format_size_local
-from .diskman import DiskManager
 import parted
 import subprocess
 import tempfile
@@ -342,11 +341,6 @@ class DiskOpCreateLUKSContainer(DiskOpCreatePartition):
 
             # Not wanting to run into issues..
             cmd += " --force-password --batch-mode"
-
-            # SSD? --allow-discards
-            dev_path = self.device.path
-            if DiskManager.is_device_ssd(dev_path):
-                cmd += " --allow-discards"
 
             subprocess.check_call(cmd, shell=True)
 
