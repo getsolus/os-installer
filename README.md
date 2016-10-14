@@ -19,7 +19,7 @@ Here Be Derghens
 
 This installer changes very often!
 
-![derghenz](https://raw.githubusercontent.com/solus-project/os-installer/ermahgerd-derghuns/landing.png)
+![derghenz](https://raw.githubusercontent.com/solus-project/os-installer/master/landing.png)
 
 
 Authors
