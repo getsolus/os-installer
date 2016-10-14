@@ -758,7 +758,7 @@ class DiskOpFormatSwapLate(DiskOpFormatPartition):
         DiskOpFormatPartition.__init__(self, device, part, "swap")
 
     def describe(self):
-        return "Use {} as {} swap partition".format(
+        return "Format {} as {} partition".format(
             self.part.path, self.format_type)
 
     def apply(self, disk, simulate):
