@@ -652,6 +652,9 @@ class PostInstallFstab(PostInstallStep):
 class PostInstallBootloader(PostInstallStep):
     """ Install the bootloader itself """
 
+    # We record swap uuid into resume= parameter
+    swap_uuid = None
+
     def __init__(self, info, installer):
         PostInstallStep.__init__(self, info, installer)
 
@@ -659,6 +662,17 @@ class PostInstallBootloader(PostInstallStep):
         return "Configuring bootloader.. please wait"
 
     def apply(self):
+        # Determine the swap path
+        swap_path = None
+        for op in self.info.strategy.get_operations():
+            if isinstance(op, DiskOpCreateSwap):
+                swap_path = op.part.path
+            elif isinstance(op, DiskOpUseSwap):
+                swap_path = op.swap_part.path
+
+        if swap_path is not None:
+            self.swap_uuid = get_part_uuid(swap_path)
+
         if self.info.strategy.is_uefi():
             return self.apply_uefi()
         return self.apply_bios()
@@ -689,10 +703,21 @@ class PostInstallBootloader(PostInstallStep):
 
     def apply_bios_config(self):
         """ Rewrite /etc/default/grub for GRUB_CMDLINE """
-        if not self.is_encrypted_install():
+        if not self.is_encrypted_install() and not self.swap_uuid:
             return True
 
-        luks_uuid = self.get_luks_uuid()
+        # Default options
+        options = "quiet splash"
+
+        # Set the LUKS Container UUID
+        if self.is_encrypted_install():
+            luks_uuid = self.get_luks_uuid()
+            options += " rd.luks.uuid={}".format(luks_uuid)
+
+        # Add the resume from swap parameter if necessary
+        if self.swap_uuid is not None:
+            options += " resume=UUID={}".format(self.swap_uuid)
+
         # Now, load in, rewrite as we go..
         lines = []
         ogrub = os.path.join(self.installer.get_installer_target_filesystem(),
@@ -705,7 +730,7 @@ class PostInstallBootloader(PostInstallStep):
                     # Have to provide rd.luks.uuid
                     if "GRUB_CMDLINE_LINUX_DEFAULT=" in line:
                         line = "GRUB_CMDLINE_LINUX_DEFAULT=\"{}\"".format(
-                            "quiet splash rd.luks.uuid={}".format(luks_uuid))
+                            options)
                     lines.append(line)
 
             with open(ogrub, "w") as grub_output:
@@ -793,6 +818,10 @@ class PostInstallBootloader(PostInstallStep):
         cmdline = "root=UUID={} quiet ro".format(uuid)
         if self.is_encrypted_install():
             cmdline += " rd.luks.uuid={}".format(self.get_luks_uuid())
+
+        # Resume from swap
+        if self.swap_uuid is not None:
+            cmdline += " resume=UUID={}".format(self.swap_uuid)
 
         try:
             with open(solfile, "w") as solconf:
