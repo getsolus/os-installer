@@ -727,7 +727,9 @@ class PostInstallBootloader(PostInstallStep):
             spath = "/usr/share/backgrounds/splash.tga"
             tt = self.installer.get_installer_target_filesystem()
             tpath = "{}/boot/grub/splash.tga".format(tt)
+            dpath = os.path.dirname(tpath)
             try:
+                os.makedirs(dpath, 0o0755)
                 shutil.copy(spath, tpath)
             except Exception as e:
                 print(e)
