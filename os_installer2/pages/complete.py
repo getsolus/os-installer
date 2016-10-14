@@ -14,6 +14,7 @@
 from .basepage import BasePage
 from gi.repository import Gtk
 from os_installer2 import join_resource_path as jrp
+import dbus
 
 
 class InstallationCompletePage(BasePage):
@@ -47,6 +48,14 @@ class InstallationCompletePage(BasePage):
         lab.set_property("xalign", 0.5)
         box.pack_start(lab, False, False, 0)
 
+        # Reboot button, everyone loves these..
+        reboot_button = Gtk.Button("Restart now")
+        reboot_button.get_style_context().add_class("suggested-action")
+        reboot_button.set_property("margin-top", 10)
+        reboot_button.set_halign(Gtk.Align.CENTER)
+        reboot_button.connect('clicked', self.reboot)
+        box.pack_start(reboot_button, False, False, 0)
+
     def get_title(self):
         return "Installation complete!"
 
@@ -55,3 +64,13 @@ class InstallationCompletePage(BasePage):
 
     def get_icon_name(self):
         return "start-here-solus"
+
+    def reboot(self, btn, udata=None):
+        try:
+            bus = dbus.SystemBus()
+            rskel = bus.get_object('org.freedesktop.login1',
+                                   '/org/freedesktop/login1')
+            iface = dbus.Interface(rskel, 'org.freedesktop.login1.Manager')
+            iface.Reboot(True)
+        except Exception as ex:
+            print("Exception rebooting: {}".format(ex))
