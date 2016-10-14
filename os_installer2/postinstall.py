@@ -701,13 +701,37 @@ class PostInstallBootloader(PostInstallStep):
             return False
         return True
 
+    def is_lvm2_install(self):
+        strategy = self.info.strategy
+        if isinstance(strategy, EmptyDiskStrategy):
+            if strategy.use_lvm2:
+                return True
+        return False
+
     def apply_bios_config(self):
         """ Rewrite /etc/default/grub for GRUB_CMDLINE """
-        if not self.is_encrypted_install() and not self.swap_uuid:
+        if (not self.is_encrypted_install() and not self.swap_uuid and
+                not self.is_lvm2_install()):
             return True
 
         # Default options
         options = "quiet splash"
+
+        write_splash = False
+        if os.path.exists("/usr/share/backgrounds/splash.tga"):
+            if self.is_lvm2_install():
+                write_splash = True
+
+        # Separate /boot, make the splash.tga available
+        if write_splash:
+            spath = "/usr/share/backgrounds/splash.tga"
+            tt = self.installer.get_installer_target_filesystem()
+            tpath = "{}/boot/grub/splash.tga".format(tt)
+            try:
+                shutil.copy(spath, tpath)
+            except Exception as e:
+                print(e)
+                pass
 
         # Set the LUKS Container UUID
         if self.is_encrypted_install():
@@ -731,6 +755,9 @@ class PostInstallBootloader(PostInstallStep):
                     if "GRUB_CMDLINE_LINUX_DEFAULT=" in line:
                         line = "GRUB_CMDLINE_LINUX_DEFAULT=\"{}\"".format(
                             options)
+                    elif "GRUB_BACKGROUND=" in line and write_splash:
+                        splash_path = "/boot/grub/splash.tga"
+                        line = "GRUB_BACKGROUND=\"{}\"".format(splash_path)
                     lines.append(line)
 
             with open(ogrub, "w") as grub_output:
