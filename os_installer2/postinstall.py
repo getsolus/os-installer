@@ -130,8 +130,13 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
         PostInstallStep.__init__(self, info, installer)
         self.live_packages = [
             "os-installer",
-            "budgie-desktop-branding-livecd"
         ]
+        # Find the branding package to nuke
+        if os.path.exists("/usr/bin/mate-panel"):
+            self.live_packages.append("mate-desktop-branding-livecd")
+        else:
+            self.live_packages.append("budgie-desktop-branding-livecd")
+
         self.original_source = "/usr/share/os-installer"
         self.modified_files = [
             "/etc/lightdm/lightdm.conf",
