@@ -114,6 +114,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.application = app
 
         self.set_title("Installer")
+        self.set_icon_name("system-software-install")
         self.connect("delete-event", self.quit_handler)
 
         self.set_position(Gtk.WindowPosition.CENTER)
