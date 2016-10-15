@@ -139,7 +139,6 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
 
         self.original_source = "/usr/share/os-installer"
         self.modified_files = [
-            "/etc/lightdm/lightdm.conf",
             "/etc/gdm/custom.conf"
         ]
 
