@@ -4,6 +4,6 @@ Icon=system-software-install
 Exec=os-installer-wrapper
 Terminal=false
 Type=Application
-Categories=GNOME;GTK;System;
+Categories=GTK;System;Settings;
 Keywords=Install;SystemSettings;
 
