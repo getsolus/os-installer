@@ -817,6 +817,7 @@ class PostInstallBootloader(PostInstallStep):
 
         updated_uefi = False
         for cmd in commands:
+            cmd += " --force"
             try:
                 subprocess.check_call(cmd, shell=True)
                 updated_uefi = True
