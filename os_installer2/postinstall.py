@@ -860,7 +860,7 @@ class PostInstallBootloader(PostInstallStep):
         try:
             with open(solfile, "w") as solconf:
                 conf = [
-                    "title Solus 1.2",
+                    "title Solus 1.2.1",
                     "linux /solus/kernel",
                     "initrd /solus/initramfs",
                     "options {}".format(cmdline)
