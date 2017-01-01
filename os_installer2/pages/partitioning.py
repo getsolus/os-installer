@@ -46,6 +46,7 @@ class SwapPartition(GObject.Object):
     part = None
 
     def __init__(self, part):
+        GObject.GObject.__init__(self)
         self.part = part
 
 
@@ -311,6 +312,7 @@ class ManualPage(Gtk.VBox):
 
         partSizeActual = part.getLength() * part.disk.device.sectorSize
         partSize = format_size_local(partSizeActual)
+        swp = SwapPartition(part)
         model.append([
             part.path,
             "swap",
@@ -319,7 +321,7 @@ class ManualPage(Gtk.VBox):
             NO_HAZ_ASSIGN,
             partSize,
             None,
-            SwapPartition(part),
+            swp,
             partSizeActual
         ])
 
