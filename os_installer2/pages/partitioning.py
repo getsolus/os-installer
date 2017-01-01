@@ -329,7 +329,7 @@ class ManualPage(Gtk.VBox):
         prober = self.info.prober
 
         model = Gtk.ListStore(str, str, str, bool,
-                              str, str, str, SystemPartition, long)
+                              str, str, str, GObject.GObject, long)
         self.treeview.set_model(model)
         for drive in prober.drives:
             for swap in drive.get_swap_partitions():
