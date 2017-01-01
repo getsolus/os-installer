@@ -716,7 +716,7 @@ class UserPartitionStrategy(DiskStrategy):
     def set_swap_partition(self, part, fmt):
         """ Set the swap partition to use and maybe format """
         self.swap_part = part
-        self.swap_format = part
+        self.swap_format = fmt
 
     def __init__(self, dp, drive):
         DiskStrategy.__init__(self, dp, drive)

@@ -20,6 +20,7 @@ from os_installer2.strategy import WipeDiskStrategy
 from os_installer2.strategy import UserPartitionStrategy
 from os_installer2.diskman import SystemPartition
 from gi.repository import Gtk
+from gi.repository import GObject
 import sys
 
 
@@ -35,6 +36,17 @@ INDEX_PARTITION_SIZE_NUM = 8
 
 ACCEPTABLE_FS_TYPES = ["ext", "ext2", "ext3", "ext4"]
 NO_HAZ_ASSIGN = "Unassigned"
+
+
+class SwapPartition(GObject.Object):
+    """ Wrapper around partition information """
+
+    __gtype_name__ = "OsSwapPartition"
+
+    part = None
+
+    def __init__(self, part):
+        self.part = part
 
 
 class ManualPage(Gtk.VBox):
@@ -307,7 +319,7 @@ class ManualPage(Gtk.VBox):
             NO_HAZ_ASSIGN,
             partSize,
             None,
-            None,
+            SwapPartition(part),
             partSizeActual
         ])
 
@@ -384,6 +396,8 @@ class ManualPage(Gtk.VBox):
             if point == 'swap':
                 swap_format = row[INDEX_PARTITION_FORMAT]
                 swap_obj = row[INDEX_PARTITION_OBJECT]
+                if isinstance(swap_obj, SwapPartition):
+                    swap_obj = swap_obj.part
             elif point == '/home':
                 home_format = row[INDEX_PARTITION_FORMAT]
                 home_obj = row[INDEX_PARTITION_OBJECT]
