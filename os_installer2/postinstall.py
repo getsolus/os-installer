@@ -575,13 +575,8 @@ class PostInstallFstab(PostInstallStep):
 
         appends = []
 
-        # Determine if SSD optimizations should be considered
         dev_path = self.info.strategy.drive.path
-        ssd = DiskManager.is_device_ssd(dev_path)
-
         ext4_ops = "rw,relatime,errors=remount-ro"
-        if ssd:
-            ext4_ops = "discard,{}".format(ext4_ops)
 
         # Add the ESP to /boot/efi
         if strat.is_uefi() and self.info.bootloader_install:
