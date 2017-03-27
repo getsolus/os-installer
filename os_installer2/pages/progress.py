@@ -244,7 +244,7 @@ class InstallerProgressPage(BasePage):
         """ Mount the ESP into the root """
         self.set_display_string("Mounting EFI System Partition")
         root = self.get_installer_target_filesystem()
-        fpath = os.path.join(root, "boot/efi")
+        fpath = os.path.join(root, "boot")
         if not os.path.exists(fpath):
             try:
                 os.makedirs(fpath, mode=0o755)
@@ -390,7 +390,7 @@ class InstallerProgressPage(BasePage):
 
             # Do we skip this guy? Don't traverse what we don't need
             dir_base = dir_root.split("/")[0]
-            if dir_base in ["home", "lost+found"]:
+            if dir_base in ["home", "lost+found", "boot"]:
                 continue
 
             # Create the container directory first
