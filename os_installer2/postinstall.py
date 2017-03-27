@@ -747,6 +747,22 @@ class PostInstallBootloader(PostInstallStep):
             TODO: In future this will be managed by clr-boot-manager itself,
             we're just ensuring that we write the EFI variables
         """
+        # Tell clr-boot-manager where our ESP is for now
+        try:
+            if not os.path.exists("/dev/disk/by-partlabel"):
+                os.makedirs("/dev/disk/by-partlabel", 00755)
+            if os.path.lexists("/dev/disk/by-partlabel/ESP"):
+                os.remove("/dev/disk/by-partlabel/ESP")
+            os.symlink(self.installer.locate_esp(),
+                       "/dev/disk/by-partlabel/ESP")
+        except Exception as e:
+            self.set_errors("Failed to simulate ESP link: {}".format(e))
+            return False
+
+        # Proxy back to CBM
+        if not self.apply_boot_loader():
+            return False
+
         espt = self.installer.get_esp_target()
         ofile = os.path.join(self.get_efi_dir(espt),
                              "goofiboot/goofibootx64.efi")
@@ -779,21 +795,6 @@ class PostInstallBootloader(PostInstallStep):
         if not updated_uefi:
             self.set_errors("Failed to install goofiboot")
             return False
-
-        # Tell clr-boot-manager where our ESP is for now
-        try:
-            if not os.path.exists("/dev/disk/by-partlabel"):
-                os.makedirs("/dev/disk/by-partlabel", 00755)
-            if os.path.lexists("/dev/disk/by-partlabel/ESP"):
-                os.remove("/dev/disk/by-partlabel/ESP")
-            os.symlink(self.installer.locate_esp(),
-                       "/dev/disk/by-partlabel/ESP")
-        except Exception as e:
-            self.set_errors("Failed to simulate ESP link: {}".format(e))
-            return False
-
-        # Proxy back to CBM
-        return self.apply_boot_loader()
 
     def get_ichild(self, root, child):
         t1 = os.path.join(root, child)
