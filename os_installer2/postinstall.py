@@ -795,6 +795,7 @@ class PostInstallBootloader(PostInstallStep):
         if not updated_uefi:
             self.set_errors("Failed to install goofiboot")
             return False
+        return True
 
     def get_ichild(self, root, child):
         t1 = os.path.join(root, child)
