@@ -779,6 +779,19 @@ class PostInstallBootloader(PostInstallStep):
         if not updated_uefi:
             self.set_errors("Failed to install goofiboot")
             return False
+
+        # Tell clr-boot-manager where our ESP is for now
+        try:
+            if not os.path.exists("/dev/disk/by-partlabel"):
+                os.makedirs("/dev/disk/by-partlabel", 00755)
+            if os.path.exists("/dev/disk/by-partlabel/ESP"):
+                os.unlink("/dev/disk/by-partlabel/ESP")
+            os.symlink("/dev/{}".format(self.installer.locate_esp()),
+                       "/dev/disk/by-partlabel/ESP")
+        except Exception as e:
+            self.set_errors("Failed to simulate ESP link: {}".format(e))
+            return False
+
         # Proxy back to CBM
         return self.apply_boot_loader()
 
