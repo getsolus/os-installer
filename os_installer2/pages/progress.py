@@ -721,7 +721,6 @@ class InstallerProgressPage(BasePage):
         # Copy source -> target
         if not self.copy_system():
             self.filesystem_copying = False
-            self.set_error_message("Failed to copy filesystem")
             self.unmount_all()
             self.installing = False
             return False
