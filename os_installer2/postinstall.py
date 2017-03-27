@@ -706,51 +706,6 @@ class PostInstallBootloader(PostInstallStep):
                 return True
         return False
 
-    def apply_bios_config(self):
-        """ Rewrite /etc/default/grub for GRUB_CMDLINE """
-        if (not self.is_encrypted_install() and not self.swap_uuid and
-                not self.is_lvm2_install()):
-            return True
-
-        write_splash = False
-        if os.path.exists("/usr/share/backgrounds/splash.tga"):
-            if self.is_lvm2_install():
-                write_splash = True
-
-        # Separate /boot, make the splash.tga available
-        if write_splash:
-            spath = "/usr/share/backgrounds/splash.tga"
-            tt = self.installer.get_installer_target_filesystem()
-            tpath = "{}/boot/grub/splash.tga".format(tt)
-            dpath = os.path.dirname(tpath)
-            try:
-                os.makedirs(dpath, 0o0755)
-                shutil.copy(spath, tpath)
-            except Exception as e:
-                print(e)
-                pass
-
-        # Now, load in, rewrite as we go..
-        lines = []
-        ogrub = os.path.join(self.installer.get_installer_target_filesystem(),
-                             "etc/default/grub")
-        try:
-            with open("/etc/default/grub", "r") as grub_input:
-                for line in grub_input.readlines():
-                    line = line.replace("\n", "").replace("\r", "").strip()
-
-                    if "GRUB_BACKGROUND=" in line and write_splash:
-                        splash_path = "/boot/grub/splash.tga"
-                        line = "GRUB_BACKGROUND=\"{}\"".format(splash_path)
-                    lines.append(line)
-
-            with open(ogrub, "w") as grub_output:
-                grub_output.write("\n".join(lines))
-        except Exception as ex:
-            self.set_errors("Error writing GRUB defaults: {}".format(ex))
-            return False
-        return True
-
     def apply_boot_loader(self):
         """ Invoke clr-boot-manager itself """
         kdir = os.path.join(self.installer.get_installer_target_filesystem(),
@@ -780,8 +735,6 @@ class PostInstallBootloader(PostInstallStep):
         if not self.info.bootloader_install:
             # Still need detecting from other distros
             return self.apply_boot_loader()
-        if not self.apply_bios_config():
-            return False
         cmd = "grub-install --force \"{}\"".format(self.info.bootloader_sz)
         if not self.run_in_chroot(cmd):
             self.set_errors("Failed to install GRUB bootloader")
