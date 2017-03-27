@@ -244,7 +244,7 @@ class InstallerProgressPage(BasePage):
         """ Mount the ESP into the root """
         self.set_display_string("Mounting EFI System Partition")
         root = self.get_installer_target_filesystem()
-        fpath = os.path.join(root, "boot")
+        fpath = os.path.join(root, "boot/efi")
         if not os.path.exists(fpath):
             try:
                 os.makedirs(fpath, mode=0o755)
