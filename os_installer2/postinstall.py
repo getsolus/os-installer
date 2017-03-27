@@ -577,17 +577,6 @@ class PostInstallFstab(PostInstallStep):
 
         ext4_ops = "rw,relatime,errors=remount-ro"
 
-        # Add the ESP to /boot
-        if strat.is_uefi() and self.info.bootloader_install:
-            esp = self.installer.locate_esp()
-            uuid = get_part_uuid(esp, True)
-            if uuid:
-                esp_ent = "PARTUUID={}\t/boot\tvfat\tdefaults\t0\t0"
-                appends.append(esp_ent.format(uuid))
-            else:
-                esp_ent = "{}\t/boot\tvfat\tdefaults\t0\t0"
-                appends.append(esp_ent.format(esp))
-
         for op in strat.get_operations():
             # TODO: Add custom mountpoints here!
             # Skip swap for GPT/UEFI
