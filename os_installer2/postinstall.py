@@ -784,9 +784,9 @@ class PostInstallBootloader(PostInstallStep):
         try:
             if not os.path.exists("/dev/disk/by-partlabel"):
                 os.makedirs("/dev/disk/by-partlabel", 00755)
-            if os.path.exists("/dev/disk/by-partlabel/ESP"):
-                os.unlink("/dev/disk/by-partlabel/ESP")
-            os.symlink("/dev/{}".format(self.installer.locate_esp()),
+            if os.path.lexists("/dev/disk/by-partlabel/ESP"):
+                os.remove("/dev/disk/by-partlabel/ESP")
+            os.symlink(self.installer.locate_esp(),
                        "/dev/disk/by-partlabel/ESP")
         except Exception as e:
             self.set_errors("Failed to simulate ESP link: {}".format(e))
