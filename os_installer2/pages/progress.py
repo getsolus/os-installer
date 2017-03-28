@@ -472,7 +472,8 @@ class InstallerProgressPage(BasePage):
                     # Update progress
                     self.filesystem_copied_size += st.st_size
                 except Exception as ex:
-                    self.set_error_message("Permissions issue: {}".format(ex))
+                    self.set_error_message("Permissions issue: {} {}".format(
+                        ex, d))
                     return False
 
         self.set_display_string("Finalizing file copy")
