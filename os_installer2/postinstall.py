@@ -134,6 +134,8 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
         # Find the branding package to nuke
         if os.path.exists("/usr/bin/mate-panel"):
             self.live_packages.append("mate-desktop-branding-livecd")
+        elif os.path.exists("/usr/bin/gnome-shell"):
+            self.live_packages.append("gnome-desktop-branding-livecd")
         else:
             self.live_packages.append("budgie-desktop-branding-livecd")
 
