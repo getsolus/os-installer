@@ -272,7 +272,8 @@ class EmptyDiskStrategy(DiskStrategy):
             # MBR you can go anywhere you want.
             paths = [
                 (self.dsc(x), x.path) for x in self.dp.drives
-                if x.path != self.drive.path and x.disk.type == "msdos"
+                if x.path != self.drive.path and x.disk is not None and
+                x.disk.type == "msdos"
             ]
             paths.append((self.dsc(self.drive), self.drive.path))
             paths.reverse()
