@@ -20,25 +20,6 @@ class BasePage(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
 
-        self.title = Gtk.Label(u"<span font-size='xx-large'>{}</span>".format(
-                               self.get_title()))
-        self.title.set_use_markup(True)
-
-        self.image = Gtk.Image()
-        self.image.set_from_icon_name(self.get_icon_name(),
-                                      Gtk.IconSize.DIALOG)
-        self.image.set_padding(10, 10)
-
-        header = Gtk.HBox()
-        header.pack_start(self.image, False, False, 0)
-        header.pack_start(self.title, False, False, 0)
-
-        header.get_style_context().add_class("primary-toolbar")
-
-        self.pack_start(header, False, True, 0)
-        self.image.set_margin_start(20)
-        self.title.set_margin_start(10)
-
     def get_title(self):
         return None
 

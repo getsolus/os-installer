@@ -103,6 +103,9 @@ class MainWindow(Gtk.ApplicationWindow):
     can_quit = True
     is_final_step = False
 
+    image_step = None
+    label_step = None
+
     def quit_handler(self, w, udata=None):
         """ Ensure quit stuff is sane ... """
         if not self.can_quit:
@@ -113,11 +116,23 @@ class MainWindow(Gtk.ApplicationWindow):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
 
-        header = Gtk.HeaderBar.new()
-        header.set_show_close_button(True)
-        self.set_titlebar(header)
+        Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", True)
 
-        self.set_title("Installer")
+        self.headerbar = Gtk.HeaderBar.new()
+        self.headerbar.set_show_close_button(True)
+        self.set_titlebar(self.headerbar)
+
+        self.image_step = Gtk.Image.new_from_icon_name("system-software-install", Gtk.IconSize.LARGE_TOOLBAR)
+        self.image_step.set_pixel_size(32)
+        self.image_step.set_property("margin", 4)
+        self.label_step = Gtk.Label.new("")
+
+        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        box.pack_start(self.label_step, False, False, 0)
+        self.headerbar.set_custom_title(box)
+        self.headerbar.pack_start(self.image_step)
+
+        self.set_title("")
         self.set_icon_name("system-software-install")
         self.connect("delete-event", self.quit_handler)
 
@@ -135,7 +150,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.installer_stack = Gtk.Stack()
         self.installer_page.pack_start(self.installer_stack, True, True, 0)
 
-        self.stack.add_named(InstallerWelcomePage(self), "welcome")
         self.installer_stack.set_transition_type(ltr)
         self.stack.add_named(self.installer_page, "install")
 
@@ -273,6 +287,11 @@ class MainWindow(Gtk.ApplicationWindow):
         else:
             self.set_can_previous(True)
         page.prepare(self.info)
+        mk = u"<span font-size='x-large'>{}</span>".format(page.get_title())
+        self.label_step.set_markup(mk)
+        self.image_step.set_from_icon_name(page.get_icon_name(),
+                                           Gtk.IconSize.LARGE_TOOLBAR)
+        self.image_step.set_pixel_size(32)
         self.installer_stack.set_visible_child_name(page.get_name())
 
     def set_can_previous(self, can_prev):
