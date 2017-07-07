@@ -113,6 +113,10 @@ class MainWindow(Gtk.ApplicationWindow):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
 
+        header = Gtk.HeaderBar.new()
+        header.set_show_close_button(True)
+        self.set_titlebar(header)
+
         self.set_title("Installer")
         self.set_icon_name("system-software-install")
         self.connect("delete-event", self.quit_handler)
