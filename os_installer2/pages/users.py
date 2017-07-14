@@ -356,8 +356,11 @@ class InstallerUsersPage(BasePage):
     def get_title(self):
         return "Who will use this device?"
 
+    def get_sidebar_title(self):
+        return "Users"
+
     def get_name(self):
         return "users"
 
     def get_icon_name(self):
-        return "system-users-symbolic"
+        return "system-users"

@@ -51,11 +51,14 @@ are in the world and proceed automatically.")
     def get_title(self):
         return "Where are you?"
 
+    def get_sidebar_title(self):
+        return "Location"
+
     def get_name(self):
         return "location"
 
     def get_icon_name(self):
-        return "find-location-symbolic"
+        return "maps"
 
     def prepare(self, info):
         self.info = info

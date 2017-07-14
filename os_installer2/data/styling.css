@@ -7,3 +7,9 @@ scrolledwindow {
     background-image: none;
     background-color: transparent;
 }
+
+.header-box {
+    background-color: #222D32;
+    box-shadow: 0 2px 3px 1px alpha(black, 0.47);
+    color: white;
+}

@@ -727,13 +727,16 @@ class InstallerPartitioningPage(BasePage):
         self.stack.set_visible_child_name("automatic")
 
     def get_title(self):
-        return "Configure disks"
+        return "Advanced disk configuration"
+
+    def get_sidebar_title(self):
+        return "Disk Configuration"
 
     def get_name(self):
         return "partitioning"
 
     def get_icon_name(self):
-        return "drive-multidisk-symbolic"
+        return "disk-usage-analyzer"
 
     def prepare(self, info):
         self.info = info

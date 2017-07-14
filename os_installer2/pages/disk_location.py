@@ -226,11 +226,14 @@ class InstallerDiskLocationPage(BasePage):
     def get_title(self):
         return "Where should we install?"
 
+    def get_sidebar_title(self):
+        return "Disks"
+
     def get_name(self):
         return "disk-location"
 
     def get_icon_name(self):
-        return "drive-harddisk-system-symbolic"
+        return "disk-utility"
 
     def load_disks(self):
         """ Load the disks within a thread """

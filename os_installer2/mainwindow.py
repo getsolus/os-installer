@@ -30,6 +30,19 @@ import sys
 import threading
 import traceback
 
+class FancyLabel(Gtk.Label):
+
+    page_id = None
+
+    def __init__(self, page):
+        Gtk.Label.__init__(self)
+        self.set_label(page.get_sidebar_title())
+        self.page_id = page.get_name()
+        self.set_halign(Gtk.Align.START)
+        self.set_property("margin", 6)
+        self.set_property("margin-start", 24)
+        self.set_property("margin-end", 24)
+        self.get_style_context().add_class("dim-label")
 
 class InstallInfo:
     """ For tracking purposes between pages """
@@ -89,6 +102,8 @@ class MainWindow(Gtk.ApplicationWindow):
     prev_button = None
     next_button = None
 
+    box_labels = None
+
     pages = list()
     page_index = 0
 
@@ -116,58 +131,76 @@ class MainWindow(Gtk.ApplicationWindow):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
 
-        self.headerbar = Gtk.HeaderBar.new()
-        self.headerbar.set_show_close_button(True)
-        self.set_titlebar(self.headerbar)
+        Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", False)
 
-        self.image_step = Gtk.Image.new_from_icon_name("system-software-install", Gtk.IconSize.LARGE_TOOLBAR)
-        self.image_step.set_pixel_size(32)
-        self.image_step.set_property("margin", 4)
+        self.image_step = Gtk.Image.new_from_icon_name("system-software-install", Gtk.IconSize.DIALOG)
+        self.image_step.set_property("margin", 8)
         self.label_step = Gtk.Label.new("")
+        self.label_step.set_property("margin", 8)
 
-        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
-        box.pack_start(self.label_step, False, False, 0)
-        self.headerbar.set_custom_title(box)
-        self.headerbar.pack_start(self.image_step)
+        self.set_title("Install Solus")
 
-        self.set_title("")
+        self.headerbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        self.headerbox.get_style_context().add_class("header-box")
+        self.headerbox.pack_start(self.image_step, False, False, 0)
+        # self.headerbox.pack_start(self.label_step, False, False, 0)
+        self.box_labels = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        self.box_labels.set_valign(Gtk.Align.START)
+        self.box_labels.set_property("margin-bottom", 40)
+        self.box_labels.set_property("margin-top", 20)
+        self.headerbox.pack_start(self.box_labels, True, True, 0)
+
+        # Vanity! TODO: Select correct icon ..
+        img_vanity = Gtk.Image.new_from_icon_name("budgie-desktop_badge-symbolic", Gtk.IconSize.LARGE_TOOLBAR)
+        img_vanity.set_property("margin", 8)
+        img_vanity.set_property("margin-top", 0)
+        lab_vanity = Gtk.Label.new("Solus Budgie")
+        lab_vanity.set_property("margin-start", 4)
+        lab_vanity.set_property("margin-end", 8)
+        lab_vanity.set_property("margin-bottom", 8)
+        self.headerbox.pack_end(lab_vanity, False, False, 0)
+        self.headerbox.pack_end(img_vanity, False, False, 0)
+
         self.set_icon_name("system-software-install")
         self.connect("delete-event", self.quit_handler)
 
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_default_size(768, 500)
 
-        # Main view
-        self.stack = Gtk.Stack()
-        ltr = Gtk.StackTransitionType.SLIDE_LEFT_RIGHT
-        self.stack.set_transition_type(ltr)
-        self.add(self.stack)
-
         # Main "install" page
         self.installer_page = Gtk.VBox(0)
         self.installer_stack = Gtk.Stack()
         self.installer_page.pack_start(self.installer_stack, True, True, 0)
 
+        self.installer_wrap = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
+        self.installer_wrap.pack_start(self.headerbox, False, False, 0)
+        sep = Gtk.Separator.new(Gtk.Orientation.VERTICAL)
+        self.installer_wrap.pack_start(sep, False, False, 0)
+        self.installer_wrap.pack_start(self.installer_page, True, True, 0)
+
+        ltr = Gtk.StackTransitionType.SLIDE_LEFT_RIGHT
         self.installer_stack.set_transition_type(ltr)
-        self.stack.add_named(self.installer_page, "install")
+        self.add(self.installer_wrap)
+
 
         # nav buttons
-        bbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
-        bbox.set_layout(Gtk.ButtonBoxStyle.SPREAD)
+        bbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
         bbox.set_halign(Gtk.Align.END)
-        self.installer_page.pack_end(bbox, False, 0, 0)
         self.prev_button = Gtk.Button.new_with_label("Previous")
-        self.prev_button.get_style_context().add_class("flat")
         self.next_button = Gtk.Button.new_with_label("Next")
-        self.next_button.get_style_context().add_class("flat")
-        self.next_button.get_style_context().add_class("suggested-action")
-        bbox.add(self.prev_button)
-        bbox.add(self.next_button)
-        bbox.set_margin_bottom(20)
-        bbox.set_margin_end(30)
-        bbox.set_margin_top(20)
+        bbox.pack_start(self.prev_button, False, False, 0)
+        bbox.pack_start(self.next_button, False, False, 0)
+        bbox.set_margin_top(10)
+        bbox.set_margin_bottom(10)
+        bbox.set_margin_end(10)
         self.prev_button.set_property("margin-start", 4)
         self.next_button.set_property("margin-start", 4)
+
+        # sep before nav
+        sep = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
+        sep.set_margin_top(20)
+        self.installer_page.pack_end(bbox, False, 0, 0)
+        self.installer_page.pack_end(sep, False, 0, 0)
 
         self.info = InstallInfo()
         self.info.owner = self
@@ -226,17 +259,12 @@ class MainWindow(Gtk.ApplicationWindow):
         self.set_can_next(True)
         Gdk.threads_leave()
 
-    def phase_install(self):
-        self.stack.set_visible_child_name("install")
-
-    def phase_live(self):
-        """ Consider switching to another view showing how to restart the
-            installer ? """
-        self.application.quit()
 
     def add_installer_page(self, page):
         """ Work a page into the set """
         self.installer_stack.add_named(page, page.get_name())
+        lab = FancyLabel(page)
+        self.box_labels.pack_start(lab, False, False, 0)
         self.pages.append(page)
 
     def next_page(self):
@@ -290,11 +318,16 @@ class MainWindow(Gtk.ApplicationWindow):
         else:
             self.set_can_previous(True)
         page.prepare(self.info)
-        mk = u"<span font-size='x-large'>{}</span>".format(page.get_title())
-        self.label_step.set_markup(mk)
+
+        for label in self.box_labels.get_children():
+            if label.page_id == page.get_name():
+                label.get_style_context().remove_class("dim-label")
+            else:
+                label.get_style_context().add_class("dim-label")
+
         self.image_step.set_from_icon_name(page.get_icon_name(),
-                                           Gtk.IconSize.LARGE_TOOLBAR)
-        self.image_step.set_pixel_size(32)
+                                           Gtk.IconSize.DIALOG)
+        # self.image_step.set_pixel_size(32)
         self.installer_stack.set_visible_child_name(page.get_name())
 
     def set_can_previous(self, can_prev):

@@ -135,7 +135,10 @@ class InstallerProgressPage(BasePage):
         return "install"
 
     def get_icon_name(self):
-        return "install-symbolic"
+        return "system-software-install"
+
+    def get_sidebar_title(self):
+        return "Install Solus"
 
     def begin_install(self):
         """ Begin the real work of doing the installation """

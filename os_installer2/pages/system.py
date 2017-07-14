@@ -139,13 +139,16 @@ class InstallerSystemPage(BasePage):
         self.check_forward()
 
     def get_title(self):
-        return "System Settings"
+        return "Configure the bootloader &amp; hostname"
 
     def get_name(self):
         return "system-settings"
 
+    def get_sidebar_title(self):
+        return "System Settings"
+
     def get_icon_name(self):
-        return "preferences-other-symbolic"
+        return "preferences-system"
 
     def prepare(self, info):
         self.info = info

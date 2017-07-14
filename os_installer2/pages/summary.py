@@ -86,6 +86,9 @@ class InstallerSummaryPage(BasePage):
         items.pack_start(self.system_details, False, False, 2)
 
     def get_title(self):
+        return "Review options before installation"
+
+    def get_sidebar_title(self):
         return "Summary"
 
     def get_name(self):

@@ -54,8 +54,11 @@ class InstallerGeoipPage(BasePage):
     def get_name(self):
         return "geoip-lookup"
 
+    def get_sidebar_title(self):
+        return u"↠" + " Find location"
+
     def get_icon_name(self):
-        return "find-location-symbolic"
+        return "mark-location-symbolic"
 
     def prepare(self, info):
         self.info = info

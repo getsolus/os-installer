@@ -122,8 +122,11 @@ class InstallerLanguagePage(BasePage):
     def get_title(self):
         return "Choose a language"
 
+    def get_sidebar_title(self):
+        return "Language"
+
     def get_name(self):
         return "language"
 
     def get_icon_name(self):
-        return "preferences-desktop-locale-symbolic"
+        return "preferences-desktop-locale"

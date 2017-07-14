@@ -68,11 +68,14 @@ class InstallerTimezonePage(BasePage):
     def get_title(self):
         return "Choose your timezone"
 
+    def get_sidebar_title(self):
+        return "Timezone"
+
     def get_name(self):
         return "timezone"
 
     def get_icon_name(self):
-        return "preferences-system-time-symbolic"
+        return "preferences-system-time"
 
     def change_timezone(self, completion, model, selection):
         item = model[selection]

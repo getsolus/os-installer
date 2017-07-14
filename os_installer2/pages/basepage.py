@@ -20,8 +20,23 @@ class BasePage(Gtk.VBox):
     def __init__(self):
         Gtk.VBox.__init__(self)
 
+        mk = u"<span font-size='x-large'>{}</span>".format(self.get_title())
+        lab = Gtk.Label.new(mk)
+        lab.set_property("margin-top", 10)
+        lab.set_property("margin-start", 20)
+        lab.set_property("margin-bottom", 10)
+        lab.set_use_markup(True)
+        lab.set_halign(Gtk.Align.START)
+        self.pack_start(lab, False, False, 0)
+
+        sep = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
+        self.pack_start(sep, False, False, 0)
+
     def get_title(self):
         return None
+
+    def get_sidebar_title(self):
+        return "Not implemented.."
 
     def get_name(self):
         return None

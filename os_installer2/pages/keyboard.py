@@ -237,11 +237,15 @@ class InstallerKeyboardPage(BasePage):
     def get_title(self):
         return "Choose a keyboard layout"
 
+    def get_sidebar_title(self):
+        return "Keyboard"
+
     def get_name(self):
         return "keyboard"
 
     def get_icon_name(self):
-        return "input-keyboard-symbolic"
+        # Just looks nicer than input-keyboard
+        return "preferences-desktop-keyboard-shortcuts"
 
     def prepare(self, info):
         self.info = info

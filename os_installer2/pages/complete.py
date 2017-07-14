@@ -62,6 +62,9 @@ class InstallationCompletePage(BasePage):
     def get_name(self):
         return "complete"
 
+    def get_sidebar_title(self):
+        return "Complete"
+
     def get_icon_name(self):
         return "start-here-solus"
 
