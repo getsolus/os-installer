@@ -70,18 +70,18 @@ class InstallerSummaryPage(BasePage):
         scroll.add(items)
         scroll.set_overlay_scrolling(False)
         self.locale_details = FramedHeader(
-            "preferences-desktop-locale-symbolic",
+            "preferences-desktop-locale",
             "Language &amp; Region")
         items.pack_start(self.locale_details, False, False, 2)
 
-        self.install_details = FramedHeader("drive-harddisk-system-symbolic",
+        self.install_details = FramedHeader("disk-utility",
                                             "Installation")
         items.pack_start(self.install_details, False, False, 2)
 
-        self.user_details = FramedHeader("system-users-symbolic", "Users")
+        self.user_details = FramedHeader("system-users", "Users")
         items.pack_start(self.user_details, False, False, 2)
 
-        self.system_details = FramedHeader("preferences-other-symbolic",
+        self.system_details = FramedHeader("preferences-system",
                                            "System Details")
         items.pack_start(self.system_details, False, False, 2)
 
@@ -95,7 +95,7 @@ class InstallerSummaryPage(BasePage):
         return "summary"
 
     def get_icon_name(self):
-        return "mail-mark-important-symbolic"
+        return "gnome-todo"
 
     def _clean_label(self, label):
         lab = Gtk.Label(label)
