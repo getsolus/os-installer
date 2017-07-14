@@ -253,11 +253,6 @@ class MainWindow(Gtk.ApplicationWindow):
             except Exception as e:
                 print("Fatal exception initialising: {}".format(e))
 
-        # Allow next again
-        Gdk.threads_enter()
-        self.set_can_next(True)
-        Gdk.threads_leave()
-
 
     def add_installer_page(self, page):
         """ Work a page into the set """
