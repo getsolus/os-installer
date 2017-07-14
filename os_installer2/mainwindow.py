@@ -13,7 +13,6 @@
 from gi.repository import Gtk, GLib, Gdk
 from .diskman import DiskManager
 from .permissions import PermissionsManager
-from .pages.welcome import InstallerWelcomePage
 from .pages.language import InstallerLanguagePage
 from .pages.location import InstallerLocationPage
 from .pages.geoip import InstallerGeoipPage
