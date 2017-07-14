@@ -15,8 +15,23 @@ import sys
 import os
 from os_installer2.application import InstallerApplication
 from os_installer2.permissions import PermissionsManager
-from os_installer2 import SOURCE_FILESYSTEM
-from gi.repository import Gdk, GObject, Gtk
+from os_installer2 import SOURCE_FILESYSTEM, join_resource_path
+from gi.repository import Gdk, GObject, Gtk, Gio
+
+
+def init_css():
+    """ Set up the CSS before we throw any windows up """
+    try:
+        f = Gio.File.new_for_path(join_resource_path("styling.css"))
+        css = Gtk.CssProvider()
+        css.load_from_file(f)
+        screen = Gdk.Screen.get_default()
+        prio = Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        Gtk.StyleContext.add_provider_for_screen(screen,
+                                                 css,
+                                                 prio)
+    except Exception as e:
+        print("Error loading CSS: {}".format(e))
 
 
 if __name__ == "__main__":
@@ -45,6 +60,8 @@ if __name__ == "__main__":
 
     GObject.threads_init()
     Gdk.threads_init()
+
+    init_css()
 
     app = InstallerApplication()
     r = app.run(sys.argv)
