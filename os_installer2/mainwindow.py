@@ -154,6 +154,8 @@ class MainWindow(Gtk.ApplicationWindow):
         self.info = InstallInfo()
         self.info.owner = self
 
+        self.get_style_context().add_class("installer-window")
+
         # Hook up actions
         self.prev_button.connect("clicked", lambda x: self.prev_page())
         self.next_button.connect("clicked", lambda x: self.next_page())
