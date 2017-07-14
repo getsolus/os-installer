@@ -11,5 +11,5 @@ setup(
     packages        = ['os_installer2', 'os_installer2.pages'],
     scripts         = ['os-installer-gtk'],
     classifiers     = [ "License :: OSI Approved :: GPL-2.0 License"],
-    package_data    = {'os_installer2': ['data/*.png', 'data/*.svg']},
+    package_data    = {'os_installer2': ['data/*.png', 'data/*.svg', 'data/*.css']},
 )
