@@ -150,7 +150,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.headerbox.pack_start(self.box_labels, True, True, 0)
 
         # Vanity! TODO: Select correct icon ..
-        img_vanity = Gtk.Image.new_from_icon_name("budgie-desktop_badge-symbolic", Gtk.IconSize.LARGE_TOOLBAR)
+        img_vanity = Gtk.Image.new_from_icon_name("budgie-desktop-symbolic", Gtk.IconSize.LARGE_TOOLBAR)
         img_vanity.set_property("margin", 8)
         img_vanity.set_property("margin-top", 0)
         lab_vanity = Gtk.Label.new("Solus Budgie")
