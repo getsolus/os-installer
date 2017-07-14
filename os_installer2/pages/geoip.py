@@ -94,9 +94,14 @@ class InstallerGeoipPage(BasePage):
             self.dlabel.set_markup("<big>Found location: {}</big>".format(c))
         else:
             self.dlabel.set_markup("<big>Unable to find location</big>")
-        self.info.owner.set_can_next(True)
         self.info.owner.set_can_previous(True)
         self.spinner.stop()
+
+        GLib.timeout_add(1500, self.go_skipping)
+        return False
+
+    def go_skipping(self):
+        self.info.owner.skip_page()
         return False
 
     def get_ip_address(self):
