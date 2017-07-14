@@ -116,8 +116,6 @@ class MainWindow(Gtk.ApplicationWindow):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
 
-        Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", True)
-
         self.headerbar = Gtk.HeaderBar.new()
         self.headerbar.set_show_close_button(True)
         self.set_titlebar(self.headerbar)
