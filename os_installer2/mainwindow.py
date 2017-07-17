@@ -149,11 +149,24 @@ class MainWindow(Gtk.ApplicationWindow):
         self.box_labels.set_property("margin-top", 20)
         self.headerbox.pack_start(self.box_labels, True, True, 0)
 
-        # Vanity! TODO: Select correct icon ..
-        img_vanity = Gtk.Image.new_from_icon_name("budgie-desktop-symbolic", Gtk.IconSize.LARGE_TOOLBAR)
+        vanity_icon = "start-here-symbolic"
+        vanity_string = ""
+
+        if os.path.exists("/usr/bin/budgie-panel"):
+            vanity_icon = "budgie-desktop-symbolic"
+            vanity_string = "Solus Budgie"
+        elif os.path.exists("/usr/bin/gnome-shell"):
+            vanity_string = "Solus GNOME"
+        elif os.path.exists("/usr/bin/mate-panel"):
+            vanity_string = "Solus MATE"
+        else:
+            vanity_icon = "start-here-solus"
+            vanity_string = "Solus"
+
+        img_vanity = Gtk.Image.new_from_icon_name(vanity_icon, Gtk.IconSize.LARGE_TOOLBAR)
         img_vanity.set_property("margin", 8)
         img_vanity.set_property("margin-top", 0)
-        lab_vanity = Gtk.Label.new("Solus Budgie")
+        lab_vanity = Gtk.Label.new(vanity_string)
         lab_vanity.set_property("margin-start", 4)
         lab_vanity.set_property("margin-end", 8)
         lab_vanity.set_property("margin-bottom", 8)
