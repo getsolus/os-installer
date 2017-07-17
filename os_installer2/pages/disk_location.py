@@ -18,13 +18,15 @@ from os_installer2.strategy import DiskStrategyManager
 import threading
 
 
-class BrokenWindowsPage(Gtk.VBox):
+class BrokenWindowsPage(Gtk.Box):
     """ Indicate to the user that they booted in the wrong mode """
 
     owner = None
 
     def __init__(self, owner):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self)
+        self.set_property("orientation", Gtk.Orientation.VERTICAL)
+
         self.owner = owner
 
         img = Gtk.Image.new_from_icon_name("face-crying-symbolic",
@@ -59,7 +61,7 @@ class BrokenWindowsPage(Gtk.VBox):
         self.owner.stack.set_visible_child_name("chooser")
 
 
-class ChooserPage(Gtk.VBox):
+class ChooserPage(Gtk.Box):
     """ Main chooser UI """
 
     combo = None
@@ -72,7 +74,9 @@ class ChooserPage(Gtk.VBox):
     info = None
 
     def __init__(self):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self)
+
+        self.set_property("orientation", Gtk.Orientation.VERTICAL)
         self.set_border_width(40)
 
         # set up the disk selector
@@ -80,7 +84,7 @@ class ChooserPage(Gtk.VBox):
 
         self.pack_start(self.combo, False, False, 0)
 
-        self.strategy_box = Gtk.VBox(0)
+        self.strategy_box = Gtk.Box(Gtk.Orientation.VERTICAL, 0)
         self.strategy_box.set_margin_top(20)
         self.pack_start(self.strategy_box, True, True, 0)
 
@@ -147,11 +151,13 @@ class ChooserPage(Gtk.VBox):
         self.combo.set_active_id(active_id)
 
 
-class WhoopsPage(Gtk.VBox):
+class WhoopsPage(Gtk.Box):
     """ No disks on this system """
 
     def __init__(self):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self)
+
+        self.set_property("orientation", Gtk.Orientation.VERTICAL)
 
         img = Gtk.Image.new_from_icon_name("face-crying-symbolic",
                                            Gtk.IconSize.DIALOG)
@@ -171,11 +177,13 @@ class WhoopsPage(Gtk.VBox):
         self.set_halign(Gtk.Align.CENTER)
 
 
-class LoadingPage(Gtk.HBox):
+class LoadingPage(Gtk.Box):
     """ Spinner/load box """
 
     def __init__(self):
-        Gtk.HBox.__init__(self)
+        Gtk.Box.__init__(self)
+
+        self.set_property("orientation", Gtk.Orientation.HORIZONTAL)
 
         self.spinner = Gtk.Spinner()
         self.pack_start(self.spinner, False, False, 10)

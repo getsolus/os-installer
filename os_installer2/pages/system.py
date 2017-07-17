@@ -38,7 +38,7 @@ class InstallerSystemPage(BasePage):
 
         wid_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
 
-        mbox = Gtk.VBox(0)
+        mbox = Gtk.Box(Gtk.Orientation.VERTICAL, 0)
         mbox.set_margin_top(40)
         self.pack_start(mbox, False, False, 0)
         mbox.set_halign(Gtk.Align.CENTER)

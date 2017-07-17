@@ -33,7 +33,7 @@ class InstallerGeoipPage(BasePage):
     def __init__(self):
         BasePage.__init__(self)
 
-        hbox = Gtk.HBox(0)
+        hbox = Gtk.Box(Gtk.Orientation.HORIZONTAL, 0)
         self.pack_start(hbox, True, True, 0)
         hbox.set_margin_top(20)
         hbox.set_border_width(40)

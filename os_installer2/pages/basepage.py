@@ -14,11 +14,13 @@
 from gi.repository import Gtk
 
 
-class BasePage(Gtk.VBox):
+class BasePage(Gtk.Box):
     """ Base widget for all page implementations to save on duplication. """
 
     def __init__(self):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self)
+
+        self.set_property("orientation", Gtk.Orientation.VERTICAL)
 
         mk = u"<span font-size='x-large'>{}</span>".format(self.get_title())
         lab = Gtk.Label.new(mk)

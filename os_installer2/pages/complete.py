@@ -23,7 +23,7 @@ class InstallationCompletePage(BasePage):
     def __init__(self):
         BasePage.__init__(self)
 
-        box = Gtk.VBox(0)
+        box = Gtk.Box(Gtk.Orientation.VERTICAL, 0)
         self.pack_start(box, True, True, 0)
         box.set_border_width(40)
         box.set_valign(Gtk.Align.CENTER)
