@@ -28,6 +28,7 @@ from .pages.complete import InstallationCompletePage
 import sys
 import threading
 import traceback
+import os
 
 class FancyLabel(Gtk.Label):
 
