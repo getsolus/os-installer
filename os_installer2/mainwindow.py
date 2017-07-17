@@ -157,8 +157,10 @@ class MainWindow(Gtk.ApplicationWindow):
             vanity_icon = "budgie-desktop-symbolic"
             vanity_string = "Solus Budgie"
         elif os.path.exists("/usr/bin/gnome-shell"):
+            vanity_icon = "desktop-environment-gnome"
             vanity_string = "Solus GNOME"
         elif os.path.exists("/usr/bin/mate-panel"):
+            vanity_icon = "mate"
             vanity_string = "Solus MATE"
         else:
             vanity_icon = "start-here-solus"
