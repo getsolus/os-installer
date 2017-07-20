@@ -13,3 +13,9 @@ scrolledwindow {
     box-shadow: 0 2px 3px 1px alpha(black, 0.47);
     color: white;
 }
+
+.arc-theme .header-box {
+    background-color: #2F343F;
+    box-shadow: 0 2px 3px 1px alpha(black, 0.47);
+    color: white;
+}

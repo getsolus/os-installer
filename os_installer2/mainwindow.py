@@ -131,7 +131,8 @@ class MainWindow(Gtk.ApplicationWindow):
         Gtk.ApplicationWindow.__init__(self, application=app)
         self.application = app
 
-        Gtk.Settings.get_default().set_property("gtk-application-prefer-dark-theme", False)
+        settings = Gtk.Settings.get_default()
+        settings.set_property("gtk-application-prefer-dark-theme", False)
 
         self.image_step = Gtk.Image.new_from_icon_name("system-software-install", Gtk.IconSize.DIALOG)
         self.image_step.set_property("margin", 8)
@@ -221,6 +222,9 @@ class MainWindow(Gtk.ApplicationWindow):
         self.info.owner = self
 
         self.get_style_context().add_class("installer-window")
+        gtktheme = settings.get_property("gtk-theme-name").lower()
+        if gtktheme.startswith("arc"):
+            self.get_style_context().add_class("arc-theme")
 
         # Hook up actions
         self.prev_button.connect("clicked", lambda x: self.prev_page())
