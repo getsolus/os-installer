@@ -94,7 +94,7 @@ class InstallerProgressPage(BasePage):
         BasePage.__init__(self)
 
         self.error_msgs = []
-        box = Gtk.Box(Gtk.Orientation.VERTICAL, 0)
+        box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         box.set_border_width(20)
         self.pack_end(box, False, False, 0)
 

@@ -24,9 +24,7 @@ class UserPanel(Gtk.Box):
     """Userpanel. Represents a user. Whoda thunk it. """
 
     def __init__(self, user):
-        Gtk.Box.__init__(self)
-
-        self.set_property("orientation", Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
         self.user = user
 
@@ -289,8 +287,7 @@ class InstallerUsersPage(BasePage):
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
         self.pack_start(self.stack, True, True, 0)
 
-        main_page = Gtk.Box()
-        main_page.set_property("orientation", Gtk.Orientation.VERTICAL)
+        main_page = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         main_page.pack_start(scroller, True, True, 0)
         main_page.pack_start(toolbar, False, False, 0)
         main_page.set_border_width(40)
