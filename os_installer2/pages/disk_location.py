@@ -24,7 +24,7 @@ class BrokenWindowsPage(Gtk.Box):
     owner = None
 
     def __init__(self, owner):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         self.owner = owner
 
@@ -73,7 +73,7 @@ class ChooserPage(Gtk.Box):
     info = None
 
     def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         self.set_property("orientation", Gtk.Orientation.VERTICAL)
         self.set_border_width(40)
@@ -154,7 +154,7 @@ class WhoopsPage(Gtk.Box):
     """ No disks on this system """
 
     def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         img = Gtk.Image.new_from_icon_name("face-crying-symbolic",
                                            Gtk.IconSize.DIALOG)
@@ -178,7 +178,7 @@ class LoadingPage(Gtk.Box):
     """ Spinner/load box """
 
     def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         self.spinner = Gtk.Spinner()
         self.pack_start(self.spinner, False, False, 10)

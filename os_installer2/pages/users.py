@@ -24,7 +24,7 @@ class UserPanel(Gtk.Box):
     """Userpanel. Represents a user. Whoda thunk it. """
 
     def __init__(self, user):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         self.user = user
 

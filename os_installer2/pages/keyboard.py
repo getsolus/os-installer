@@ -23,7 +23,7 @@ class KbLabel(Gtk.Box):
     dname = None
 
     def __init__(self, kb, info):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
 
         self.kb = kb
 

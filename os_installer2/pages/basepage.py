@@ -18,7 +18,7 @@ class BasePage(Gtk.Box):
     """ Base widget for all page implementations to save on duplication. """
 
     def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         mk = u"<span font-size='x-large'>{}</span>".format(self.get_title())
         lab = Gtk.Label.new(mk)

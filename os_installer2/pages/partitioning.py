@@ -64,7 +64,7 @@ class ManualPage(Gtk.Box):
     cur_strategy = None
 
     def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         lab = Gtk.Label("Select custom mount points to use with Solus from "
                         "the available partition selection below.\n"
@@ -431,7 +431,7 @@ class DualBootPage(Gtk.Box):
     info = None
 
     def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         self.set_border_width(40)
 
@@ -559,7 +559,7 @@ class AdvancedOptionsPage(Gtk.Box):
     pw_grid = None
 
     def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         self.set_border_width(40)
         self.info_label = Gtk.Label("<big>Advanced installation options</big>")
