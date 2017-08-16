@@ -184,7 +184,7 @@ class MainWindow(Gtk.ApplicationWindow):
         self.set_default_size(768, 500)
 
         # Main "install" page
-        self.installer_page = Gtk.VBox(0)
+        self.installer_page = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         self.installer_stack = Gtk.Stack()
         self.installer_page.pack_start(self.installer_stack, True, True, 0)
 

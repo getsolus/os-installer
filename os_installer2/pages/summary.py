@@ -22,7 +22,8 @@ class FramedHeader(Gtk.Frame):
 
     def __init__(self, icon_name, title):
         Gtk.Frame.__init__(self)
-        box = Gtk.HBox(0)
+
+        box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
 
         sz = Gtk.IconSize.DIALOG
         image = Gtk.Image.new_from_icon_name(icon_name, sz)
@@ -38,7 +39,7 @@ class FramedHeader(Gtk.Frame):
         label.set_valign(Gtk.Align.START)
         label.set_property("margin", 10)
 
-        self.vbox = Gtk.VBox(0)
+        self.vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         box.pack_end(self.vbox, False, False, 0)
         self.vbox.set_property("margin", 10)
 
@@ -66,7 +67,7 @@ class InstallerSummaryPage(BasePage):
         self.pack_start(scroll, True, True, 0)
         scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
 
-        items = Gtk.VBox(0)
+        items = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         scroll.add(items)
         scroll.set_overlay_scrolling(False)
         self.locale_details = FramedHeader(

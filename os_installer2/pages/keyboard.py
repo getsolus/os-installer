@@ -16,14 +16,15 @@ from gi.repository import Gtk, GnomeDesktop
 import subprocess
 
 
-class KbLabel(Gtk.HBox):
+class KbLabel(Gtk.Box):
     """ View label for locales, save code duping """
 
     kb = None
     dname = None
 
     def __init__(self, kb, info):
-        Gtk.HBox.__init__(self)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+
         self.kb = kb
 
         lab = Gtk.Label("")

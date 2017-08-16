@@ -20,11 +20,11 @@ LABEL_COLUMN = 0
 DATA_COLUMN = 1
 
 
-class UserPanel(Gtk.VBox):
+class UserPanel(Gtk.Box):
     """Userpanel. Represents a user. Whoda thunk it. """
 
     def __init__(self, user):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         self.user = user
 
@@ -287,7 +287,7 @@ class InstallerUsersPage(BasePage):
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_UP_DOWN)
         self.pack_start(self.stack, True, True, 0)
 
-        main_page = Gtk.VBox()
+        main_page = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
         main_page.pack_start(scroller, True, True, 0)
         main_page.pack_start(toolbar, False, False, 0)
         main_page.set_border_width(40)

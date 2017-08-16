@@ -50,7 +50,7 @@ class SwapPartition(GObject.Object):
         self.part = part
 
 
-class ManualPage(Gtk.VBox):
+class ManualPage(Gtk.Box):
     """ Manual partitioning page, mostly TreeView with gparted proxy """
 
     info = None
@@ -64,7 +64,7 @@ class ManualPage(Gtk.VBox):
     cur_strategy = None
 
     def __init__(self):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         lab = Gtk.Label("Select custom mount points to use with Solus from "
                         "the available partition selection below.\n"
@@ -418,7 +418,7 @@ class ManualPage(Gtk.VBox):
         self.info.owner.set_can_next(True)
 
 
-class DualBootPage(Gtk.VBox):
+class DualBootPage(Gtk.Box):
     """ Used to manage the dual boot configuration settings,
         essentially we're just here to resize the users partititon
         and make room for Solus. """
@@ -431,7 +431,7 @@ class DualBootPage(Gtk.VBox):
     info = None
 
     def __init__(self):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
 
         self.set_border_width(40)
 
@@ -441,7 +441,7 @@ class DualBootPage(Gtk.VBox):
         self.info_label.set_halign(Gtk.Align.START)
 
         # Construct dual-boot row
-        hbox = Gtk.HBox(0)
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         hbox.set_margin_top(20)
         self.pack_start(hbox, False, False, 0)
 
@@ -467,7 +467,7 @@ class DualBootPage(Gtk.VBox):
         lab2.get_style_context().add_class("dim-label")
 
         # Now start our row
-        hbox = Gtk.HBox(0)
+        hbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 0)
         hbox.set_margin_top(20)
         self.pack_start(hbox, False, False, 0)
 
@@ -545,7 +545,7 @@ class DualBootPage(Gtk.VBox):
         self.info_label.set_markup(l)
 
 
-class AdvancedOptionsPage(Gtk.VBox):
+class AdvancedOptionsPage(Gtk.Box):
     """ Advanced options for full disk installs, enabling LVM + encryption """
 
     info_label = None
@@ -559,7 +559,8 @@ class AdvancedOptionsPage(Gtk.VBox):
     pw_grid = None
 
     def __init__(self):
-        Gtk.VBox.__init__(self)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=0)
+
         self.set_border_width(40)
         self.info_label = Gtk.Label("<big>Advanced installation options</big>")
         self.info_label.set_margin_bottom(10)
