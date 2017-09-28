@@ -163,6 +163,9 @@ class MainWindow(Gtk.ApplicationWindow):
         elif os.path.exists("/usr/bin/mate-panel"):
             vanity_icon = "mate"
             vanity_string = "Solus MATE"
+        elif os.path.exists("/usr/bin/plasmashell"):
+            vanity_icon = "plasma"
+            vanity_string = "Solus Plasma"
         else:
             vanity_icon = "start-here-solus"
             vanity_string = "Solus"

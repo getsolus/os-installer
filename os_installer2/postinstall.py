@@ -136,6 +136,8 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
             self.live_packages.append("mate-desktop-branding-livecd")
         elif os.path.exists("/usr/bin/gnome-shell"):
             self.live_packages.append("gnome-desktop-branding-livecd")
+        elif os.path.exists("/usr/bin/plasmashell"):
+            self.live_packages.append("plasma-desktop-branding-livecd")
         else:
             self.live_packages.append("budgie-desktop-branding-livecd")
 
