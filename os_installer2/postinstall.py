@@ -746,26 +746,25 @@ class PostInstallBootloader(PostInstallStep):
 
         espt = self.installer.get_esp_target()
         ofile = os.path.join(self.get_efi_dir(espt),
-                             "goofiboot/goofibootx64.efi")
+                             "systemd/systemd-bootx64.efi")
 
         if os.path.exists(ofile):
-            # Update the existing goofiboot stuff, fallback to no nvvars mod
+            # Update the existing bootctl stuff, fallback to no nvvars mod
             commands = [
-                "goofiboot update --path=\"{}\"".format(espt),
-                "goofiboot update --path=\"{}\" --no-variables".format(espt),
-                "goofiboot install --path=\"{}\"".format(espt),
-                "goofiboot install --path=\"{}\" --no-variables".format(espt)
+                "bootctl update --path=\"{}\"".format(espt),
+                "bootctl update --path=\"{}\" --no-variables".format(espt),
+                "bootctl install --path=\"{}\"".format(espt),
+                "bootctl install --path=\"{}\" --no-variables".format(espt)
             ]
-            # Install a fresh goofiboot, fallback to no nvvars mod
+            # Install a fresh systemd-boot, fallback to no nvvars mod
         else:
             commands = [
-                "goofiboot install --path=\"{}\"".format(espt),
-                "goofiboot install --path=\"{}\" --no-variables".format(espt)
+                "bootctl install --path=\"{}\"".format(espt),
+                "bootctl install --path=\"{}\" --no-variables".format(espt)
             ]
 
         updated_uefi = False
         for cmd in commands:
-            cmd += " --force"
             try:
                 subprocess.check_call(cmd, shell=True)
                 updated_uefi = True
@@ -774,7 +773,7 @@ class PostInstallBootloader(PostInstallStep):
                 pass
 
         if not updated_uefi:
-            self.set_errors("Failed to install goofiboot")
+            self.set_errors("Failed to install systemd-boot")
             return False
         return True
 
