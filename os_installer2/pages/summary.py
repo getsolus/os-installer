@@ -58,8 +58,9 @@ class InstallerSummaryPage(BasePage):
     system_details = None
     user_details = None
 
-    def __init__(self):
+    def __init__(self, plasma):
         BasePage.__init__(self)
+        self.plasma = plasma
 
         scroll = Gtk.ScrolledWindow(None, None)
         scroll.set_border_width(40)
@@ -75,7 +76,11 @@ class InstallerSummaryPage(BasePage):
             "Language &amp; Region")
         items.pack_start(self.locale_details, False, False, 2)
 
-        self.install_details = FramedHeader("disk-utility",
+        disk_icon = "disk-utility"
+        if self.plasma:
+            disk_icon = "drive-harddisk"
+
+        self.install_details = FramedHeader(disk_icon,
                                             "Installation")
         items.pack_start(self.install_details, False, False, 2)
 
@@ -96,6 +101,8 @@ class InstallerSummaryPage(BasePage):
         return "summary"
 
     def get_icon_name(self, plasma=False):
+        if plasma:
+            return "korg-todo"
         return "gnome-todo"
 
     def _clean_label(self, label):

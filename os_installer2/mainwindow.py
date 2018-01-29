@@ -245,7 +245,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.add_installer_page(InstallerPartitioningPage())
             self.add_installer_page(InstallerSystemPage())
             self.add_installer_page(InstallerUsersPage())
-            self.add_installer_page(InstallerSummaryPage())
+            self.add_installer_page(InstallerSummaryPage(self.plasma))
             self.add_installer_page(InstallerProgressPage())
             self.add_installer_page(InstallationCompletePage())
         except Exception as e:
