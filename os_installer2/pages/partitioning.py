@@ -736,7 +736,9 @@ class InstallerPartitioningPage(BasePage):
     def get_name(self):
         return "partitioning"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
+        if plasma:
+            return "partitionmanager"
         return "disk-usage-analyzer"
 
     def prepare(self, info):

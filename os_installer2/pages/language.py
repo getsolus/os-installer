@@ -128,5 +128,5 @@ class InstallerLanguagePage(BasePage):
     def get_name(self):
         return "language"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "preferences-desktop-locale"

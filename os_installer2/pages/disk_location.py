@@ -235,7 +235,9 @@ class InstallerDiskLocationPage(BasePage):
     def get_name(self):
         return "disk-location"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
+        if plasma:
+            return "drive-harddisk"
         return "disk-utility"
 
     def load_disks(self):

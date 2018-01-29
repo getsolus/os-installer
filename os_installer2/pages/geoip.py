@@ -57,7 +57,7 @@ class InstallerGeoipPage(BasePage):
     def get_sidebar_title(self):
         return u"↠" + " Find location"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "mark-location-symbolic"
 
     def prepare(self, info):

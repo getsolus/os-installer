@@ -57,7 +57,9 @@ are in the world and proceed automatically.")
     def get_name(self):
         return "location"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
+        if plasma:
+            return "applications-internet"
         return "maps"
 
     def prepare(self, info):

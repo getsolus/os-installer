@@ -147,7 +147,7 @@ class InstallerSystemPage(BasePage):
     def get_sidebar_title(self):
         return "System Settings"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "preferences-system"
 
     def prepare(self, info):

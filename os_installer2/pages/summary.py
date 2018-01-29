@@ -95,7 +95,7 @@ class InstallerSummaryPage(BasePage):
     def get_name(self):
         return "summary"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "gnome-todo"
 
     def _clean_label(self, label):

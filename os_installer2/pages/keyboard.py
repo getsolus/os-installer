@@ -244,8 +244,10 @@ class InstallerKeyboardPage(BasePage):
     def get_name(self):
         return "keyboard"
 
-    def get_icon_name(self):
-        # Just looks nicer than input-keyboard
+    def get_icon_name(self, plasma=False):
+        if plasma:
+            return "input-keyboard"
+        # Just looks nicer than input-keyboard outside breeze
         return "preferences-desktop-keyboard-shortcuts"
 
     def prepare(self, info):

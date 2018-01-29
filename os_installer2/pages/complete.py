@@ -65,7 +65,7 @@ class InstallationCompletePage(BasePage):
     def get_sidebar_title(self):
         return "Complete"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "start-here-solus"
 
     def reboot(self, btn, udata=None):

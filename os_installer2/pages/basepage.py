@@ -41,7 +41,7 @@ class BasePage(Gtk.Box):
     def get_name(self):
         return None
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "dialog-error"
 
     def get_primary_answer(self):

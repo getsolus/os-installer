@@ -134,7 +134,7 @@ class InstallerProgressPage(BasePage):
     def get_name(self):
         return "install"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "system-software-install"
 
     def get_sidebar_title(self):

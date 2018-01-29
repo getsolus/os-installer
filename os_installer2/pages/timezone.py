@@ -74,7 +74,7 @@ class InstallerTimezonePage(BasePage):
     def get_name(self):
         return "timezone"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "preferences-system-time"
 
     def change_timezone(self, completion, model, selection):

@@ -120,6 +120,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
     image_step = None
     label_step = None
+    plasma = False
 
     def quit_handler(self, w, udata=None):
         """ Ensure quit stuff is sane ... """
@@ -166,6 +167,7 @@ class MainWindow(Gtk.ApplicationWindow):
         elif os.path.exists("/usr/bin/plasmashell"):
             vanity_icon = "plasma"
             vanity_string = "Solus Plasma"
+            self.plasma = True
         else:
             vanity_icon = "start-here-solus"
             vanity_string = "Solus"
@@ -342,7 +344,8 @@ class MainWindow(Gtk.ApplicationWindow):
             else:
                 label.get_style_context().add_class("dim-label")
 
-        self.image_step.set_from_icon_name(page.get_icon_name(),
+        iname = page.get_icon_name(plasma=self.plasma)
+        self.image_step.set_from_icon_name(iname,
                                            Gtk.IconSize.DIALOG)
         # self.image_step.set_pixel_size(32)
         self.installer_stack.set_visible_child_name(page.get_name())

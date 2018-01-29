@@ -362,5 +362,5 @@ class InstallerUsersPage(BasePage):
     def get_name(self):
         return "users"
 
-    def get_icon_name(self):
+    def get_icon_name(self, plasma=False):
         return "system-users"
