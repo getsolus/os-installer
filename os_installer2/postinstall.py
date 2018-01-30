@@ -185,7 +185,7 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
                 return False
 
         # Remove sudo
-        if not self.run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers"):
+        if not self.run_in_chroot("rm /etc/sudoers.d/os-installer"):
             return False
         return True
 
