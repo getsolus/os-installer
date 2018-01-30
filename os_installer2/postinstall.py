@@ -532,6 +532,9 @@ class PostInstallUsysconf(PostInstallStep):
             return False
         return True
 
+    def is_long_step(self):
+        """ Its.. just long. Seriously """
+        return True
 
 FSTAB_HEADER = """
 # /etc/fstab: static file system information.
