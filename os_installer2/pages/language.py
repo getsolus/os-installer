@@ -99,6 +99,8 @@ class InstallerLanguagePage(BasePage):
     def init_remaining(self):
         """ Add the rest to the list """
         self.scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.scroll.set_vexpand(True)
+        self.scroll.set_valign(Gtk.Align.FILL)
         locales = GnomeDesktop.get_all_locales()
         self.moar_button.get_parent().hide()
         appends = list()
