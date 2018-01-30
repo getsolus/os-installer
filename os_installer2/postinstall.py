@@ -184,9 +184,6 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
                 self.set_errors("Cannot update file: {}".format(e))
                 return False
 
-        # Update schemas. Nasty, I know
-        self.run_in_chroot("glib-compile-schemas /usr/share/glib-2.0/schemas")
-
         # Remove sudo
         if not self.run_in_chroot("sed -e '/live ALL=/d' -i /etc/sudoers"):
             return False
