@@ -514,41 +514,21 @@ class PostInstallDiskOptimize(PostInstallStep):
             return False
         return True
 
-
-class PostInstallDracut(PostInstallStep):
-    """ Rebuild dracut for the target """
+class PostInstallUsysconf(PostInstallStep):
+    """ Run usysconf for the target """
 
     def __init__(self, info, installer):
         PostInstallStep.__init__(self, info, installer)
 
     def get_display_string(self):
-        return "Rebuild the initramfs"
-
-    def write_lvm2_config(self):
-        fp = "add_dracutmodules+=\"lvm\""
-
-        bpath = self.installer.get_installer_target_filesystem()
-        dconf = os.path.join(bpath, "etc/dracut.conf.d/lvm.conf")
-
-        try:
-            with open(dconf, "w") as hout:
-                os.chmod(dconf, 0o0644)
-                hout.write("{}\n".format(fp))
-        except Exception as e:
-            self.set_errors("Failed to configure lvm2: {}".format(e))
-            return False
-        return True
+        return "Running usysconf"
 
     def apply(self):
-        strategy = self.info.strategy
-        if isinstance(strategy, EmptyDiskStrategy):
-            if strategy.use_lvm2:
-                if not self.write_lvm2_config():
-                    return False
+        """ Perform a full usysconf run """
         try:
-            self.run_in_chroot("dracut -N -f")
+            self.run_in_chroot("usysconf run -f")
         except Exception as e:
-            self.set_errors("Failed to rebuild initramfs: {}".format(e))
+            self.set_errors("Failed to run usysconf: {}".format(e))
             return False
         return True
 
