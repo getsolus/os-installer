@@ -380,10 +380,13 @@ class PostInstallUsers(PostInstallStep):
             "cdrom",
             "dialout",
             "fuse"
+            "users",
         ]
         self.admin_groups = [
             "sudo",
-            "lpadmin"
+            "lpadmin",
+            "plugdev",
+            "scanner",
         ]
 
     def get_display_string(self):
