@@ -379,7 +379,7 @@ class PostInstallUsers(PostInstallStep):
             "video",
             "cdrom",
             "dialout",
-            "fuse"
+            "fuse",
             "users",
         ]
         self.admin_groups = [
