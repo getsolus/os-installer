@@ -187,6 +187,21 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
         # Remove sudo
         if not self.run_in_chroot("rm /etc/sudoers.d/os-installer"):
             return False
+
+        # Remove history
+        history_dir = os.path.join(target_fs, "var/lib/eopkg/history")
+        try:
+            shutil.rmtree(history_dir)
+        except Exception as e:
+            self.set_errors("Cannot remove history: {}".format(e))
+            return False
+
+        # Recreate blank directory
+        try:
+            os.makedirs(history_dir, 0o0755)
+        except Exception as e:
+            self.set_errors("Cannot mkdir: {}".format(e))
+            return False
         return True
 
     def is_long_step(self):
