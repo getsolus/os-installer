@@ -155,7 +155,7 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
             return False
 
         # Return live-specific packages
-        cmd_remove = "eopkg remove {} --ignore-comar".format(
+        cmd_remove = "eopkg rmf {} -y".format(
             " ".join(self.live_packages))
         if not self.run_in_chroot(cmd_remove):
             self.set_errors("Failed to remove live packages")
