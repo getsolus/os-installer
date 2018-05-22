@@ -154,9 +154,16 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
         if not self.run_in_chroot("userdel -fr live"):
             return False
 
+        packages = []
+        packages.extend(self.live_packages)
+
+        # Don't keep GRUB around on UEFI installs, causes confusion.
+        if self.info.strategy.is_uefi():
+            packages.extend(["grub", "os-prober"])
+
         # Return live-specific packages
         cmd_remove = "eopkg rmf {} -y".format(
-            " ".join(self.live_packages))
+            " ".join(packages))
         if not self.run_in_chroot(cmd_remove):
             self.set_errors("Failed to remove live packages")
             return False
