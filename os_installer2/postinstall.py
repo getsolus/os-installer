@@ -337,6 +337,7 @@ class PostInstallLocale(PostInstallStep):
                 if not lang.endswith(".utf8"):
                     lc = lang.split(".")[0]
                     lang = "{}.utf8".format(lc)
+                lang = lang.replace(".utf8", ".UTF-8")
                 localef.write("LANG={}\n".format(lang))
         except Exception as e:
             self.set_errors(e)
