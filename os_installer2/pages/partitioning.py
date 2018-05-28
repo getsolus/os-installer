@@ -69,7 +69,8 @@ class ManualPage(Gtk.Box):
         lab = Gtk.Label("Select custom mount points to use with Solus from "
                         "the available partition selection below.\n"
                         "Only available system partitions and swap will be "
-                        "displayed here. Use gparted to edit partitions\nin "
+                        "displayed here. Use a partition editor (i.e. gparted) "
+                        "to edit partitions\nin "
                         "order for them to be displayed."
                         "When modifying partitions outside of the installer, "
                         "you will have\nto restart the installer.")
