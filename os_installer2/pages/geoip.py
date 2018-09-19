@@ -18,7 +18,7 @@ import threading
 import re
 import pygeoip
 
-IP_CHECK = "https://solus-project.com/geoip.php"
+IP_CHECK = "https://getsol.us/location"
 TIMEOUT = 10
 
 
