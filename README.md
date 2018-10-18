@@ -1,9 +1,9 @@
 os-installer
 ============
 
-os-installer is a [Solus project](https://solus-project.com/)
+os-installer is a [Solus project](https://getsol.us/)
 
-![logo](https://build.solus-project.com/logo.png)
+![logo](https://build.getsol.us/logo.png)
 
 Successor to the "live-installer" from Ikey Doherty.
 Current version is simply a staging installer to address issues for
