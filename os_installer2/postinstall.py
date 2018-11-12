@@ -159,7 +159,7 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
 
         # Don't keep GRUB around on UEFI installs, causes confusion.
         if self.info.strategy.is_uefi():
-            packages.extend(["grub", "os-prober"])
+            packages.extend(["grub2", "os-prober"])
 
         # Return live-specific packages
         cmd_remove = "eopkg rmf {} -y".format(
