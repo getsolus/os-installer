@@ -3,7 +3,7 @@
 #
 #  This file is part of os-installer
 #
-#  Copyright 2013-2016 Ikey Doherty <ikey@solus-project.com>
+#  Copyright 2013-2019 Solus <copyright@getsol.us>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -50,14 +50,6 @@ def find_best_swap_size(longsize):
         return 2 * GB
     else:
         return 1 * GB
-
-
-def find_best_esp_size(longsize):
-    gbs = longsize / GB
-    if gbs < 20:
-        return 250 * MB
-    return 512 * MB
-
 
 class DiskStrategy:
     """ Base DiskStrategy does nothing """
@@ -305,7 +297,7 @@ class EmptyDiskStrategy(DiskStrategy):
         if info.bootloader_install:
             # *Always* consume an ESP
             if info.bootloader_sz == 'c':
-                size_eat += find_best_esp_size(self.drive.size)
+                size_eat += 512 * MB
                 op = DiskOpCreateESP(self.drive.device, None, size_eat)
                 self.push_operation(op)
 
@@ -481,7 +473,7 @@ class DualBootStrategy(DiskStrategy):
         size_eat = 0
         if info.bootloader_install:
             if info.bootloader_sz == 'c':
-                size_eat += find_best_esp_size(self.drive.size)
+                size_eat += 512 * MB
                 op = DiskOpCreateESP(self.drive.device, None, size_eat)
                 self.push_operation(op)
                 part_count += 1
@@ -655,7 +647,7 @@ class ReplaceOSStrategy(DiskStrategy):
         """ First up, resize them """
         if info.bootloader_install:
             if info.bootloader_sz == 'c':
-                size = find_best_esp_size(self.drive.size)
+                size = 512 * MB
                 op = DiskOpCreateESP(self.drive.device, None, size)
                 self.push_operation(op)
 

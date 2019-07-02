@@ -3,7 +3,7 @@
 #
 #  This file is part of os-installer
 #
-#  Copyright 2013-2016 Ikey Doherty <ikey@solus-project.com>
+#  Copyright 2013-2019 Solus <copyright@getsol.us>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -660,11 +660,20 @@ class AdvancedOptionsPage(Gtk.Box):
         self.check_enc.set_sensitive(w.get_active())
         self.enc_desc_box.set_sensitive(w.get_active())
         self.update_options()
+        if not self.info.strategy.use_lvm2:
+            self.check_enc.set_active(False) # Disable encryption
+            self.clear_pw_boxes()
 
     def on_enc_clicked(self, w, data=None):
         self.info.strategy.use_encryption = w.get_active()
         self.pw_grid.set_visible(w.get_active())
         self.update_options()
+        if not self.info.strategy.use_encryption:
+            self.clear_pw_boxes()
+
+    def clear_pw_boxes(self):
+        self.pw_enc_box.set_text("") # Reset password value
+        self.pw_enc_box_confirm.set_text("") # Also reset confirm password value
 
     def update_options(self):
         """ Encryption and lvm2 are both linked """

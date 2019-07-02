@@ -3,7 +3,7 @@
 #
 #  This file is part of os-installer
 #
-#  Copyright 2013-2016 Ikey Doherty <ikey@solus-project.com>
+#  Copyright 2013-2019 Solus <copyright@getsol.us>
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
