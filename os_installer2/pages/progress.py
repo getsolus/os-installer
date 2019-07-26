@@ -554,7 +554,7 @@ class InstallerProgressPage(BasePage):
                 part_offset = self.round_up_next_block(op.new_part_off, part_step)
             elif isinstance(op, DiskOpCreatePartition):
                 # Push forward the offset
-                part_offset = self.round_up_next_block(op.part_end,part_step)
+                part_offset = self.round_up_next_block(op.part_end, part_step)
 
         if simulate:
             return True
