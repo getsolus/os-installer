@@ -36,6 +36,7 @@ from . import MIN_REQUIRED_SIZE, MB, GB
 
 
 SWAP_USE_THRESHOLD = 15 * GB
+SWAP_MIN_SIZE = 56 * MB
 ESP_FREE_REQUIRED = 60 * MB
 ESP_MIN_SIZE = 512
 
@@ -44,7 +45,9 @@ BOOT_MIN_SIZE = 300 * MB
 
 def find_best_swap_size(longsize):
     gbs = longsize / GB
-    if gbs > 50:
+    if gbs < SWAP_USE_THRESHOLD / GB:
+        return 0
+    elif gbs > 50:
         return 4 * GB
     elif gbs > 40:
         return 2 * GB
@@ -212,18 +215,16 @@ class DiskStrategy:
 
 
 class EmptyDiskStrategy(DiskStrategy):
-    """ There is an empty disk, use this if it is big enough """
-    drive = None
 
     priority = 50
 
+    swap_part_size = 0
     use_lvm2 = False
     use_encryption = False
     enc_password = None
 
     def __init__(self, dp, drive):
         DiskStrategy.__init__(self, dp, drive)
-        self.drive = drive
 
     def get_boot_partition(self):
         for op in self.get_operations():
@@ -239,6 +240,13 @@ class EmptyDiskStrategy(DiskStrategy):
         if self.use_lvm2:
             return True
         return False
+
+    def get_swap_size(self, remaining_space=0):
+        """ Get the requested or the most available swap space """
+        if self.swap_part_size <= 0:
+            return 0
+        else:
+            return min(self.swap_part_size, remaining_space)
 
     def get_display_string(self):
         sz = "Automatically partition this empty disk and install a fresh " \
@@ -332,26 +340,26 @@ class EmptyDiskStrategy(DiskStrategy):
             vg_op = DiskOpCreateVolumeGroup(self.drive.device, pv_op, vg_name)
             self.push_operation(vg_op)
 
-            # Can we create swap?
-            tnew = self.drive.size - size_eat
-            if tnew >= SWAP_USE_THRESHOLD:
-                new_swap_size = find_best_swap_size(self.drive.size)
-                tnew -= new_swap_size
-                size = "{}B".format(new_swap_size)
-                # Create swap volume
-                op = DiskOpCreateLogicalVolume(
-                    self.drive.device, vg_name, "Swap", size)
-                self.push_operation(op)
-                # Format the swap on the LVM2 LV
-                self.push_operation(DiskOpFormatSwapLate(
-                    self.drive.device, DummyPart(op.path)))
-                # Mark it used and get the path in place
-                self.push_operation(DiskOpUseSwap(
-                    self.drive.device, DummyPart(op.path)))
+            if self.swap_part_size > 0:
+                tnew = self.drive.size - size_eat
+                new_swap_size = self.get_swap_size(tnew)
+                if new_swap_size >= SWAP_MIN_SIZE:
+                    # Create swap volume
+                    op = DiskOpCreateLogicalVolume(
+                        self.drive.device, vg_name, "Swap", new_swap_size)
+                    self.push_operation(op)
+                    # Format the swap on the LVM2 LV
+                    self.push_operation(DiskOpFormatSwapLate(
+                        self.drive.device, DummyPart(op.path)))
+                    # Mark it used and get the path in place
+                    self.push_operation(DiskOpUseSwap(
+                        self.drive.device, DummyPart(op.path)))
+                    size_eat += new_swap_size
 
             # Create a root partition on the whole thang from remaining space
+            root_size = self.drive.size - size_eat
             lv_op = DiskOpCreateLogicalVolume(
-                self.drive.device, vg_name, "Root", "100%FREE")
+                self.drive.device, vg_name, "Root", root_size, "100%FREE")
             self.push_operation(lv_op)
             # Format the root partition
             self.push_operation(DiskOpFormatRootLate(
@@ -359,14 +367,14 @@ class EmptyDiskStrategy(DiskStrategy):
 
             return
 
-        # Attempt to create a local swap
-        tnew = self.drive.size - size_eat
-        if tnew >= SWAP_USE_THRESHOLD:
-            new_swap_size = find_best_swap_size(self.drive.size)
-            tnew -= new_swap_size
-            op = DiskOpCreateSwap(self.drive.device, None, new_swap_size)
-            self.push_operation(op)
-            size_eat += new_swap_size
+        if self.swap_part_size > 0:
+            # Attempt to create a local swap
+            tnew = self.drive.size - size_eat
+            new_swap_size = self.get_swap_size(tnew)
+            if new_swap_size >= SWAP_MIN_SIZE:
+                op = DiskOpCreateSwap(self.drive.device, None, new_swap_size)
+                self.push_operation(op)
+                size_eat += new_swap_size
 
         root_size = self.drive.size - size_eat
         op = DiskOpCreateRoot(self.drive.device, None, root_size)

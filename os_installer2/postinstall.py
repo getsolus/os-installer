@@ -715,7 +715,7 @@ class PostInstallBootloader(PostInstallStep):
         if self.swap_uuid is not None:
             if not os.path.exists(kdir):
                 try:
-                    os.makedirs(kdir, 00755)
+                    os.makedirs(kdir, 0o0755)
                     with open(kresumefile, "w") as kfile_output:
                         swap = "resume=UUID={}".format(self.swap_uuid)
                         kfile_output.write(swap)

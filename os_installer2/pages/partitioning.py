@@ -12,8 +12,8 @@
 #
 
 from .basepage import BasePage
-from os_installer2 import format_size_local, MIN_REQUIRED_SIZE
-from os_installer2.strategy import DualBootStrategy
+from os_installer2 import format_size_local
+from os_installer2.strategy import DualBootStrategy, SWAP_MIN_SIZE, find_best_swap_size
 from os_installer2.strategy import ReplaceOSStrategy
 from os_installer2.strategy import EmptyDiskStrategy
 from os_installer2.strategy import WipeDiskStrategy
@@ -23,6 +23,7 @@ from gi.repository import Gtk
 from gi.repository import GObject
 import sys
 
+from .. import MIN_REQUIRED_SIZE, MB
 
 INDEX_PARTITION_PATH = 0
 INDEX_PARTITION_TYPE = 1
@@ -549,6 +550,13 @@ class DualBootPage(Gtk.Box):
 class AdvancedOptionsPage(Gtk.Box):
     """ Advanced options for full disk installs, enabling LVM + encryption """
 
+    had_init = False
+    widgets_to_validate = dict()
+
+    check_swap_part = None
+    swap_size_box = None
+    swap_size_grid = None
+
     info_label = None
     check_lvm2 = None
 
@@ -568,6 +576,53 @@ class AdvancedOptionsPage(Gtk.Box):
         self.info_label.set_halign(Gtk.Align.START)
         self.info_label.set_use_markup(True)
         self.pack_start(self.info_label, False, False, 0)
+
+        # Swap partition checkbox
+        self.check_swap_part = Gtk.CheckButton.new_with_label(
+            "Create swap partition")
+        self.pack_start(self.check_swap_part, False, False, 1)
+        desc_label = Gtk.Label(
+            "Swap partitions can improve stability and be used in system hibernation"
+        )
+        desc_label.set_line_wrap(True)
+        desc_label.set_margin_bottom(15)
+        desc_label.set_halign(Gtk.Align.START)
+        desc_label.set_xalign(0.0)
+
+        # Swap partition checkbox description
+        desc_wrap = Gtk.EventBox()
+        desc_wrap.add(desc_label)
+        desc_wrap.set_margin_start(20)
+        self.pack_start(desc_wrap, False, False, 1)
+
+        # Swap partition size input box
+        self.swap_size_box = Gtk.Entry()
+        self.swap_size_box.set_input_purpose(Gtk.InputPurpose.NUMBER)
+
+        # Grid for swap partition size input
+        self.swap_size_grid = Gtk.Grid()
+        self.swap_size_grid.set_column_spacing(10)
+        self.swap_size_grid.set_row_spacing(10)
+        self.swap_size_grid.set_property("margin", 10)
+        self.pack_start(self.swap_size_grid, False, False, 0)
+
+        # Swap partition size input box label
+        hlab = Gtk.Label("<b>Swap partition size:</b>")
+        hlab.set_use_markup(True)
+        hlab.set_halign(Gtk.Align.END)
+
+        # Swap partition size input box units label
+        unit_lab = Gtk.Label("MB")
+        unit_lab.set_halign(Gtk.Align.END)
+
+        # Add everything to grid
+        self.swap_size_grid.attach(hlab, 0, 0, 1, 1)
+        self.swap_size_grid.attach(self.swap_size_box, 1, 0, 1, 1)
+        self.swap_size_grid.attach(unit_lab, 2, 0, 1, 1)
+
+        # Hook up swap callbacks
+        self.check_swap_part.connect("clicked", self.on_swap_clicked)
+        self.swap_size_box.connect("changed", self.on_swap_size_changed)
 
         # LVM2 usage
         self.check_lvm2 = Gtk.CheckButton.new_with_label(
@@ -652,53 +707,127 @@ class AdvancedOptionsPage(Gtk.Box):
         self.pw_grid.set_no_show_all(True)
         self.pw_grid.hide()
 
-    def on_pw_changed(self, w, data=None):
-        self.update_options()
+    def on_swap_clicked(self, w, data=None):
+        if not w.get_active():
+            self.remove_swap_size_box()
+        else:
+            self.show_and_default_swap_size_box()  # Reset the value to the suggested default
+
+    def on_swap_size_changed(self, widget, data=None):
+        swap_part_valid = False
+        swap_size_text = self.swap_size_box.get_text()
+        if swap_size_text:
+            swap_size_text = swap_size_text.strip()
+            if swap_size_text != "" and swap_size_text.isdigit():
+                swap_size = int(swap_size_text) * MB
+                # Estimate the max swap sizes allowed, the final swap is displayed in the summary page
+                # when update_operations is called
+                if SWAP_MIN_SIZE <= swap_size <= self.info.strategy.drive.size - MIN_REQUIRED_SIZE:
+                    swap_part_valid = True
+                    self.info.strategy.swap_part_size = swap_size
+                    self.swap_size_box.set_icon_from_icon_name(
+                        Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+        if not swap_part_valid:
+            self.swap_size_box.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, "action-unavailable-symbolic")
+
+        self.update_options(widget, swap_part_valid)
+
+    def show_and_default_swap_size_box(self):
+        self.info.strategy.swap_part_size = self.find_suggested_swap_size()
+        self.swap_size_box.set_text(str(int(self.info.strategy.swap_part_size / MB)))
+        self.on_swap_size_changed(self.swap_size_box)
+        self.swap_size_box.grab_focus_without_selecting()
+        self.swap_size_grid.show_all()
+
+    def remove_swap_size_box(self):
+        self.swap_size_box.set_text("0")
+        self.info.strategy.swap_part_size = 0
+        self.swap_size_box.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+        self.update_options(self.swap_size_box, True)
+        self.swap_size_grid.hide()
+
+    def find_suggested_swap_size(self):
+        return find_best_swap_size(self.info.strategy.drive.size)
 
     def on_lvm2_clicked(self, w, data=None):
         # Encryption requires LVM2, disable it if necessary
-        self.check_enc.set_sensitive(w.get_active())
-        self.enc_desc_box.set_sensitive(w.get_active())
-        self.update_options()
+        self.info.strategy.use_lvm2 = w.get_active()
+        self.check_enc.set_sensitive(self.info.strategy.use_lvm2)
+        self.enc_desc_box.set_sensitive(self.info.strategy.use_lvm2)
         if not self.info.strategy.use_lvm2:
-            self.check_enc.set_active(False) # Disable encryption
-            self.clear_pw_boxes()
+            # Disable encryption
+            self.info.strategy.use_encryption = False
+            self.check_enc.set_active(False)
+            self.remove_pw_enc_boxes()
 
     def on_enc_clicked(self, w, data=None):
         self.info.strategy.use_encryption = w.get_active()
-        self.pw_grid.set_visible(w.get_active())
-        self.update_options()
         if not self.info.strategy.use_encryption:
-            self.clear_pw_boxes()
-
-    def clear_pw_boxes(self):
-        self.pw_enc_box.set_text("") # Reset password value
-        self.pw_enc_box_confirm.set_text("") # Also reset confirm password value
-
-    def update_options(self):
-        """ Encryption and lvm2 are both linked """
-        if not self.check_lvm2.get_active():
-            self.info.strategy.use_lvm2 = False
-            self.info.strategy.use_encryption = False
-            self.info.owner.set_can_next(True)
-            return
-        self.info.strategy.use_lvm2 = self.check_lvm2.get_active()
-        self.info.strategy.use_encryption = self.check_enc.get_active()
-        if self.info.strategy.use_encryption:
-            t1 = self.pw_enc_box.get_text()
-            t2 = self.pw_enc_box_confirm.get_text()
-            if t1 != t2 or t1.strip() == "":
-                self.info.owner.set_can_next(False)
-            else:
-                self.info.owner.set_can_next(True)
-                self.info.strategy.enc_password = t2
+            self.remove_pw_enc_boxes()
         else:
-            self.info.owner.set_can_next(True)
+            self.show_pw_enc_boxes()
+
+    def on_pw_changed(self, w, data=None):
+        t1 = self.pw_enc_box.get_text()
+        t2 = self.pw_enc_box_confirm.get_text()
+        if t1.strip():
+            self.pw_enc_box.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+            if not t2:
+                self.pw_enc_box_confirm.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY, None)
+                self.update_options(self.pw_enc_box, False)
+            elif t2 != t1:
+                self.pw_enc_box_confirm.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY, "action-unavailable-symbolic")
+                self.update_options(self.pw_enc_box, False)
+            else:
+                self.info.strategy.enc_password = t2
+                self.pw_enc_box_confirm.set_icon_from_icon_name(
+                    Gtk.EntryIconPosition.SECONDARY, "emblem-ok-symbolic")
+                self.update_options(self.pw_enc_box, True)
+        else:
+            self.pw_enc_box.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, "action-unavailable-symbolic")
+            self.pw_enc_box_confirm.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, None)
+            self.update_options(self.pw_enc_box, False)
+
+    def show_pw_enc_boxes(self):
+        self.pw_grid.set_visible(True)
+        self.pw_enc_box.grab_focus()
+        self.update_options(self.pw_enc_box, False)
+
+    def remove_pw_enc_boxes(self):
+        self.pw_grid.set_visible(False)
+        self.pw_enc_box.set_text("")  # Reset password value
+        self.pw_enc_box_confirm.set_text("")  # Also reset confirm password value
+        self.pw_enc_box.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+        self.pw_enc_box_confirm.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+        self.update_options(self.pw_enc_box, True)  # Mark password box as valid
+
+    def update_options(self, widget=None, valid=None):
+        """ Allow the user to click next if everything is valid """
+        if widget:
+            self.widgets_to_validate[widget] = valid
+        self.info.owner.set_can_next(all(self.widgets_to_validate.values()))
+
+    def init_view(self):
+        if not self.had_init:
+            # Show the grid and select the checkbox if swap is recommended
+            suggested_swap = self.find_suggested_swap_size()
+            if suggested_swap > 0:
+                self.check_swap_part.set_active(True)
+                self.show_and_default_swap_size_box()
+            else:
+                self.remove_swap_size_box()
+            self.had_init = True
 
     def update_strategy(self, info):
         self.info = info
         self.update_options()
-
+        self.init_view()
 
 class InstallerPartitioningPage(BasePage):
     """ Dual boot + partitioning page """
