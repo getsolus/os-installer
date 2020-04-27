@@ -47,6 +47,7 @@ class InstallerTimezonePage(BasePage):
         completion.set_inline_completion(True)
         completion.set_inline_selection(True)
         completion.connect("match-selected", self.change_timezone)
+        completion.connect("cursor-on-match", self.change_timezone)
         self.locations.set_completion(completion)
         self.tmap.connect("location-changed", self.changed)
 
