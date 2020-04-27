@@ -497,21 +497,25 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
     # Size for this logical volume
     lv_size = None
 
-    def __init__(self, device, vg_name, lv_name, lv_size):
+    # Optional size command used to create logical volume (e.g. 100%FREE)
+    lv_extents = None
+
+    def __init__(self, device, vg_name, lv_name, lv_size, lv_extents=None):
         BaseDiskOp.__init__(self, device)
         self.path = "/dev/{}/{}".format(vg_name, lv_name)
         self.vg_name = vg_name
         self.lv_name = lv_name
         self.lv_size = lv_size
+        self.lv_extents = lv_extents
 
     def apply(self, disk, simulate):
         return True
 
     def apply_format(self, disk):
-        if "%" in self.lv_size:
-            size_arg = "-l {}".format(self.lv_size)
+        if self.lv_extents:
+            size_arg = "-l {}".format(self.lv_extents)
         else:
-            size_arg = "-L {}".format(self.lv_size)
+            size_arg = "-L {}B".format(self.lv_size)
 
         cmd = "/sbin/lvcreate --yes -n {} {} {}".format(
             self.lv_name, size_arg, self.vg_name)
@@ -523,8 +527,8 @@ class DiskOpCreateLogicalVolume(BaseDiskOp):
         return True
 
     def describe(self):
-        return "Create logical volume '{}' on group '{}'".format(
-            self.lv_name, self.vg_name)
+        return "Create {} logical volume '{}' on group '{}'".format(
+            format_size_local(self.lv_size, True), self.lv_name, self.vg_name)
 
 
 class DiskOpUseSwap(BaseDiskOp):
