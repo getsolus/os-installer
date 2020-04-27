@@ -128,7 +128,7 @@ class InstallerSummaryPage(BasePage):
         for kid in self.system_details.vbox.get_children():
             kid.destroy()
         self.system_details.add_label(self._clean_label(
-            "Set device host-name to \"{}\"".format(info.hostname)))
+            "Set device hostname to {}".format(info.hostname)))
         if info.bootloader_install:
             if info.bootloader_sz == "c":
                 s = info.bootloader
