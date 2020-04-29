@@ -111,7 +111,7 @@ class InstallerKeyboardPage(BasePage):
         self.info.keyboard = child.kb
         self.info.keyboard_sz = child.dname
         try:
-            subprocess.check_call("setxkbmap {}".format(child.kb), shell=True)
+            subprocess.check_call("setxkbmap {} {}".format(child.layout,child.variant), shell=True)
         except Exception as e:
             print("@ERR@: Couldn\'t set the keyboard layout: {}".format(e))
 
