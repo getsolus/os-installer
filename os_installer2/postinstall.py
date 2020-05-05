@@ -557,7 +557,8 @@ class PostInstallUsysconf(PostInstallStep):
         """ Its.. just long. Seriously """
         return True
 
-FSTAB_HEADER = """
+
+FSTAB_HEADER = """\
 # /etc/fstab: static file system information.
 #
 # <fs>      <mountpoint> <type> <opts>      <dump/pass>
@@ -567,6 +568,7 @@ FSTAB_HEADER = """
 # /dev/fd0    /mnt/floppy  auto    noauto         0 0
 none        /proc        proc    nosuid,noexec  0 0
 none        /dev/shm     tmpfs   defaults       0 0
+
 """
 
 
@@ -590,22 +592,25 @@ class PostInstallFstab(PostInstallStep):
 
         for op in strat.get_operations():
             # TODO: Add custom mountpoints here!
-            # Skip swap for GPT/UEFI
             if isinstance(op, DiskOpUseHome):
-                huuid = get_part_uuid(op.home_part.path)
+                home_path = op.home_part.path
+                huuid = get_part_uuid(home_path)
                 fs = op.home_part_fs
-                desc = "# {} at time of installation".format(op.home_part.path)
-                i = "UUID={}\t/home\t{}\t{}\t0\t2"
-                appends.append(desc)
-                appends.append(i.format(huuid, fs, ext4_ops))
+                append = "# {orig_path} at time of installation\n".format(
+                    orig_path=home_path)
+                append += "{uuid}\t/home\t{fs}\t{ext4_ops}\t0\t2".format(
+                    uuid=huuid, fs=fs, ext4_ops=ext4_ops)
+                appends.append(append)
                 continue
             elif isinstance(op, DiskOpCreateBoot):
-                buuid = get_part_uuid(op.part.path)
+                build_path = op.part.path
+                buuid = get_part_uuid(build_path)
                 fs = op.fstype
-                desc = "# {} at time of installation".format(op.part.path)
-                i = "UUID={}\t/boot\t{}\t{}\t0\t2"
-                appends.append(desc)
-                appends.append(i.format(buuid, fs, ext4_ops))
+                append = "# {orig_path} at time of installation\n".format(
+                    orig_path=build_path)
+                append += "UUID={uuid}\t/boot\t{fs}\t{ext4_ops}\t0\t2".format(
+                    uuid=buuid, fs=fs, ext4_ops=ext4_ops)
+                appends.append(append)
                 continue
 
             # All swap handling from hereon out
@@ -620,25 +625,31 @@ class PostInstallFstab(PostInstallStep):
 
             uuid = get_part_uuid(swap_path)
             if uuid:
-                im = "UUID={}\tswap\tswap\tsw\t0\t0".format(uuid)
-                appends.append(im)
+                append = "# {orig_path} at time of installation\n".format(
+                    orig_path=swap_path)
+                append += "UUID={uuid}\tswap\tswap\tsw\t0\t0".format(
+                    uuid=uuid)
+                appends.append(append)
             else:
-                appends.append("{}\tswap\tswap\tsw\t0\t0".format(swap_path))
+                appends.append("{swap_path}\tswap\tswap\tsw\t0\t0".format(
+                    swap_path=swap_path))
 
         # Add the root partition last
         root = strat.get_root_partition()
         uuid = get_part_uuid(root)
-        appends.append("# {} at time of installation".format(root))
+        append = "# {orig_path} at time of installation\n".format(
+            orig_path=root)
+        append += "UUID={uuid}\t/\text4\t{ext4_ops}\t0\t1".format(
+            uuid=uuid, ext4_ops=ext4_ops)
+        appends.append(append)
 
-        appends.append("UUID={}\t/\text4\t{}\t0\t1".format(uuid, ext4_ops))
-
-        fp = os.path.join(self.installer.get_installer_target_filesystem(),
-                          "etc/fstab")
+        fp = os.path.join(self.installer.get_installer_target_filesystem(), "etc/fstab")
 
         try:
             with open(fp, "w") as fstab:
-                fstab.write(FSTAB_HEADER.strip() + "\n")
-                fstab.write("\n".join(appends) + "\n")
+                fstab.write(FSTAB_HEADER)
+                if appends:
+                    fstab.write("\n\n".join(appends) + "\n\n")
         except Exception as e:
             self.set_errors("Failed to write fstab: {}".format(e))
             return False
