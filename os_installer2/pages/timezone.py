@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,10 +10,10 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
-from os_installer2.tz import Database
-
 from gi.repository import TimezoneMap, Gtk, Gdk
+
+from os_installer2.tz import Database
+from .basepage import BasePage
 
 
 class InstallerTimezonePage(BasePage):
@@ -57,7 +56,7 @@ class InstallerTimezonePage(BasePage):
         tz_model = Gtk.ListStore(str, str, str, str, float, float, str)
 
         for item in self.db.locations:
-            tz_model.append([item.human_zone, item.human_country,  None,
+            tz_model.append([item.human_zone, item.human_country, None,
                              item.country, item.longitude, item.latitude,
                              item.zone])
 

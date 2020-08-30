@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,10 +10,11 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
-from gi.repository import Gtk
-from os_installer2 import join_resource_path as jrp
 import dbus
+from gi.repository import Gtk
+
+from os_installer2 import join_resource_path as jrp
+from .basepage import BasePage
 
 
 class InstallationCompletePage(BasePage):

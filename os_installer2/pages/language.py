@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,9 +10,10 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
-from . import default_locales
 from gi.repository import Gtk, GnomeDesktop, Gdk
+
+from . import default_locales
+from .basepage import BasePage
 
 
 class LcLabel(Gtk.Label):

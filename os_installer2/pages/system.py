@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,9 +10,11 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
-from gi.repository import Gtk
 import re
+
+from gi.repository import Gtk
+
+from .basepage import BasePage
 
 # This is all we allow. OK.
 ValidHostnameRegex = "^[a-z_][a-z0-9_-]*[$]?$"

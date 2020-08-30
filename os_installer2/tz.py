@@ -1,4 +1,4 @@
-# -*- coding: utf-8; Mode: Python; indent-tabs-mode: nil; tab-width: 4 -*-
+# coding=utf-8
 
 # Copyright (C) 2006, 2007 Canonical Ltd.
 # Written by Colin Watson <cjwatson@ubuntu.com>.
@@ -25,7 +25,6 @@ import os
 import sys
 import time
 import xml.dom.minidom
-
 
 TZ_DATA_FILE = '/usr/share/zoneinfo/zone.tab'
 ISO_3166_FILE = '/usr/share/xml/iso-codes/iso_3166.xml'

@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,14 +10,15 @@
 #  (at your option) any later version.
 #
 
-import gi.repository
-import os
 import locale
+import os
+
+import gi.repository
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gio', '2.0')
 gi.require_version('GnomeDesktop', '3.0')
 gi.require_version('TimezoneMap', '1.0')
-
 
 # The path of the source filesystem
 SOURCE_FILESYSTEM = "/run/initramfs/live/LiveOS/squashfs.img"

@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,11 +10,13 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
+import threading
+
 from gi.repository import Gdk, Gtk, GLib
+
 from os_installer2.diskman import DriveProber
 from os_installer2.strategy import DiskStrategyManager
-import threading
+from .basepage import BasePage
 
 
 class BrokenWindowsPage(Gtk.Box):
@@ -34,11 +35,11 @@ class BrokenWindowsPage(Gtk.Box):
         self.pack_start(img, False, False, 10)
 
         label = Gtk.Label("<big>{}</big>".format(
-                          "You have booted Solus in UEFI mode, however your\n"
-                          "system is configured by Windows to use BIOS mode.\n"
-                          "If you wish to dual-boot, please reboot using the"
-                          " legacy mode.\n"
-                          "Otherwise, you may wipe disks in the next screen"))
+            "You have booted Solus in UEFI mode, however your\n"
+            "system is configured by Windows to use BIOS mode.\n"
+            "If you wish to dual-boot, please reboot using the"
+            " legacy mode.\n"
+            "Otherwise, you may wipe disks in the next screen"))
         label.set_property("xalign", 0.5)
         label.set_use_markup(True)
         self.pack_start(label, False, False, 10)
@@ -162,10 +163,10 @@ class WhoopsPage(Gtk.Box):
         self.pack_start(img, False, False, 10)
 
         label = Gtk.Label("<big>{}</big>".format(
-                          "Oh no! Your system has no usable disks available.\n"
-                          "There is nowhere to install Solus.\n"
-                          "Please ensure you have a minimum of 10GB available"
-                          "\nstorage to complete a full Solus installation."))
+            "Oh no! Your system has no usable disks available.\n"
+            "There is nowhere to install Solus.\n"
+            "Please ensure you have a minimum of 10GB available"
+            "\nstorage to complete a full Solus installation."))
         label.set_property("xalign", 0.5)
         label.set_use_markup(True)
         self.pack_start(label, False, False, 10)

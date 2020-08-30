@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -12,28 +11,28 @@
 #
 
 import parted
+
+from . import MIN_REQUIRED_SIZE, MB, GB
 from .diskman import SystemPartition
-from .diskops import DummyPart
+from .diskops import DiskOpCreateBoot
 from .diskops import DiskOpCreateDisk
+from .diskops import DiskOpCreateESP
+from .diskops import DiskOpCreateLUKSContainer
+from .diskops import DiskOpCreateLUKSPhysicalVolume
+from .diskops import DiskOpCreateLogicalVolume
+from .diskops import DiskOpCreatePhysicalVolume
 from .diskops import DiskOpCreateRoot
 from .diskops import DiskOpCreateSwap
-from .diskops import DiskOpCreateESP
+from .diskops import DiskOpCreateVolumeGroup
+from .diskops import DiskOpFormatHome
 from .diskops import DiskOpFormatRoot
 from .diskops import DiskOpFormatRootLate
-from .diskops import DiskOpResizeOS
-from .diskops import DiskOpUseSwap
 from .diskops import DiskOpFormatSwap
 from .diskops import DiskOpFormatSwapLate
-from .diskops import DiskOpFormatHome
+from .diskops import DiskOpResizeOS
 from .diskops import DiskOpUseHome
-from .diskops import DiskOpCreateBoot
-from .diskops import DiskOpCreatePhysicalVolume
-from .diskops import DiskOpCreateLUKSPhysicalVolume
-from .diskops import DiskOpCreateLUKSContainer
-from .diskops import DiskOpCreateVolumeGroup
-from .diskops import DiskOpCreateLogicalVolume
-from . import MIN_REQUIRED_SIZE, MB, GB
-
+from .diskops import DiskOpUseSwap
+from .diskops import DummyPart
 
 SWAP_USE_THRESHOLD = 15 * GB
 ESP_FREE_REQUIRED = 60 * MB
@@ -50,6 +49,7 @@ def find_best_swap_size(longsize):
         return 2 * GB
     else:
         return 1 * GB
+
 
 class DiskStrategy:
     """ Base DiskStrategy does nothing """
@@ -265,7 +265,7 @@ class EmptyDiskStrategy(DiskStrategy):
             paths = [
                 (self.dsc(x), x.path) for x in self.dp.drives
                 if x.path != self.drive.path and x.disk is not None and
-                x.disk.type == "msdos"
+                   x.disk.type == "msdos"
             ]
             paths.append((self.dsc(self.drive), self.drive.path))
             paths.reverse()
@@ -717,7 +717,7 @@ class UserPartitionStrategy(DiskStrategy):
 
     def get_display_string(self):
         sz = "Assign mount points to partitions you have previously created." \
-             "\nThese must already exist prior to launching the installer. If"\
+             "\nThese must already exist prior to launching the installer. If" \
              "\nyou modify them, please restart the installer."
         return sz
 

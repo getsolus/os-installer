@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -16,7 +15,6 @@ import pwd
 
 
 class PermissionsManager:
-
     down_uid = None
     down_gid = None
     home_dir = None

@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,16 +10,18 @@
 #  (at your option) any later version.
 #
 
-from . import format_size_local
-from . import MIN_REQUIRED_SIZE
-from gi.repository import GObject
-import re
 import os
+import re
+import struct
 import subprocess
 import tempfile
 import time
+
 import parted
-import struct
+from gi.repository import GObject
+
+from . import MIN_REQUIRED_SIZE
+from . import format_size_local
 
 
 class DriveProber:
@@ -81,7 +82,7 @@ class DriveProber:
                 size = device.getLength() * device.sectorSize
                 if size < MIN_REQUIRED_SIZE:
                     print("DEBUG: Skipping tiny drive: {}".format(
-                          device.path))
+                        device.path))
                     continue
             except Exception as e:
                 print("Cannot probe device: {} {}".format(item, e))
@@ -167,12 +168,12 @@ class SystemPartition(GObject.Object):
             print("Cannot resize ntfs: {}".format(ex))
             return
 
-        for l in o.split("\n"):
-            if ":" not in l:
+        for line in o.split("\n"):
+            if ":" not in line:
                 continue
-            if "MB" not in l:
+            if "MB" not in line:
                 continue
-            min_size = long(l.split(":")[-1].strip())
+            min_size = int(line.split(":")[-1].strip())
             self.min_size = min_size * 1000 * 1000
             self.resizable = True
             break
@@ -192,7 +193,7 @@ class SystemPartition(GObject.Object):
                 continue
             if "minimum size" not in l:
                 continue
-            min_size = long(l.split(":")[-1].strip())
+            min_size = int(l.split(":")[-1].strip())
             self.min_size = min_size * 4096 / 1024
 
             # Handle 1/2k blocks

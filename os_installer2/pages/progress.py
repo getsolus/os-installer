@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,37 +10,39 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
-from gi.repository import Gtk, GLib, Pango
+import os
+import shutil
+import stat
+import sys
 import threading
 import time
 from collections import OrderedDict
+
+import parted
+from gi.repository import Gtk, GLib, Pango
+
 from os_installer2 import SOURCE_FILESYSTEM, INNER_FILESYSTEM
 from os_installer2.diskops import DiskOpCreateDisk, DiskOpResizeOS
-from os_installer2.diskops import DiskOpCreatePartition
 from os_installer2.diskops import DiskOpCreateESP
 from os_installer2.diskops import DiskOpCreateLogicalVolume
+from os_installer2.diskops import DiskOpCreatePartition
 from os_installer2.diskops import DiskOpCreateVolumeGroup
 from os_installer2.diskops import DiskOpFormatRootLate
 from os_installer2.diskops import DiskOpFormatSwapLate
-from os_installer2.postinstall import PostInstallVfs
-from os_installer2.postinstall import PostInstallRemoveLiveConfig
-from os_installer2.postinstall import PostInstallSyncFilesystems
-from os_installer2.postinstall import PostInstallMachineID
-from os_installer2.postinstall import PostInstallKeyboard
-from os_installer2.postinstall import PostInstallLocale
-from os_installer2.postinstall import PostInstallTimezone
-from os_installer2.postinstall import PostInstallUsers
-from os_installer2.postinstall import PostInstallHostname
+from os_installer2.postinstall import PostInstallBootloader
 from os_installer2.postinstall import PostInstallDiskOptimize
 from os_installer2.postinstall import PostInstallFstab
+from os_installer2.postinstall import PostInstallHostname
+from os_installer2.postinstall import PostInstallKeyboard
+from os_installer2.postinstall import PostInstallLocale
+from os_installer2.postinstall import PostInstallMachineID
+from os_installer2.postinstall import PostInstallRemoveLiveConfig
+from os_installer2.postinstall import PostInstallSyncFilesystems
+from os_installer2.postinstall import PostInstallTimezone
+from os_installer2.postinstall import PostInstallUsers
 from os_installer2.postinstall import PostInstallUsysconf
-from os_installer2.postinstall import PostInstallBootloader
-import os
-import stat
-import parted
-import sys
-import shutil
+from os_installer2.postinstall import PostInstallVfs
+from .basepage import BasePage
 
 # Update 5 times a second, vs every byte copied..
 UPDATE_FREQUENCY = 1000 / 5

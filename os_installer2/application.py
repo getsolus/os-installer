@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,14 +10,14 @@
 #  (at your option) any later version.
 #
 
-from .mainwindow import MainWindow
 from gi.repository import Gio, Gtk
+
+from .mainwindow import MainWindow
 
 APP_ID = "com.solus_project.Installer"
 
 
 class InstallerApplication(Gtk.Application):
-
     app_window = None
 
     def __init__(self):

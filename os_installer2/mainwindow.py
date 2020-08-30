@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -10,28 +9,30 @@
 #  the Free Software Foundation, either version 2 of the License, or
 #  (at your option) any later version.
 #
-from gi.repository import Gtk, GLib, Gdk
-from .diskman import DiskManager
-from .permissions import PermissionsManager
-from .pages.language import InstallerLanguagePage
-from .pages.location import InstallerLocationPage
-from .pages.geoip import InstallerGeoipPage
-from .pages.keyboard import InstallerKeyboardPage
-from .pages.timezone import InstallerTimezonePage
-from .pages.disk_location import InstallerDiskLocationPage
-from .pages.partitioning import InstallerPartitioningPage
-from .pages.system import InstallerSystemPage
-from .pages.users import InstallerUsersPage
-from .pages.summary import InstallerSummaryPage
-from .pages.progress import InstallerProgressPage
-from .pages.complete import InstallationCompletePage
+import os
 import sys
 import threading
 import traceback
-import os
+
+from gi.repository import Gtk, GLib
+
+from .diskman import DiskManager
+from .pages.complete import InstallationCompletePage
+from .pages.disk_location import InstallerDiskLocationPage
+from .pages.geoip import InstallerGeoipPage
+from .pages.keyboard import InstallerKeyboardPage
+from .pages.language import InstallerLanguagePage
+from .pages.location import InstallerLocationPage
+from .pages.partitioning import InstallerPartitioningPage
+from .pages.progress import InstallerProgressPage
+from .pages.summary import InstallerSummaryPage
+from .pages.system import InstallerSystemPage
+from .pages.timezone import InstallerTimezonePage
+from .pages.users import InstallerUsersPage
+from .permissions import PermissionsManager
+
 
 class FancyLabel(Gtk.Label):
-
     page_id = None
 
     def __init__(self, page):
@@ -43,6 +44,7 @@ class FancyLabel(Gtk.Label):
         self.set_property("margin-start", 24)
         self.set_property("margin-end", 24)
         self.get_style_context().add_class("dim-label")
+
 
 class InstallInfo:
     """ For tracking purposes between pages """
@@ -94,7 +96,6 @@ class InstallInfo:
 
 
 class MainWindow(Gtk.ApplicationWindow):
-
     stack = None
     installer_stack = None
     installer_page = None
@@ -203,7 +204,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.installer_stack.set_transition_type(ltr)
         self.add(self.installer_wrap)
 
-
         # nav buttons
         bbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 4)
         bbox.set_halign(Gtk.Align.END)
@@ -277,7 +277,6 @@ class MainWindow(Gtk.ApplicationWindow):
                 page.do_expensive_init()
             except Exception as e:
                 print("Fatal exception initialising: {}".format(e))
-
 
     def add_installer_page(self, page):
         """ Work a page into the set """

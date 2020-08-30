@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,10 +10,12 @@
 #  (at your option) any later version.
 #
 
-from os_installer2 import format_size_local
-import parted
 import subprocess
 import tempfile
+
+import parted
+
+from os_installer2 import format_size_local
 
 
 class DummyPart:
@@ -153,7 +154,7 @@ class DiskOpCreatePartition(BaseDiskOp):
                 disk=disk, type=self.ptype, fs=fs, geometry=geom)
 
             disk.addPartition(
-                p,  parted.Constraint(device=self.device))
+                p, parted.Constraint(device=self.device))
             self.part = p
             self.part_end = self.part_offset + length
         except Exception as e:

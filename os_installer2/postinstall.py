@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,15 +10,16 @@
 #  (at your option) any later version.
 #
 
-import subprocess
 import os
+import shutil
+import subprocess
 from collections import OrderedDict
+
 from .diskman import DiskManager
-from .diskops import DiskOpCreateSwap, DiskOpUseSwap, DiskOpUseHome
 from .diskops import DiskOpCreateBoot
 from .diskops import DiskOpCreateLUKSContainer
+from .diskops import DiskOpCreateSwap, DiskOpUseSwap, DiskOpUseHome
 from .strategy import EmptyDiskStrategy
-import shutil
 
 
 def get_part_uuid(path, part_uuid=False):
@@ -535,6 +535,7 @@ class PostInstallDiskOptimize(PostInstallStep):
             return False
         return True
 
+
 class PostInstallUsysconf(PostInstallStep):
     """ Run usysconf for the target """
 
@@ -556,6 +557,7 @@ class PostInstallUsysconf(PostInstallStep):
     def is_long_step(self):
         """ Its.. just long. Seriously """
         return True
+
 
 FSTAB_HEADER = """
 # /etc/fstab: static file system information.
@@ -716,7 +718,7 @@ class PostInstallBootloader(PostInstallStep):
         if self.swap_uuid is not None:
             if not os.path.exists(kdir):
                 try:
-                    os.makedirs(kdir, 00755)
+                    os.makedirs(kdir, 0o00755)
                     with open(kresumefile, "w") as kfile_output:
                         swap = "resume=UUID={}".format(self.swap_uuid)
                         kfile_output.write(swap)

@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,9 +10,11 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
-from gi.repository import Gtk, GnomeDesktop
 import subprocess
+
+from gi.repository import Gtk, GnomeDesktop
+
+from .basepage import BasePage
 
 
 class KbLabel(Gtk.Box):
@@ -111,7 +112,7 @@ class InstallerKeyboardPage(BasePage):
         self.info.keyboard = child.kb
         self.info.keyboard_sz = child.dname
         try:
-            subprocess.check_call("setxkbmap {} {}".format(child.layout,child.variant), shell=True)
+            subprocess.check_call("setxkbmap {} {}".format(child.layout, child.variant), shell=True)
         except Exception as e:
             print("@ERR@: Couldn\'t set the keyboard layout: {}".format(e))
 

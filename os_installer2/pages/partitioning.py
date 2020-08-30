@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,18 +10,19 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
-from os_installer2 import format_size_local, MIN_REQUIRED_SIZE
-from os_installer2.strategy import DualBootStrategy
-from os_installer2.strategy import ReplaceOSStrategy
-from os_installer2.strategy import EmptyDiskStrategy
-from os_installer2.strategy import WipeDiskStrategy
-from os_installer2.strategy import UserPartitionStrategy
-from os_installer2.diskman import SystemPartition
-from gi.repository import Gtk
-from gi.repository import GObject
 import sys
 
+from gi.repository import GObject
+from gi.repository import Gtk
+
+from os_installer2 import format_size_local, MIN_REQUIRED_SIZE
+from os_installer2.diskman import SystemPartition
+from os_installer2.strategy import DualBootStrategy
+from os_installer2.strategy import EmptyDiskStrategy
+from os_installer2.strategy import ReplaceOSStrategy
+from os_installer2.strategy import UserPartitionStrategy
+from os_installer2.strategy import WipeDiskStrategy
+from .basepage import BasePage
 
 INDEX_PARTITION_PATH = 0
 INDEX_PARTITION_TYPE = 1
@@ -284,7 +284,7 @@ class ManualPage(Gtk.Box):
             fsname = fs.type
 
         partSizeActual = part.partition.getLength() * \
-            part.partition.disk.device.sectorSize
+                         part.partition.disk.device.sectorSize
         model.append([
             part.path,
             fsname,
@@ -540,9 +540,9 @@ class DualBootPage(Gtk.Box):
             "Solus requires a minimum of {} disk space for the installation" \
             ", so free up <b>at least {}</b>\nfrom the maximum available " \
             "{}\n{} will require a minimum of {} from the total {}".format(
-                os_name, min_we_needs, min_we_needs, max_avail,
-                "Your currently installed operating system", min_they_needs,
-                total_size)
+            os_name, min_we_needs, min_we_needs, max_avail,
+            "Your currently installed operating system", min_they_needs,
+            total_size)
         self.info_label.set_markup(l)
 
 
@@ -661,7 +661,7 @@ class AdvancedOptionsPage(Gtk.Box):
         self.enc_desc_box.set_sensitive(w.get_active())
         self.update_options()
         if not self.info.strategy.use_lvm2:
-            self.check_enc.set_active(False) # Disable encryption
+            self.check_enc.set_active(False)  # Disable encryption
             self.clear_pw_boxes()
 
     def on_enc_clicked(self, w, data=None):
@@ -672,8 +672,8 @@ class AdvancedOptionsPage(Gtk.Box):
             self.clear_pw_boxes()
 
     def clear_pw_boxes(self):
-        self.pw_enc_box.set_text("") # Reset password value
-        self.pw_enc_box_confirm.set_text("") # Also reset confirm password value
+        self.pw_enc_box.set_text("")  # Reset password value
+        self.pw_enc_box_confirm.set_text("")  # Also reset confirm password value
 
     def update_options(self):
         """ Encryption and lvm2 are both linked """

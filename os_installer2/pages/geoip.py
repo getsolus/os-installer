@@ -1,5 +1,4 @@
-#!/bin/true
-# -*- coding: utf-8 -*-
+# coding=utf-8
 #
 #  This file is part of os-installer
 #
@@ -11,12 +10,14 @@
 #  (at your option) any later version.
 #
 
-from .basepage import BasePage
-from gi.repository import GLib, Gtk
-import urllib2
-import threading
 import re
+import threading
+from urllib import request
+
 import pygeoip
+from gi.repository import GLib, Gtk
+
+from .basepage import BasePage
 
 IP_CHECK = "https://getsol.us/location"
 TIMEOUT = 10
@@ -107,7 +108,7 @@ class InstallerGeoipPage(BasePage):
     def get_ip_address(self):
         """ Get our external IP address for this machine """
         try:
-            o = urllib2.urlopen(IP_CHECK, None, TIMEOUT)
+            o = request.urlopen(IP_CHECK, None, TIMEOUT)
             contents = o.read()
             regex = r'Address: (\d+\.\d+\.\d+\.\d+)'
             reg = re.compile(regex)
