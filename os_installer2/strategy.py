@@ -39,7 +39,7 @@ SWAP_USE_THRESHOLD = 15 * GB
 ESP_FREE_REQUIRED = 60 * MB
 ESP_MIN_SIZE = 512
 
-BOOT_MIN_SIZE = 300 * MB
+BOOT_MIN_SIZE = 512 * MB
 
 
 def find_best_swap_size(longsize):
