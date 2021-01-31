@@ -129,6 +129,7 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
     def __init__(self, info, installer):
         PostInstallStep.__init__(self, info, installer)
         self.live_packages = [
+            "network-manager-livecd",
             "os-installer",
         ]
         # Find the branding package to nuke
