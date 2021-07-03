@@ -607,8 +607,6 @@ class PostInstallFstab(PostInstallStep):
                 appends.append(desc)
                 appends.append(i.format(buuid, fs, ext4_ops))
                 continue
-            if disk.type == "gpt" and strat.is_uefi():
-                continue
 
             # All swap handling from hereon out
             swap_path = None
