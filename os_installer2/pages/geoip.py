@@ -18,7 +18,7 @@ import threading
 import re
 import pygeoip
 
-IP_CHECK = "https://getsol.us/location"
+IP_CHECK = "https://location.getsol.us"
 TIMEOUT = 10
 
 
