@@ -193,7 +193,7 @@ class PostInstallRemoveLiveConfig(PostInstallStep):
                 return False
 
         # Remove sudo
-        if not self.run_in_chroot("rm /usr/share/defaults/etc/sudo/sudoers.d/os-installer"):
+        if not self.run_in_chroot("rm /etc/sudoers.d/os-installer"):
             return False
 
         # Remove history
