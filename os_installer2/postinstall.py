@@ -98,6 +98,7 @@ class PostInstallVfs(PostInstallStep):
             ("/dev/shm", "{}/dev/shm"),
             ("/dev/pts", "{}/dev/pts"),
             ("/sys", "{}/sys"),
+            ("/sys/firmware/efi/efivars", "{}/sys/firmware/efi/efivars"),
             ("/proc", "{}/proc"),
         ])
 
@@ -108,7 +109,10 @@ class PostInstallVfs(PostInstallStep):
         target = self.installer.get_installer_target_filesystem()
         for source_point in self.vfs_points:
             target_point = self.vfs_points[source_point].format(target)
-            cmd = "mount --bind {} \"{}\"".format(source_point, target_point)
+            if "/sys/firmware/efi/efivars" in source_point:
+                cmd = "mount --types efivarfs {} \"{}\"".format(source_point, target_point)
+            else:
+                cmd = "mount --bind {} \"{}\"".format(source_point, target_point)
             try:
                 subprocess.check_call(cmd, shell=True)
                 self.installer.mount_tracker[source_point] = target_point
