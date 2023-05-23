@@ -674,7 +674,7 @@ class PostInstallBootloader(PostInstallStep):
             self.swap_uuid = get_part_uuid(swap_path)
 
         if self.info.strategy.is_uefi():
-            return self.apply_uefi()
+            return self.apply_boot_loader()
         return self.apply_bios()
 
     def is_long_step(self):
@@ -743,48 +743,6 @@ class PostInstallBootloader(PostInstallStep):
             return False
         # Proxy back to CBM
         return self.apply_boot_loader()
-
-    def apply_uefi(self):
-        """ Take the UEFI approach to bootloader configuration
-            TODO: In future this will be managed by clr-boot-manager itself,
-            we're just ensuring that we write the EFI variables
-        """
-        # Proxy back to CBM
-        if not self.apply_boot_loader():
-            return False
-
-        espt = self.installer.get_esp_target()
-        ofile = os.path.join(self.get_efi_dir(espt),
-                             "systemd/systemd-bootx64.efi")
-
-        if os.path.exists(ofile):
-            # Update the existing bootctl stuff, fallback to no nvvars mod
-            commands = [
-                "bootctl update --path=\"{}\"".format(espt),
-                "bootctl update --path=\"{}\" --no-variables".format(espt),
-                "bootctl install --path=\"{}\"".format(espt),
-                "bootctl install --path=\"{}\" --no-variables".format(espt)
-            ]
-            # Install a fresh systemd-boot, fallback to no nvvars mod
-        else:
-            commands = [
-                "bootctl install --path=\"{}\"".format(espt),
-                "bootctl install --path=\"{}\" --no-variables".format(espt)
-            ]
-
-        updated_uefi = False
-        for cmd in commands:
-            try:
-                subprocess.check_call(cmd, shell=True)
-                updated_uefi = True
-                break
-            except:
-                pass
-
-        if not updated_uefi:
-            self.set_errors("Failed to install systemd-boot")
-            return False
-        return True
 
     def get_ichild(self, root, child):
         t1 = os.path.join(root, child)
