@@ -98,7 +98,6 @@ class PostInstallVfs(PostInstallStep):
             ("/dev/shm", "{}/dev/shm"),
             ("/dev/pts", "{}/dev/pts"),
             ("/sys", "{}/sys"),
-            ("/sys/firmware/efi/efivars", "{}/sys/firmware/efi/efivars"),
             ("/proc", "{}/proc"),
         ])
 
@@ -109,10 +108,7 @@ class PostInstallVfs(PostInstallStep):
         target = self.installer.get_installer_target_filesystem()
         for source_point in self.vfs_points:
             target_point = self.vfs_points[source_point].format(target)
-            if "/sys/firmware/efi/efivars" in source_point:
-                cmd = "mount --types efivarfs {} \"{}\"".format(source_point, target_point)
-            else:
-                cmd = "mount --bind {} \"{}\"".format(source_point, target_point)
+            cmd = "mount --bind {} \"{}\"".format(source_point, target_point)
             try:
                 subprocess.check_call(cmd, shell=True)
                 self.installer.mount_tracker[source_point] = target_point
@@ -710,9 +706,24 @@ class PostInstallBootloader(PostInstallStep):
 
     def apply_boot_loader(self):
         """ Invoke clr-boot-manager itself """
-        kdir = os.path.join(self.installer.get_installer_target_filesystem(),
-                            "etc/kernel/cmdline.d")
+        target = self.installer.get_installer_target_filesystem()
+
+        kdir = os.path.join(target, "etc/kernel/cmdline.d")
         kresumefile = os.path.join(kdir, "10_resume.conf")
+
+        # Attempt to mount efivarfs dir in order to create the EFI boot entry
+        # No big deal if it fails, we'll rely on shim's fallback to create it.
+        efivardir = "/sys/firmware/efi/efivars"
+        target_point = "{}{}".format(target, efivardir)
+        efivar_cmd = "mount --types efivarfs {} \"{}\"".format(
+                                efivardir,
+                                target_point)
+        try:
+            subprocess.check_call(efivar_cmd, shell=True)
+            self.installer.mount_tracker[efivardir] = target_point
+        except Exception as e:
+            print("Error mounting efivar vfs: {}".format(e))
+            print("Buggy UEFI firmware, relying on shim's fallback")
 
         # Write out the resume= parameter for clr-boot-manager
         if self.swap_uuid is not None:
