@@ -227,9 +227,6 @@ class MainWindow(Gtk.ApplicationWindow):
         self.info.owner = self
 
         self.get_style_context().add_class("installer-window")
-        gtktheme = settings.get_property("gtk-theme-name").lower()
-        if gtktheme.startswith("arc"):
-            self.get_style_context().add_class("arc-theme")
 
         # Hook up actions
         self.prev_button.connect("clicked", lambda x: self.prev_page())
