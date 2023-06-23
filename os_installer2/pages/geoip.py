@@ -13,10 +13,11 @@
 
 from .basepage import BasePage
 from gi.repository import GLib, Gtk
-import urllib2
+from io import BytesIO
 import threading
 import re
 import pygeoip
+import pycurl
 
 IP_CHECK = "https://location.getsol.us"
 TIMEOUT = 10
@@ -107,9 +108,17 @@ class InstallerGeoipPage(BasePage):
     def get_ip_address(self):
         """ Get our external IP address for this machine """
         try:
-            o = urllib2.urlopen(IP_CHECK, None, TIMEOUT)
-            contents = o.read()
-            regex = r'Address: (\d+\.\d+\.\d+\.\d+)'
+            buffer = BytesIO()
+            curl = pycurl.Curl()
+            curl.setopt(curl.IPRESOLVE, 1)
+            curl.setopt(curl.WRITEDATA, buffer)
+            curl.setopt(curl.URL, IP_CHECK)
+            curl.perform()
+            curl.close()
+            b = buffer.getvalue()
+            contents = b.decode('utf-8')
+
+            regex = r'Address: (.+)$'
             reg = re.compile(regex)
             return reg.search(contents).group(1)
         except Exception as e:
