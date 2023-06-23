@@ -402,6 +402,7 @@ class PostInstallUsers(PostInstallStep):
             "dialout",
             "fuse",
             "users",
+            "sambashares",
         ]
         self.admin_groups = [
             "sudo",
