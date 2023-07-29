@@ -130,9 +130,9 @@ class Iso3166(object):
                  entry.hasAttribute('name'))):
             alpha_2_code = entry.getAttribute('alpha_2_code')
             if entry.hasAttribute('common_name'):
-                name = entry.getAttribute('common_name')
+                name = entry.getAttribute('common_name').encode('utf-8')
             else:
-                name = entry.getAttribute('name')
+                name = entry.getAttribute('name').encode('utf-8')
             self.names[alpha_2_code] = name
 
 
