@@ -1,3 +1,9 @@
+This repository has been archived and is no longer maintained.
+
+`os-installer` has been deprecated in favor of Calamares for installating Solus.
+
+---
+
 # os-installer
 
 os-installer is the official [Solus](https://getsol.us) installer.
